@@ -54,7 +54,19 @@ export const submitCaptureAudit = createServerFn({ method: "POST" })
 
     const sha256 = createHash("sha256").update(bytes).digest("hex");
 
-    // Idempotency: same (owner, sha256, capturedAt) → return existing row.
+    // Compute integrity envelope: parser version + canonical-JSON SHA-256
+    // signature of the report. Stored inline so any client can re-verify.
+    const reportPlain = JSON.parse(JSON.stringify(report)) as Record<string, unknown>;
+    const signature = await computeReportSignature(reportPlain);
+    const integrity: IntegrityEnvelope = {
+      parserVersion: PARSER_VERSION,
+      integrityVersion: INTEGRITY_VERSION,
+      signature,
+      signedAt: new Date().toISOString(),
+      algorithm: "sha256-canonical-json",
+    };
+    const reportWithIntegrity = { ...reportPlain, _integrity: integrity };
+
     const { data: existing, error: existingError } = await supabase
       .from("capture_audits")
       .select("id, created_at, jpeg_sha256")
