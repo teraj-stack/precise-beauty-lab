@@ -612,6 +612,37 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
             >
               Raport PDF
             </button>
+            <button
+              type="button"
+              disabled={auditState === "saving" || auditState === "saved"}
+              onClick={async () => {
+                setAuditState("saving");
+                try {
+                  const { submitCaptureAudit } = await import(
+                    "@/lib/camera/capture-audit.functions"
+                  );
+                  const base64 = shot.dataUrl.slice(shot.dataUrl.indexOf(",") + 1);
+                  const res = await submitCaptureAudit({ data: { jpegBase64: base64 } });
+                  setAuditState("saved");
+                  toast.success("Audyt zapisany", {
+                    description: `SHA-256 ${res.sha256.slice(0, 12)}…`,
+                  });
+                } catch (e) {
+                  console.error(e);
+                  setAuditState("idle");
+                  toast.error("Nie udało się zapisać audytu", {
+                    description: e instanceof Error ? e.message : undefined,
+                  });
+                }
+              }}
+              className="inline-flex items-center rounded-md border border-border bg-background px-2.5 py-1 text-[11px] font-medium hover:bg-muted disabled:opacity-60"
+            >
+              {auditState === "saving"
+                ? "Zapisuję…"
+                : auditState === "saved"
+                  ? "Audyt zapisany ✓"
+                  : "Zapisz audyt"}
+            </button>
           </div>
           <p className="text-[10px] leading-snug text-muted-foreground">
             Pełny raport jakości (luminancja, ostrość, skóra, histogram, AE/AWB
