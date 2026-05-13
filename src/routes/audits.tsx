@@ -350,6 +350,8 @@ function AuditsPage() {
                 key={r.id}
                 row={r}
                 open={!!expanded[r.id]}
+                highlighted={r.id === highlightId}
+                rowRef={r.id === highlightId ? highlightRef : undefined}
                 onToggle={() =>
                   setExpanded((s) => ({ ...s, [r.id]: !s[r.id] }))
                 }
