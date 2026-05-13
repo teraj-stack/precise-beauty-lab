@@ -330,20 +330,55 @@ export function HistogramHUD({ metrics, reference }: Props) {
   );
 }
 
-function ClipPip({ label, pct, bad }: { label: string; pct: number; bad: boolean }) {
+function SidePip({
+  side,
+  label,
+  massPct,
+  clipPct,
+  clipBad,
+  heavy,
+  skewed,
+}: {
+  side: "dark" | "bright";
+  label: string;
+  massPct: number;
+  clipPct: number;
+  clipBad: boolean;
+  heavy: boolean;
+  skewed: boolean;
+}) {
+  const tone = clipBad || heavy ? "fail" : skewed || clipPct > 0 ? "warn" : "ok";
+  const cls =
+    tone === "fail"
+      ? "bg-red-500/25 text-red-100 border-red-400/40"
+      : tone === "warn"
+        ? "bg-amber-500/15 text-amber-100 border-amber-400/30"
+        : "bg-emerald-500/15 text-emerald-100 border-emerald-400/30";
+  const arrow = side === "dark" ? "◀" : "▶";
+  const verdict = clipBad
+    ? side === "dark"
+      ? "głębokie cienie"
+      : "prześwietlenia"
+    : heavy
+      ? side === "dark"
+        ? "kadr zbyt ciemny"
+        : "kadr zbyt jasny"
+      : skewed
+        ? "lekki skos"
+        : "OK";
   return (
     <span
-      className={
-        "inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium " +
-        (bad
-          ? "bg-red-500/25 text-red-100"
-          : pct > 0
-            ? "bg-amber-500/15 text-amber-100"
-            : "bg-emerald-500/15 text-emerald-100")
-      }
+      className={`inline-flex items-center justify-between gap-1.5 rounded border px-1.5 py-0.5 font-medium ${cls}`}
+      title={`${label}: masa histogramu ${massPct.toFixed(0)}%, clipping ${clipPct.toFixed(1)}%`}
     >
-      <span className="opacity-80">{label}</span>
-      <span>{pct.toFixed(1)}%</span>
+      <span className="flex items-center gap-1">
+        <span className="opacity-80">{arrow}</span>
+        <span className="opacity-90">{label}</span>
+      </span>
+      <span className="tabular-nums">
+        {massPct.toFixed(0)}% · clip {clipPct.toFixed(1)}%
+      </span>
+      <span className="opacity-95">· {verdict}</span>
     </span>
   );
 }
