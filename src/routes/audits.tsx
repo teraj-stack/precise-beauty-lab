@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowLeft,
@@ -30,7 +30,14 @@ import {
 import type { CaptureAuditRow } from "@/lib/camera/capture-audit-list.functions";
 import { IntegrityBadge } from "@/components/camera/IntegrityBadge";
 
+type AuditsSearch = { sha?: string; open?: string };
+
 export const Route = createFileRoute("/audits")({
+  validateSearch: (s: Record<string, unknown>): AuditsSearch => {
+    const sha = typeof s.sha === "string" ? s.sha.replace(/[^a-fA-F0-9]/g, "").slice(0, 64) : undefined;
+    const open = typeof s.open === "string" ? s.open.slice(0, 64) : undefined;
+    return { sha: sha || undefined, open: open || undefined };
+  },
   head: () => ({
     meta: [
       { title: "Audyt jakości — MySkinCode" },
@@ -89,12 +96,21 @@ function toIso(local: string): string | undefined {
 
 function AuditsPage() {
   const search = useServerFn(searchCaptureAudits);
-  const [filters, setFilters] = useState<FiltersState>(EMPTY);
-  const [applied, setApplied] = useState<FiltersState>(EMPTY);
+  const { sha: shaParam, open: openParam } = Route.useSearch();
+  const initial: FiltersState = useMemo(
+    () => (shaParam ? { ...EMPTY, sha256: shaParam } : EMPTY),
+    [shaParam],
+  );
+  const [filters, setFilters] = useState<FiltersState>(initial);
+  const [applied, setApplied] = useState<FiltersState>(initial);
   const [result, setResult] = useState<AuditSearchResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [expanded, setExpanded] = useState<Record<string, boolean>>(() =>
+    openParam ? { [openParam]: true } : {},
+  );
+  const highlightId = openParam ?? null;
+  const highlightRef = useRef<HTMLLIElement | null>(null);
 
   const run = async (f: FiltersState) => {
     setLoading(true);
@@ -120,9 +136,18 @@ function AuditsPage() {
   };
 
   useEffect(() => {
-    void run(EMPTY);
+    void run(initial);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [initial.sha256]);
+
+  // Scroll to highlighted row once results land
+  useEffect(() => {
+    if (!highlightId || !result) return;
+    const t = setTimeout(() => {
+      highlightRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 60);
+    return () => clearTimeout(t);
+  }, [highlightId, result]);
 
   const activeCount = useMemo(
     () => Object.values(applied).filter((v) => v && v.length > 0).length,
@@ -325,6 +350,8 @@ function AuditsPage() {
                 key={r.id}
                 row={r}
                 open={!!expanded[r.id]}
+                highlighted={r.id === highlightId}
+                rowRef={r.id === highlightId ? highlightRef : undefined}
                 onToggle={() =>
                   setExpanded((s) => ({ ...s, [r.id]: !s[r.id] }))
                 }
@@ -341,13 +368,21 @@ function AuditRow({
   row,
   open,
   onToggle,
+  highlighted,
+  rowRef,
 }: {
   row: CaptureAuditRow;
   open: boolean;
   onToggle: () => void;
+  highlighted?: boolean;
+  rowRef?: React.Ref<HTMLLIElement>;
 }) {
   return (
-    <li className="rounded-lg border border-border bg-card">
+    <li
+      ref={rowRef}
+      className={`rounded-lg border bg-card transition-colors ${highlighted ? "border-primary ring-2 ring-primary/30" : "border-border"}`}
+    >
+
       <button
         type="button"
         onClick={onToggle}

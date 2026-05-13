@@ -15,6 +15,7 @@ import {
   X as XIcon,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { useCameraStream } from "@/hooks/useCameraStream";
 import { useDeviceStability } from "@/hooks/useDeviceStability";
@@ -197,6 +198,8 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     message: string;
     hint?: string;
   } | null>(null);
+  const [dedupInfo, setDedupInfo] = useState<{ id: string; sha256: string; createdAt: string } | null>(null);
+  const navigate = useNavigate();
   const [session, setSession] = useState<ValidatedCapture[]>([]);
   const [zipping, setZipping] = useState(false);
   const [schemaError, setSchemaError] = useState<string | null>(null);
@@ -663,6 +666,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     };
     setShot(frame);
     setAuditState("idle");
+    setDedupInfo(null);
     auditInFlightRef.current = false;
     setSession((s) => [...s, frame]);
     setLastRejection(null);
@@ -1171,10 +1175,16 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                   const res = await submitCaptureAudit({ data: { jpegBase64: base64 } });
                   setAuditState("saved");
                   if (res.deduplicated) {
+                    setDedupInfo({ id: res.id, sha256: res.sha256, createdAt: res.createdAt });
+                    const openExisting = () =>
+                      navigate({ to: "/audits", search: { sha: res.sha256, open: res.id } });
                     toast.info("Audyt już istniał — pominięto duplikat", {
-                      description: `SHA-256 ${res.sha256.slice(0, 12)}…`,
+                      description: `SHA-256 ${res.sha256.slice(0, 12)}… · zapisany ${new Date(res.createdAt).toLocaleString("pl-PL")}`,
+                      action: { label: "Otwórz audyt", onClick: openExisting },
+                      duration: 8000,
                     });
                   } else {
+                    setDedupInfo(null);
                     toast.success("Audyt zapisany", {
                       description: `SHA-256 ${res.sha256.slice(0, 12)}…`,
                     });
@@ -1253,6 +1263,34 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                 className="mt-1.5 text-[10px] underline opacity-70 hover:opacity-100"
               >
                 Zamknij
+              </button>
+            </div>
+          )}
+          {dedupInfo && (
+            <div
+              role="status"
+              className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-2 text-[11px]"
+            >
+              <div className="min-w-0">
+                <p className="font-medium text-amber-700 dark:text-amber-300">
+                  Duplikat — istniejący audyt
+                </p>
+                <p className="mt-0.5 break-all font-mono text-[10px] text-muted-foreground">
+                  SHA-256 {dedupInfo.sha256.slice(0, 16)}… · zapisany{" "}
+                  {new Date(dedupInfo.createdAt).toLocaleString("pl-PL")}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  navigate({
+                    to: "/audits",
+                    search: { sha: dedupInfo.sha256, open: dedupInfo.id },
+                  })
+                }
+                className="inline-flex items-center rounded-md border border-amber-500/50 bg-amber-500/20 px-2.5 py-1 text-[11px] font-medium text-amber-800 hover:bg-amber-500/30 dark:text-amber-200"
+              >
+                Otwórz istniejący audyt →
               </button>
             </div>
           )}
