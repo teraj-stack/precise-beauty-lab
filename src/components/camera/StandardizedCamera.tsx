@@ -9,6 +9,8 @@ import {
   CheckCircle2,
   Loader2,
   RefreshCw,
+  BookmarkPlus,
+  X as XIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -26,7 +28,33 @@ import {
 } from "@/lib/camera/capture-metadata";
 import { FaceGuideOverlay } from "./FaceGuideOverlay";
 import { QualityHUD } from "./QualityHUD";
-import { HistogramHUD } from "./HistogramHUD";
+import { HistogramHUD, type HistogramReference } from "./HistogramHUD";
+
+const HIST_REF_STORAGE_KEY = "msc:hist-reference:v1";
+
+function loadHistReference(): HistogramReference | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(HIST_REF_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as HistogramReference;
+    if (
+      parsed &&
+      Array.isArray(parsed.histogram) &&
+      typeof parsed.luminance === "number"
+    )
+      return parsed;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function saveHistReference(ref: HistogramReference | null) {
+  if (typeof window === "undefined") return;
+  if (ref) window.localStorage.setItem(HIST_REF_STORAGE_KEY, JSON.stringify(ref));
+  else window.localStorage.removeItem(HIST_REF_STORAGE_KEY);
+}
 
 const MAX_AUTO_RETRIES = 5;
 const RETRY_DEBOUNCE_MS = 350;
@@ -175,6 +203,33 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     reasons: string[];
   } | null>(null);
   const lastAttemptAt = useRef(0);
+
+  // ---- Histogram reference (persistent across reloads) ----
+  const [histRef, setHistRef] = useState<HistogramReference | null>(() =>
+    loadHistReference(),
+  );
+
+  const captureHistRef = useCallback(() => {
+    if (!report) {
+      toast.error("Brak metryk — uruchom kamerę i poczekaj na pierwszy frame.");
+      return;
+    }
+    const ref: HistogramReference = {
+      histogram: [...report.metrics.histogram],
+      luminance: report.metrics.luminance,
+      capturedAt: Date.now(),
+      label: `Próba ${new Date().toLocaleTimeString()}`,
+    };
+    setHistRef(ref);
+    saveHistReference(ref);
+    toast.success(`Histogram zarejestrowany (μ ${ref.luminance.toFixed(2)})`);
+  }, [report]);
+
+  const clearHistRef = useCallback(() => {
+    setHistRef(null);
+    saveHistReference(null);
+    toast.message("Referencja histogramu wyczyszczona");
+  }, []);
 
   // Blocking gates (live HUD): all currently failing, plus warnings if no fails
   const blockingGates = (() => {
@@ -326,7 +381,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
             {report && (
               <div className="absolute inset-x-2 top-2 space-y-1.5">
                 <QualityHUD gates={report.gates} />
-                <HistogramHUD metrics={report.metrics} />
+                <HistogramHUD metrics={report.metrics} reference={histRef} />
               </div>
             )}
             {locked && (
@@ -390,6 +445,25 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
             >
               {locked ? <Lock /> : <LockOpen />}
             </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={captureHistRef}
+              disabled={!report}
+              title="Zapisz histogram bieżącej klatki jako referencję"
+            >
+              <BookmarkPlus />
+            </Button>
+            {histRef && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={clearHistRef}
+                title="Wyczyść referencję histogramu"
+              >
+                <XIcon />
+              </Button>
+            )}
             {autoRetry ? (
               <Button
                 variant="secondary"
