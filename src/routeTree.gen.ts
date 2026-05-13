@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProtocolsPs30RouteImport } from './routes/protocols-ps30'
 import { Route as ProtocolsEl950RouteImport } from './routes/protocols-el950'
 import { Route as ProtocolsCl300RouteImport } from './routes/protocols-cl300'
 import { Route as ProtocolsRouteImport } from './routes/protocols'
@@ -17,6 +18,11 @@ import { Route as CaptureRouteImport } from './routes/capture'
 import { Route as CalibrateRouteImport } from './routes/calibrate'
 import { Route as IndexRouteImport } from './routes/index'
 
+const ProtocolsPs30Route = ProtocolsPs30RouteImport.update({
+  id: '/protocols-ps30',
+  path: '/protocols-ps30',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProtocolsEl950Route = ProtocolsEl950RouteImport.update({
   id: '/protocols-el950',
   path: '/protocols-el950',
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/protocols': typeof ProtocolsRoute
   '/protocols-cl300': typeof ProtocolsCl300Route
   '/protocols-el950': typeof ProtocolsEl950Route
+  '/protocols-ps30': typeof ProtocolsPs30Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/protocols': typeof ProtocolsRoute
   '/protocols-cl300': typeof ProtocolsCl300Route
   '/protocols-el950': typeof ProtocolsEl950Route
+  '/protocols-ps30': typeof ProtocolsPs30Route
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/protocols': typeof ProtocolsRoute
   '/protocols-cl300': typeof ProtocolsCl300Route
   '/protocols-el950': typeof ProtocolsEl950Route
+  '/protocols-ps30': typeof ProtocolsPs30Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/protocols'
     | '/protocols-cl300'
     | '/protocols-el950'
+    | '/protocols-ps30'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/protocols'
     | '/protocols-cl300'
     | '/protocols-el950'
+    | '/protocols-ps30'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/protocols'
     | '/protocols-cl300'
     | '/protocols-el950'
+    | '/protocols-ps30'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,10 +131,18 @@ export interface RootRouteChildren {
   ProtocolsRoute: typeof ProtocolsRoute
   ProtocolsCl300Route: typeof ProtocolsCl300Route
   ProtocolsEl950Route: typeof ProtocolsEl950Route
+  ProtocolsPs30Route: typeof ProtocolsPs30Route
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/protocols-ps30': {
+      id: '/protocols-ps30'
+      path: '/protocols-ps30'
+      fullPath: '/protocols-ps30'
+      preLoaderRoute: typeof ProtocolsPs30RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/protocols-el950': {
       id: '/protocols-el950'
       path: '/protocols-el950'
@@ -183,7 +203,18 @@ const rootRouteChildren: RootRouteChildren = {
   ProtocolsRoute: ProtocolsRoute,
   ProtocolsCl300Route: ProtocolsCl300Route,
   ProtocolsEl950Route: ProtocolsEl950Route,
+  ProtocolsPs30Route: ProtocolsPs30Route,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
