@@ -163,7 +163,7 @@ const FIELDS: Array<{
   },
 ];
 
-export function ThresholdPanel({ current, baseline, onChange, refMatch, onRefMatchChange }: Props) {
+export function ThresholdPanel({ current, baseline, onChange, refMatch, onRefMatchChange, liveRefSample }: Props) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<ThresholdOverrides>(() => loadOverrides());
   const [refDraft, setRefDraft] = useState<RefMatchThresholds>(
