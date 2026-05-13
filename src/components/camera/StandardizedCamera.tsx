@@ -311,6 +311,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
       qualityReportJson,
     };
     setShot(frame);
+    setAuditState("idle");
     setLastRejection(null);
     onAccepted?.(frame);
     return "accepted";
