@@ -117,6 +117,8 @@ interface Props {
   /** Reference-match thresholds (shutter gate vs saved histogram reference). */
   refMatch?: RefMatchThresholds;
   onRefMatchChange?: (next: RefMatchThresholds) => void;
+  /** Live sample {evDelta, l1} from current frame vs active reference (for auto-calibration). */
+  liveRefSample?: { evDelta: number; l1: number } | null;
 }
 
 const FIELDS: Array<{
