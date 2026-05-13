@@ -233,6 +233,10 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     reasons: string[];
   } | null>(null);
   const lastAttemptAt = useRef(0);
+  // Synchronous guard against double-click / race: setState is async, so a fast
+  // second tap can fire before `disabled` re-renders. This ref short-circuits
+  // re-entry immediately within the same tick.
+  const auditInFlightRef = useRef(false);
 
   // ---- Histogram reference library (multiple entries + active selection) ----
   const [refLibrary, setRefLibrary] = useState<StoredHistogramReference[]>(() => loadLibrary());
@@ -659,6 +663,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     };
     setShot(frame);
     setAuditState("idle");
+    auditInFlightRef.current = false;
     setSession((s) => [...s, frame]);
     setLastRejection(null);
     onAccepted?.(frame);
@@ -1147,7 +1152,15 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
             <button
               type="button"
               disabled={auditState === "saving" || auditState === "saved"}
+              aria-busy={auditState === "saving"}
+              aria-disabled={auditState === "saving" || auditState === "saved"}
               onClick={async () => {
+                // Sync re-entry guard — wins the race against React re-render
+                // when the user double-taps faster than the disabled attribute
+                // propagates.
+                if (auditInFlightRef.current) return;
+                if (auditState === "saving" || auditState === "saved") return;
+                auditInFlightRef.current = true;
                 setAuditState("saving");
                 setAuditError(null);
                 try {
@@ -1202,10 +1215,16 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                   const info = meta[code] ?? meta.E_UNKNOWN;
                   setAuditError({ code, title: info.title, message: msg, hint: info.hint });
                   toast.error(`${info.title} (${code})`, { description: msg });
+                } finally {
+                  // Always release the sync guard so a retry after error works.
+                  auditInFlightRef.current = false;
                 }
               }}
-              className="inline-flex items-center rounded-md border border-border bg-background px-2.5 py-1 text-[11px] font-medium hover:bg-muted disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-[11px] font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-background"
             >
+              {auditState === "saving" && (
+                <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+              )}
               {auditState === "saving"
                 ? "Zapisuję…"
                 : auditState === "saved"
