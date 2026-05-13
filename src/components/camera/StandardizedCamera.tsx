@@ -15,6 +15,7 @@ import {
   X as XIcon,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { useCameraStream } from "@/hooks/useCameraStream";
 import { useDeviceStability } from "@/hooks/useDeviceStability";
