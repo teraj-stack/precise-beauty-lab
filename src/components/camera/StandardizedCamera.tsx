@@ -49,12 +49,17 @@ function blockingHint(gateIds: string[], reasons: string[]): string {
 }
 
 export interface ValidatedCapture {
+  /** JPEG data URL with the quality report embedded as a JPEG COM marker. */
   dataUrl: string;
   width: number;
   height: number;
   validation: CaptureValidation;
   capturedAt: string;
   profileVersion: string;
+  /** Full structured quality report — same data embedded in the JPEG. */
+  qualityReport: CaptureQualityReport;
+  /** Stand-alone JSON sidecar (UTF-8) for archive/export. */
+  qualityReportJson: string;
 }
 
 interface Props {
