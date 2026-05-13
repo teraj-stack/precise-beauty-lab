@@ -21,6 +21,7 @@ import { Route as LaserThuliumRouteImport } from './routes/laser-thulium'
 import { Route as CaptureRouteImport } from './routes/capture'
 import { Route as CalibrateRouteImport } from './routes/calibrate'
 import { Route as CalendarRouteImport } from './routes/calendar'
+import { Route as AuditsRouteImport } from './routes/audits'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PatientsIdRouteImport } from './routes/patients.$id'
 
@@ -84,6 +85,11 @@ const CalendarRoute = CalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuditsRoute = AuditsRouteImport.update({
+  id: '/audits',
+  path: '/audits',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -97,6 +103,7 @@ const PatientsIdRoute = PatientsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/audits': typeof AuditsRoute
   '/calendar': typeof CalendarRoute
   '/calibrate': typeof CalibrateRoute
   '/capture': typeof CaptureRoute
@@ -113,6 +120,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/audits': typeof AuditsRoute
   '/calendar': typeof CalendarRoute
   '/calibrate': typeof CalibrateRoute
   '/capture': typeof CaptureRoute
@@ -130,6 +138,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/audits': typeof AuditsRoute
   '/calendar': typeof CalendarRoute
   '/calibrate': typeof CalibrateRoute
   '/capture': typeof CaptureRoute
@@ -148,6 +157,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/audits'
     | '/calendar'
     | '/calibrate'
     | '/capture'
@@ -164,6 +174,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/audits'
     | '/calendar'
     | '/calibrate'
     | '/capture'
@@ -180,6 +191,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/audits'
     | '/calendar'
     | '/calibrate'
     | '/capture'
@@ -197,6 +209,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuditsRoute: typeof AuditsRoute
   CalendarRoute: typeof CalendarRoute
   CalibrateRoute: typeof CalibrateRoute
   CaptureRoute: typeof CaptureRoute
@@ -297,6 +310,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/audits': {
+      id: '/audits'
+      path: '/audits'
+      fullPath: '/audits'
+      preLoaderRoute: typeof AuditsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -328,6 +348,7 @@ const PatientsRouteWithChildren = PatientsRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuditsRoute: AuditsRoute,
   CalendarRoute: CalendarRoute,
   CalibrateRoute: CalibrateRoute,
   CaptureRoute: CaptureRoute,
