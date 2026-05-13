@@ -32,20 +32,26 @@ export default tseslint.config(
           ],
         },
       ],
-      // Block the deprecated `CaptureAuditInsertResult` alias from creeping
-      // back in. Always use `CaptureAuditSubmitResult` from
-      // `@/lib/camera/capture-audit-types`.
+      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+      "@typescript-eslint/no-unused-vars": "off",
+    },
+  },
+  // Global ban on the deprecated `CaptureAuditInsertResult` alias.
+  // Applies to every file in the repo (ts, tsx, js, jsx, mjs, cjs) so the
+  // old name cannot creep back in via imports, exports, type references,
+  // type/interface declarations, or plain identifier references.
+  {
+    files: ["**/*.{ts,tsx,js,jsx,mjs,cjs}"],
+    rules: {
       "no-restricted-syntax": [
         "error",
         {
           selector:
-            "ImportSpecifier[imported.name='CaptureAuditInsertResult'], ExportSpecifier[exported.name='CaptureAuditInsertResult'], TSTypeReference[typeName.name='CaptureAuditInsertResult'], TSTypeAliasDeclaration[id.name='CaptureAuditInsertResult'], TSInterfaceDeclaration[id.name='CaptureAuditInsertResult']",
+            "ImportSpecifier[imported.name='CaptureAuditInsertResult'], ImportDefaultSpecifier[local.name='CaptureAuditInsertResult'], ImportNamespaceSpecifier[local.name='CaptureAuditInsertResult'], ExportSpecifier[exported.name='CaptureAuditInsertResult'], ExportSpecifier[local.name='CaptureAuditInsertResult'], TSTypeReference[typeName.name='CaptureAuditInsertResult'], TSTypeAliasDeclaration[id.name='CaptureAuditInsertResult'], TSInterfaceDeclaration[id.name='CaptureAuditInsertResult'], TSQualifiedName[right.name='CaptureAuditInsertResult'], MemberExpression[property.name='CaptureAuditInsertResult'], Identifier[name='CaptureAuditInsertResult']",
           message:
             "CaptureAuditInsertResult is deprecated and removed. Import CaptureAuditSubmitResult from '@/lib/camera/capture-audit-types' instead.",
         },
       ],
-      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
-      "@typescript-eslint/no-unused-vars": "off",
     },
   },
   eslintPluginPrettier,
