@@ -20,6 +20,8 @@ interface Props {
   onActivate: (id: string | null) => void;
   onDelete: (id: string) => void;
   onRename: (id: string, patch: { label?: string; conditions?: string }) => void;
+  /** Clone an existing reference (histogram + conditions) for quick variants. */
+  onDuplicate?: (id: string) => void;
   /** Optional indicator: external preset takes priority over manual references. */
   presetActive?: boolean;
 }
