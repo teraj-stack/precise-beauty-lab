@@ -26,6 +26,7 @@ import {
   embedQualityReportInJpeg,
   type CaptureQualityReport,
 } from "@/lib/camera/capture-metadata";
+import { validateQualityReport } from "@/lib/camera/quality-report-schema";
 import { FaceGuideOverlay } from "./FaceGuideOverlay";
 import { QualityHUD } from "./QualityHUD";
 import { HistogramHUD, type HistogramReference } from "./HistogramHUD";
