@@ -76,12 +76,16 @@ function Dashboard() {
       <header className="hairline border-b-0 border-x-0 border-t-0 bg-background/60 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-8 py-5">
           <Link to="/" className="flex items-center gap-3">
-            <Logo />
-            <div className="leading-tight">
-              <p className="text-[15px] font-medium tracking-[0.18em] text-navy">
-                MYSKIN<span className="font-semibold">CODE</span>
+            <img
+              src={mscLogo}
+              alt="MySkinCode — Technical Support MedTech SaaS"
+              className="h-12 w-12 rounded-md object-contain mix-blend-multiply"
+            />
+            <div className="hidden leading-tight sm:block">
+              <p className="text-[10px] uppercase tracking-[0.35em] text-muted-foreground">
+                MedTech SaaS
               </p>
-              <p className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+              <p className="text-[11px] uppercase tracking-[0.25em] text-navy">
                 Aesthetic Intelligence
               </p>
             </div>
