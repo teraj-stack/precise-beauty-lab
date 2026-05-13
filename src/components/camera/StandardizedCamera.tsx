@@ -182,6 +182,8 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
   const report = useFrameAnalysis(videoRef, stability, { intervalMs: 220, profile });
   const [shot, setShot] = useState<ValidatedCapture | null>(null);
   const [auditState, setAuditState] = useState<"idle" | "saving" | "saved">("idle");
+  const [session, setSession] = useState<ValidatedCapture[]>([]);
+  const [zipping, setZipping] = useState(false);
   const autoLockTried = useRef(false);
 
   useEffect(() => {
@@ -312,6 +314,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     };
     setShot(frame);
     setAuditState("idle");
+    setSession((s) => [...s, frame]);
     setLastRejection(null);
     onAccepted?.(frame);
     return "accepted";
@@ -651,6 +654,58 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
             temporal, gates) zapisany w segmencie JPEG COM oraz dostępny jako
             sidecar.
           </p>
+        </div>
+      )}
+
+      {session.length > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border bg-muted/40 px-3 py-2 text-[11px]">
+          <span className="font-medium">
+            Sesja: {session.length} {session.length === 1 ? "ujęcie" : "ujęć"}
+          </span>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={zipping}
+              onClick={async () => {
+                setZipping(true);
+                try {
+                  const { buildSessionZip } = await import("@/lib/camera/session-zip");
+                  const { blob, filename, count } = await buildSessionZip(session);
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = filename;
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+                  setTimeout(() => URL.revokeObjectURL(url), 1500);
+                  toast.success(`Sesja wyeksportowana (${count})`, {
+                    description: filename,
+                  });
+                } catch (e) {
+                  console.error(e);
+                  toast.error("Nie udało się spakować sesji", {
+                    description: e instanceof Error ? e.message : undefined,
+                  });
+                } finally {
+                  setZipping(false);
+                }
+              }}
+              className="inline-flex items-center rounded-md border border-primary/40 bg-primary/10 px-2.5 py-1 font-medium text-primary hover:bg-primary/20 disabled:opacity-60"
+            >
+              {zipping ? "Pakuję…" : "Eksport sesji ZIP"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setSession([]);
+                toast.info("Sesja wyczyszczona");
+              }}
+              className="inline-flex items-center rounded-md border border-border bg-background px-2.5 py-1 font-medium hover:bg-muted"
+            >
+              Wyczyść
+            </button>
+          </div>
         </div>
       )}
 
