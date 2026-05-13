@@ -26,6 +26,7 @@ import {
   embedQualityReportInJpeg,
   type CaptureQualityReport,
 } from "@/lib/camera/capture-metadata";
+import { validateQualityReport } from "@/lib/camera/quality-report-schema";
 import { FaceGuideOverlay } from "./FaceGuideOverlay";
 import { QualityHUD } from "./QualityHUD";
 import { HistogramHUD, type HistogramReference } from "./HistogramHUD";
@@ -184,6 +185,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
   const [auditState, setAuditState] = useState<"idle" | "saving" | "saved">("idle");
   const [session, setSession] = useState<ValidatedCapture[]>([]);
   const [zipping, setZipping] = useState(false);
+  const [schemaError, setSchemaError] = useState<string | null>(null);
   const autoLockTried = useRef(false);
 
   useEffect(() => {
@@ -299,6 +301,21 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
       height: c.height,
       validation,
     });
+    const schemaCheck = validateQualityReport(qualityReport);
+    if (!schemaCheck.ok) {
+      setSchemaError(`${schemaCheck.message}${schemaCheck.issues?.length ? ` — ${schemaCheck.issues.join("; ")}` : ""}`);
+      toast.error("Raport jakości niezgodny ze schematem", {
+        description: schemaCheck.message,
+      });
+      console.error("[capture-schema-invalid]", schemaCheck);
+      return "rejected";
+    }
+    if (schemaCheck.warnings.length) {
+      toast.warning("Ostrzeżenie schematu raportu", {
+        description: schemaCheck.warnings.join(" • "),
+      });
+    }
+    setSchemaError(null);
     const qualityReportJson = JSON.stringify(qualityReport, null, 2);
     const { dataUrl } = embedQualityReportInJpeg(rawDataUrl, qualityReport);
 
@@ -517,6 +534,13 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
       />
 
       {/* Last rejection details — clear, persistent until accepted */}
+      {schemaError && (
+        <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-[11px] text-destructive">
+          <p className="font-medium">Niezgodny schemat raportu jakości</p>
+          <p className="mt-0.5 leading-snug opacity-90">{schemaError}</p>
+        </div>
+      )}
+
       {lastRejection && !shot && (
         <div className="space-y-1.5 rounded-xl border border-amber-500/40 bg-amber-500/5 p-3 text-xs">
           <div className="flex items-center gap-1.5 text-sm font-semibold text-amber-700 dark:text-amber-300">
