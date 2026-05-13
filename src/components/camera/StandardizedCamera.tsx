@@ -10,6 +10,8 @@ import {
   Loader2,
   RefreshCw,
   BookmarkPlus,
+  Download,
+  Upload,
   X as XIcon,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -277,6 +279,66 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     setManualHistRef(null);
     saveHistReference(null);
     toast.message("Referencja histogramu wyczyszczona");
+  }, []);
+
+  const exportHistRef = useCallback(() => {
+    if (!histRef) {
+      toast.error("Brak referencji do wyeksportowania.");
+      return;
+    }
+    const payload = {
+      schema: "msc:hist-reference:v1",
+      exportedAt: new Date().toISOString(),
+      reference: histRef,
+    };
+    const json = JSON.stringify(payload, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const stamp = new Date(histRef.capturedAt)
+      .toISOString()
+      .replace(/[:.]/g, "-");
+    a.href = url;
+    a.download = `hist-reference-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    toast.success("Referencja wyeksportowana (JSON)");
+  }, [histRef]);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const importHistRef = useCallback(async (file: File) => {
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const ref: HistogramReference | undefined = parsed?.reference ?? parsed;
+      if (
+        !ref ||
+        !Array.isArray(ref.histogram) ||
+        ref.histogram.length === 0 ||
+        typeof ref.luminance !== "number"
+      ) {
+        toast.error("Nieprawidłowy plik referencji histogramu.");
+        return;
+      }
+      const sum = ref.histogram.reduce((a, b) => a + (Number(b) || 0), 0);
+      if (Math.abs(sum - 1) > 0.05) {
+        toast.warning("Histogram nie jest znormalizowany (suma ≠ 1) — importuję mimo to.");
+      }
+      const clean: HistogramReference = {
+        histogram: ref.histogram.map((v) => Number(v) || 0),
+        luminance: ref.luminance,
+        capturedAt: ref.capturedAt ?? Date.now(),
+        label: ref.label ?? `Import ${new Date().toLocaleString()}`,
+      };
+      setManualHistRef(clean);
+      saveHistReference(clean);
+      toast.success(`Referencja zaimportowana (μ ${clean.luminance.toFixed(2)})`);
+    } catch (e) {
+      console.error(e);
+      toast.error("Nie udało się odczytać pliku JSON.");
+    }
   }, []);
 
   const handleSavePreset = useCallback((p: CapturePreset) => {
@@ -626,6 +688,35 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
             >
               <BookmarkPlus />
             </Button>
+            {histRef && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={exportHistRef}
+                title="Eksportuj referencję histogramu (JSON)"
+              >
+                <Download />
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => fileInputRef.current?.click()}
+              title="Importuj referencję histogramu z pliku JSON"
+            >
+              <Upload />
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) void importHistRef(f);
+                e.target.value = "";
+              }}
+            />
             {histRef && (
               <Button
                 variant="outline"
