@@ -91,6 +91,13 @@ function Dashboard() {
             </div>
           </Link>
           <div className="flex items-center gap-5">
+            <Link
+              to="/audits"
+              className="hidden rounded-full border border-border bg-card px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-navy transition-colors hover:bg-muted md:inline-flex"
+            >
+              <ShieldCheck className="mr-1.5 h-3 w-3" />
+              Audyt jakości
+            </Link>
             <p className="hidden text-xs uppercase tracking-[0.25em] text-muted-foreground md:block">
               {new Date().toLocaleDateString("pl-PL", {
                 weekday: "long",
