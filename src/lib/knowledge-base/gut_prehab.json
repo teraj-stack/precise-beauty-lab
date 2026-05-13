@@ -1,0 +1,62 @@
+{
+  "id": "ADJ-GUT-PREHAB-001",
+  "title": "Prehabilitacja jelitowa (oś dieta–mikrobiom–gojenie)",
+  "scope": "adjuvant_aftercare",
+  "applies_to": [
+    "DEV-EL950-PICO-001",
+    "DEV-PS30-PLASMA-001"
+  ],
+  "rationale": "Optymalizacja bariery jelitowej i podaży maślanu (główne paliwo kolonocytów, do 70% ATP) wzmacnia tight junctions, redukuje stan zapalny systemowy i wspiera gojenie tkanek po zabiegach laserowych/plazmowych (mikrourazy, rumień, odbudowa naskórka).",
+  "mechanisms": [
+    {
+      "name": "Klastry Clostridium IV i XIVa",
+      "detail": "Faecalibacterium prausnitzii, Roseburia, Eubacterium rectale — główni producenci maślanu (SCFA) w jelicie grubym."
+    },
+    {
+      "name": "Prebiotyk: błonnik nierozpuszczalny i skrobia oporna",
+      "detail": "Celuloza, hemiceluloza, skrobia oporna z warzyw korzeniowych — paliwo dla endogennych Clostridium IV/XIVa."
+    },
+    {
+      "name": "SBO (Soil-Based Organisms)",
+      "detail": "Endospory Bacillus subtilis / B. coagulans z resztek gleby przeżywają kwas żołądkowy; obniżają potencjał redoks i przygotowują środowisko beztlenowe."
+    },
+    {
+      "name": "Cross-feeding",
+      "detail": "Bacillus rozkłada złożone włókna i zużywa resztkowy tlen, tworząc niszę dla producentów maślanu."
+    }
+  ],
+  "prehab_window_days": [10, 14],
+  "aftercare_window_days": [7, 14],
+  "diet_recommendations": [
+    "Warzywa korzeniowe lekko szorowane (marchew, pietruszka, burak, seler, rzodkiew) — 300–500 g/dobę.",
+    "Skrobia oporna: ugotowane i schłodzone ziemniaki/ryż (≥12 h w lodówce), zielony banan.",
+    "Kiszonki niepasteryzowane (kapusta, ogórki, kimchi) — 2–3 łyżki/dobę.",
+    "Tłuszcze przeciwzapalne: oliwa extra virgin, tłuste ryby morskie 2×/tydz.",
+    "Nawodnienie 30–35 ml/kg m.c./dobę."
+  ],
+  "avoid": [
+    "Alkohol (≥72 h przed i po zabiegu)",
+    "Cukry proste i ultra-przetworzone produkty (prozapalne dla mikrobioty)",
+    "NLPZ bez wskazań (wpływ na barierę jelitową i gojenie)",
+    "Antybiotyki w oknie prehab — jeśli to możliwe i bezpieczne klinicznie"
+  ],
+  "supplements_optional": [
+    "Maślan sodu mikrootoczkowany 600–1200 mg/dobę",
+    "Bacillus coagulans / B. subtilis (preparaty sporowe) zgodnie z ChPL",
+    "Witamina D3 zgodnie z poziomem 25(OH)D"
+  ],
+  "red_flags": [
+    "IBD w zaostrzeniu, SIBO objawowe — modyfikacja błonnika i SBO wymaga konsultacji gastroenterologicznej.",
+    "Immunosupresja, neutropenia — preparaty sporowe tylko po decyzji lekarza prowadzącego.",
+    "Ciąża/laktacja — suplementy wyłącznie po konsultacji."
+  ],
+  "expected_benefits": [
+    "Szybsza re-epitelizacja po ablacji frakcyjnej / plazmie",
+    "Mniejszy rumień pozabiegowy i krótszy downtime",
+    "Mniejsze ryzyko hiperpigmentacji pozapalnej (PIH) u fototypów III–V",
+    "Stabilniejszy efekt anti-aging (oś jelito–skóra)"
+  ],
+  "evidence_level": "expert_opinion_mechanistic",
+  "expert_confirmation_required": true,
+  "source": "Innowacyjna_prehabilitacja_jelitowa_gleba_celuloza_maslan.docx (notatka kliniczna)"
+}

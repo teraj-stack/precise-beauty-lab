@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PROTOCOL_RULES_EL950, getDevice } from "@/lib/knowledge-base";
+import { GutPrehabSection } from "@/components/protocols/GutPrehabSection";
 
 export const Route = createFileRoute("/protocols-el950")({
   head: () => ({
@@ -242,6 +243,10 @@ function ProtocolsEl950Page() {
             </table>
           </div>
         </Card>
+
+        <div className="mt-10">
+          <GutPrehabSection deviceId="DEV-EL950-PICO-001" />
+        </div>
 
         <p className="mt-8 text-center text-[11px] text-muted-foreground">
           Źródło: {kb.source_documents.join(", ")}. Każda rekomendacja wymaga potwierdzenia
