@@ -155,14 +155,26 @@ export function StandardizedCamera({ onAccepted }: Props) {
       return "rejected";
     }
 
-    const dataUrl = c.toDataURL("image/jpeg", 0.92);
+    const rawDataUrl = c.toDataURL("image/jpeg", 0.92);
+    const capturedAt = new Date().toISOString();
+    const qualityReport = buildCaptureMetadata({
+      capturedAt,
+      width: c.width,
+      height: c.height,
+      validation,
+    });
+    const qualityReportJson = JSON.stringify(qualityReport, null, 2);
+    const { dataUrl } = embedQualityReportInJpeg(rawDataUrl, qualityReport);
+
     const frame: ValidatedCapture = {
       dataUrl,
       width: c.width,
       height: c.height,
       validation,
-      capturedAt: new Date().toISOString(),
+      capturedAt,
       profileVersion: validation.profileVersion,
+      qualityReport,
+      qualityReportJson,
     };
     setShot(frame);
     setLastRejection(null);
