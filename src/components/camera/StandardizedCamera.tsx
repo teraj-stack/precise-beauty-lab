@@ -565,6 +565,9 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     return out.filter((h) => (seen.has(h.text) ? false : (seen.add(h.text), true))).slice(0, 4);
   })();
 
+  // ---- Per-attempt alignment tracker (frames + ms until aligned, history per session) ----
+  const alignmentTracker = useAlignmentTracker(refMatch, refKey);
+
 
   // Blocking gates (live HUD): all currently failing, plus warnings if no fails
   const blockingGates = (() => {
