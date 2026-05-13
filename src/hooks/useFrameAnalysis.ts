@@ -1,38 +1,42 @@
 import { useEffect, useRef, useState } from "react";
-import { analyzeFrame, DEFAULT_FACE_ROI, evaluateGates, type RoiRect } from "@/lib/camera/quality";
+import {
+  analyzeFrame,
+  DEFAULT_FACE_ROI,
+  evaluateGates,
+  TemporalTracker,
+  type RoiRect,
+} from "@/lib/camera/quality";
 import type { QualityReport, StabilityMetrics } from "@/lib/camera/types";
 
 interface Options {
   intervalMs?: number;
   roi?: RoiRect;
   analysisWidth?: number;
+  windowSize?: number;
 }
 
-/**
- * Periodically samples frames from a <video> element via an offscreen canvas,
- * runs the portable quality analyzer, and emits a QualityReport.
- */
 export function useFrameAnalysis(
   videoRef: React.RefObject<HTMLVideoElement | null>,
   stability: StabilityMetrics,
   opts: Options = {},
 ) {
-  const { intervalMs = 250, roi = DEFAULT_FACE_ROI, analysisWidth = 480 } = opts;
+  const { intervalMs = 220, roi = DEFAULT_FACE_ROI, analysisWidth = 480, windowSize = 8 } = opts;
   const [report, setReport] = useState<QualityReport | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const trackerRef = useRef<TemporalTracker>(new TemporalTracker(windowSize));
   const stabRef = useRef(stability);
   stabRef.current = stability;
 
   useEffect(() => {
-    let rafTimer: number | null = null;
+    let timer: number | null = null;
     let stopped = false;
 
-    if (!canvasRef.current) {
-      canvasRef.current = document.createElement("canvas");
-    }
+    if (!canvasRef.current) canvasRef.current = document.createElement("canvas");
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) return;
+
+    trackerRef.current.reset();
 
     const tick = () => {
       if (stopped) return;
@@ -47,20 +51,21 @@ export function useFrameAnalysis(
         try {
           const img = ctx.getImageData(0, 0, w, h);
           const m = analyzeFrame(img.data, w, h, roi);
-          setReport(evaluateGates(m, stabRef.current));
+          const temporal = trackerRef.current.push(m);
+          setReport(evaluateGates(m, stabRef.current, temporal));
         } catch {
-          // ignore (cross-origin guard, etc.)
+          /* cross-origin guard */
         }
       }
-      rafTimer = window.setTimeout(tick, intervalMs);
+      timer = window.setTimeout(tick, intervalMs);
     };
     tick();
 
     return () => {
       stopped = true;
-      if (rafTimer != null) window.clearTimeout(rafTimer);
+      if (timer != null) window.clearTimeout(timer);
     };
-  }, [videoRef, intervalMs, roi, analysisWidth]);
+  }, [videoRef, intervalMs, roi, analysisWidth, windowSize]);
 
   return report;
 }
