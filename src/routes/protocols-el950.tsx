@@ -178,10 +178,12 @@ function ProtocolsEl950Page() {
                     <summary className="cursor-pointer">Wskazania</summary>
                     <div className="mt-1 space-y-1">
                       <p>
-                        <span className="font-medium">1064 nm:</span> {h.indications_1064.join(" · ")}
+                        <span className="font-medium">1064 nm:</span>{" "}
+                        {(h.indications_1064 ?? []).join(" · ")}
                       </p>
                       <p>
-                        <span className="font-medium">532 nm:</span> {h.indications_532.join(" · ")}
+                        <span className="font-medium">532 nm:</span>{" "}
+                        {(h.indications_532 ?? []).join(" · ")}
                       </p>
                     </div>
                   </details>
