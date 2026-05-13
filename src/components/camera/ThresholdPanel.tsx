@@ -465,6 +465,17 @@ export function ThresholdPanel({ current, baseline, onChange, refMatch, onRefMat
             onSave={handleProfileSave}
             onActivate={handleProfileActivate}
             onDelete={handleProfileDelete}
+            onReplaceAll={(next, nextActiveId) => {
+              setProfiles(next);
+              saveRefMatchProfiles(next);
+              setActiveProfileId(nextActiveId);
+              saveActiveRefMatchProfileId(nextActiveId);
+            }}
+            onApplyThresholds={(t) => {
+              setRefDraft(t);
+              saveRefMatchThresholds(t);
+              onRefMatchChange?.(t);
+            }}
           />
         </div>
       )}
