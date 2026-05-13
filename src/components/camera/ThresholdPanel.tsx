@@ -17,6 +17,7 @@ import {
 import type { QualityThresholds } from "@/lib/camera/types";
 
 const STORAGE_KEY = "msc:threshold-overrides:v1";
+const REF_MATCH_STORAGE_KEY = "msc:ref-match-thresholds:v1";
 
 type TunableKey =
   | "luminanceMin"
@@ -25,6 +26,48 @@ type TunableKey =
   | "clippingHighMax";
 
 export type ThresholdOverrides = Partial<Pick<QualityThresholds, TunableKey>>;
+
+/** Reference-match thresholds (shutter gate vs saved histogram reference). */
+export type RefMatchThresholds = {
+  /** Max |ΔEV| (in EV) allowed between current frame and reference. */
+  alignEv: number;
+  /** Max L1 distance between normalized histograms allowed. */
+  alignL1: number;
+};
+
+export const DEFAULT_REF_MATCH: RefMatchThresholds = {
+  alignEv: 1 / 6, // ½ kroku 1/3 EV
+  alignL1: 0.45,
+};
+
+export function loadRefMatchThresholds(): RefMatchThresholds {
+  if (typeof window === "undefined") return { ...DEFAULT_REF_MATCH };
+  try {
+    const raw = window.localStorage.getItem(REF_MATCH_STORAGE_KEY);
+    if (!raw) return { ...DEFAULT_REF_MATCH };
+    const parsed = JSON.parse(raw) as Partial<RefMatchThresholds>;
+    return {
+      alignEv:
+        typeof parsed.alignEv === "number" && parsed.alignEv > 0 && parsed.alignEv <= 1
+          ? parsed.alignEv
+          : DEFAULT_REF_MATCH.alignEv,
+      alignL1:
+        typeof parsed.alignL1 === "number" && parsed.alignL1 > 0 && parsed.alignL1 <= 2
+          ? parsed.alignL1
+          : DEFAULT_REF_MATCH.alignL1,
+    };
+  } catch {
+    return { ...DEFAULT_REF_MATCH };
+  }
+}
+
+function saveRefMatchThresholds(t: RefMatchThresholds) {
+  if (typeof window === "undefined") return;
+  const isDefault =
+    t.alignEv === DEFAULT_REF_MATCH.alignEv && t.alignL1 === DEFAULT_REF_MATCH.alignL1;
+  if (isDefault) window.localStorage.removeItem(REF_MATCH_STORAGE_KEY);
+  else window.localStorage.setItem(REF_MATCH_STORAGE_KEY, JSON.stringify(t));
+}
 
 export function loadOverrides(): ThresholdOverrides {
   if (typeof window === "undefined") return {};
@@ -63,6 +106,9 @@ interface Props {
   /** Profile being mutated (defaults to QUALITY_PROFILE_V1.live for the reset baseline). */
   baseline?: QualityThresholds;
   onChange: (next: ThresholdOverrides) => void;
+  /** Reference-match thresholds (shutter gate vs saved histogram reference). */
+  refMatch?: RefMatchThresholds;
+  onRefMatchChange?: (next: RefMatchThresholds) => void;
 }
 
 const FIELDS: Array<{
