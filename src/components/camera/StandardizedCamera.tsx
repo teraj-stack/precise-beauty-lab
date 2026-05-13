@@ -386,7 +386,36 @@ export function StandardizedCamera({ onAccepted }: Props) {
             <dd className="text-right font-mono">
               {(shot.validation.report.metrics.skinRatio * 100).toFixed(0)}%
             </dd>
+            <dt>AE σ</dt>
+            <dd className="text-right font-mono">
+              {shot.validation.report.temporal.luminanceStd.toFixed(4)}
+            </dd>
+            <dt>AWB σ</dt>
+            <dd className="text-right font-mono">
+              {shot.validation.report.temporal.colorCastStd.toFixed(4)}
+            </dd>
           </dl>
+          <div className="flex flex-wrap gap-2 pt-1">
+            <a
+              href={shot.dataUrl}
+              download={`capture-${shot.capturedAt.replace(/[:.]/g, "-")}.jpg`}
+              className="inline-flex items-center rounded-md border border-border bg-background px-2.5 py-1 text-[11px] font-medium hover:bg-muted"
+            >
+              JPG + raport (COM)
+            </a>
+            <a
+              href={`data:application/json;charset=utf-8,${encodeURIComponent(shot.qualityReportJson)}`}
+              download={`capture-${shot.capturedAt.replace(/[:.]/g, "-")}.quality.json`}
+              className="inline-flex items-center rounded-md border border-border bg-background px-2.5 py-1 text-[11px] font-medium hover:bg-muted"
+            >
+              Sidecar JSON
+            </a>
+          </div>
+          <p className="text-[10px] leading-snug text-muted-foreground">
+            Pełny raport jakości (luminancja, ostrość, skóra, histogram, AE/AWB
+            temporal, gates) zapisany w segmencie JPEG COM oraz dostępny jako
+            sidecar.
+          </p>
         </div>
       )}
 
