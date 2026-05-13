@@ -1266,6 +1266,34 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
               </button>
             </div>
           )}
+          {dedupInfo && (
+            <div
+              role="status"
+              className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-2 text-[11px]"
+            >
+              <div className="min-w-0">
+                <p className="font-medium text-amber-700 dark:text-amber-300">
+                  Duplikat — istniejący audyt
+                </p>
+                <p className="mt-0.5 break-all font-mono text-[10px] text-muted-foreground">
+                  SHA-256 {dedupInfo.sha256.slice(0, 16)}… · zapisany{" "}
+                  {new Date(dedupInfo.createdAt).toLocaleString("pl-PL")}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  navigate({
+                    to: "/audits",
+                    search: { sha: dedupInfo.sha256, open: dedupInfo.id },
+                  })
+                }
+                className="inline-flex items-center rounded-md border border-amber-500/50 bg-amber-500/20 px-2.5 py-1 text-[11px] font-medium text-amber-800 hover:bg-amber-500/30 dark:text-amber-200"
+              >
+                Otwórz istniejący audyt →
+              </button>
+            </div>
+          )}
           <p className="text-[10px] leading-snug text-muted-foreground">
             Pełny raport jakości (luminancja, ostrość, skóra, histogram, AE/AWB
             temporal, gates) zapisany w segmencie JPEG COM oraz dostępny jako
