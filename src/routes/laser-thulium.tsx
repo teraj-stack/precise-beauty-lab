@@ -111,18 +111,15 @@ function LaserThuliumPage() {
           <section className="mt-10 rounded-xl border border-border bg-card p-5">
             <h2 className="text-base font-semibold">Parametry urządzenia w bazie wiedzy</h2>
             <dl className="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
-              <Row k="ID urządzenia" v={device.device_id} />
-              <Row k="Klasa lasera" v={device.safety.laser_class} />
-              <Row k="Klasa SaMD" v={device.safety.samd_class} />
+              <Row k="ID urządzenia" v={device.id} />
+              <Row k="Klasa lasera" v={device.class.laser_safety_class} />
+              <Row k="Klasa SaMD" v={device.class.samd_class} />
               <Row
-                k="Maks. moc 1927 nm"
-                v={`${device.physics.wavelengths_nm[0]} nm · do ${device.physics.max_power_w} W`}
+                k="Długości fali"
+                v={device.physics.wavelengths_nm.map((w) => `${w} nm`).join(" + ")}
               />
-              <Row
-                k="Maks. moc 1550 nm"
-                v={`${device.physics.wavelengths_nm[1]} nm · do ${device.physics.max_power_w} W`}
-              />
-              <Row k="Wersja KB" v={device.kb_version} />
+              <Row k="Maks. moc" v={`${device.physics.max_power_w} W`} />
+              <Row k="Typ" v={device.physics.type} />
             </dl>
             <div className="mt-5">
               <Button asChild size="sm" variant="outline">
