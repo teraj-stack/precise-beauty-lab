@@ -37,13 +37,18 @@ function CapturePage() {
         </header>
         <StandardizedCamera
           onAccepted={(frame) => {
-            // TODO Module 2: POST to FastAPI CV pipeline.
+            // TODO Module 2: POST { jpeg: frame.dataUrl, quality: frame.qualityReport } to FastAPI CV pipeline.
             console.log("[capture-accepted]", {
               w: frame.width,
               h: frame.height,
               profile: frame.profileVersion,
-              metrics: frame.validation.report.metrics,
               at: frame.capturedAt,
+              decision: frame.qualityReport.decision,
+              thresholds: frame.qualityReport.thresholdsVersion,
+              gates: frame.qualityReport.gates.map((g) => `${g.id}:${g.status}`),
+              metrics: frame.qualityReport.metrics,
+              temporal: frame.qualityReport.temporal,
+              jsonBytes: frame.qualityReportJson.length,
             });
           }}
         />

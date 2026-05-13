@@ -18,6 +18,11 @@ import { useFrameAnalysis } from "@/hooks/useFrameAnalysis";
 import { DEFAULT_FACE_ROI } from "@/lib/camera/quality";
 import { validateCapture, type CaptureValidation } from "@/lib/camera/validate-capture";
 import { QUALITY_PROFILE_V1 } from "@/lib/camera/quality-profiles";
+import {
+  buildCaptureMetadata,
+  embedQualityReportInJpeg,
+  type CaptureQualityReport,
+} from "@/lib/camera/capture-metadata";
 import { FaceGuideOverlay } from "./FaceGuideOverlay";
 import { QualityHUD } from "./QualityHUD";
 import { HistogramHUD } from "./HistogramHUD";
@@ -44,12 +49,17 @@ function blockingHint(gateIds: string[], reasons: string[]): string {
 }
 
 export interface ValidatedCapture {
+  /** JPEG data URL with the quality report embedded as a JPEG COM marker. */
   dataUrl: string;
   width: number;
   height: number;
   validation: CaptureValidation;
   capturedAt: string;
   profileVersion: string;
+  /** Full structured quality report — same data embedded in the JPEG. */
+  qualityReport: CaptureQualityReport;
+  /** Stand-alone JSON sidecar (UTF-8) for archive/export. */
+  qualityReportJson: string;
 }
 
 interface Props {
@@ -145,14 +155,26 @@ export function StandardizedCamera({ onAccepted }: Props) {
       return "rejected";
     }
 
-    const dataUrl = c.toDataURL("image/jpeg", 0.92);
+    const rawDataUrl = c.toDataURL("image/jpeg", 0.92);
+    const capturedAt = new Date().toISOString();
+    const qualityReport = buildCaptureMetadata({
+      capturedAt,
+      width: c.width,
+      height: c.height,
+      validation,
+    });
+    const qualityReportJson = JSON.stringify(qualityReport, null, 2);
+    const { dataUrl } = embedQualityReportInJpeg(rawDataUrl, qualityReport);
+
     const frame: ValidatedCapture = {
       dataUrl,
       width: c.width,
       height: c.height,
       validation,
-      capturedAt: new Date().toISOString(),
+      capturedAt,
       profileVersion: validation.profileVersion,
+      qualityReport,
+      qualityReportJson,
     };
     setShot(frame);
     setLastRejection(null);
@@ -364,7 +386,36 @@ export function StandardizedCamera({ onAccepted }: Props) {
             <dd className="text-right font-mono">
               {(shot.validation.report.metrics.skinRatio * 100).toFixed(0)}%
             </dd>
+            <dt>AE σ</dt>
+            <dd className="text-right font-mono">
+              {shot.validation.report.temporal.luminanceStd.toFixed(4)}
+            </dd>
+            <dt>AWB σ</dt>
+            <dd className="text-right font-mono">
+              {shot.validation.report.temporal.colorCastStd.toFixed(4)}
+            </dd>
           </dl>
+          <div className="flex flex-wrap gap-2 pt-1">
+            <a
+              href={shot.dataUrl}
+              download={`capture-${shot.capturedAt.replace(/[:.]/g, "-")}.jpg`}
+              className="inline-flex items-center rounded-md border border-border bg-background px-2.5 py-1 text-[11px] font-medium hover:bg-muted"
+            >
+              JPG + raport (COM)
+            </a>
+            <a
+              href={`data:application/json;charset=utf-8,${encodeURIComponent(shot.qualityReportJson)}`}
+              download={`capture-${shot.capturedAt.replace(/[:.]/g, "-")}.quality.json`}
+              className="inline-flex items-center rounded-md border border-border bg-background px-2.5 py-1 text-[11px] font-medium hover:bg-muted"
+            >
+              Sidecar JSON
+            </a>
+          </div>
+          <p className="text-[10px] leading-snug text-muted-foreground">
+            Pełny raport jakości (luminancja, ostrość, skóra, histogram, AE/AWB
+            temporal, gates) zapisany w segmencie JPEG COM oraz dostępny jako
+            sidecar.
+          </p>
         </div>
       )}
 
