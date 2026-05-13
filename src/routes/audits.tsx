@@ -385,9 +385,10 @@ function AuditRow({
             <Field label="Profil" value={row.profile_version} />
             <Field label="Thresholds" value={row.thresholds_version} />
           </div>
-          <div className="flex items-center gap-2 text-[11px]">
+          <div className="flex flex-wrap items-center gap-2 text-[11px]">
             <FileJson className="h-3 w-3 text-muted-foreground" />
             <span className="font-medium">Raport jakości (JSONB)</span>
+            <IntegrityBadge report={row.report} />
             <a
               href={`data:application/json;charset=utf-8,${encodeURIComponent(
                 JSON.stringify(row.report, null, 2),
