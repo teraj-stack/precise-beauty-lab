@@ -10,6 +10,8 @@ import {
   Loader2,
   RefreshCw,
   BookmarkPlus,
+  Download,
+  Upload,
   X as XIcon,
 } from "lucide-react";
 import { toast } from "sonner";
