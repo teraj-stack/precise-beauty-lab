@@ -7,7 +7,7 @@
  */
 
 import { useMemo, useState } from "react";
-import { BookmarkPlus, Check, Pencil, Trash2, X } from "lucide-react";
+import { ArrowDownAZ, BookmarkPlus, Check, Pencil, Search, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { StoredHistogramReference } from "@/lib/camera/hist-reference-library";
 
@@ -53,11 +53,39 @@ export function HistReferenceLibrary({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editLabel, setEditLabel] = useState("");
   const [editConditions, setEditConditions] = useState("");
+  const [query, setQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "label" | "conditions">("newest");
 
-  const sorted = useMemo(
-    () => [...library].sort((a, b) => b.createdAt - a.createdAt),
-    [library],
-  );
+  const sorted = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const filtered = q
+      ? library.filter((r) => {
+          const label = (r.label ?? "").toLowerCase();
+          const cond = (r.conditions ?? "").toLowerCase();
+          return label.includes(q) || cond.includes(q);
+        })
+      : library;
+    const arr = [...filtered];
+    switch (sortBy) {
+      case "oldest":
+        arr.sort((a, b) => a.createdAt - b.createdAt);
+        break;
+      case "label":
+        arr.sort((a, b) =>
+          (a.label ?? "").localeCompare(b.label ?? "", "pl", { sensitivity: "base" }),
+        );
+        break;
+      case "conditions":
+        arr.sort((a, b) =>
+          (a.conditions ?? "").localeCompare(b.conditions ?? "", "pl", { sensitivity: "base" }),
+        );
+        break;
+      case "newest":
+      default:
+        arr.sort((a, b) => b.createdAt - a.createdAt);
+    }
+    return arr;
+  }, [library, query, sortBy]);
 
   function handleSave() {
     const label = draftLabel.trim() || `Próba ${new Date().toLocaleTimeString("pl-PL")}`;
@@ -126,10 +154,41 @@ export function HistReferenceLibrary({
         </Button>
       </div>
 
+      {/* Search & sort */}
+      {library.length > 0 && (
+        <div className="grid gap-1.5 sm:grid-cols-[1fr_auto] sm:items-center">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Szukaj po etykiecie lub warunkach…"
+              className="w-full rounded border border-input bg-background py-1 pl-7 pr-2 text-[11px]"
+            />
+          </div>
+          <label className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <ArrowDownAZ className="h-3 w-3" />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              className="rounded border border-input bg-background px-1.5 py-1 text-[11px] text-foreground"
+            >
+              <option value="newest">Najnowsze</option>
+              <option value="oldest">Najstarsze</option>
+              <option value="label">Etykieta A→Z</option>
+              <option value="conditions">Warunki A→Z</option>
+            </select>
+          </label>
+        </div>
+      )}
+
       {/* List */}
       {sorted.length === 0 ? (
         <p className="text-[11px] text-muted-foreground">
-          Brak zapisanych referencji. Zapisz pierwszą referencję na bazie aktualnej klatki.
+          {library.length === 0
+            ? "Brak zapisanych referencji. Zapisz pierwszą referencję na bazie aktualnej klatki."
+            : "Brak referencji pasujących do wyszukiwania."}
         </p>
       ) : (
         <ul className="space-y-1.5">
