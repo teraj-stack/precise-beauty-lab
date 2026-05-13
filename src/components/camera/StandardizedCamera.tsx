@@ -372,7 +372,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     setLastRejection(null);
     onAccepted?.(frame);
     return "accepted";
-  }, [report, stability, onAccepted, profile]);
+  }, [report, stability, onAccepted, profile, refMatch]);
 
   // Manual shutter — also enables auto-retry mode if rejected.
   const onShutter = () => {
