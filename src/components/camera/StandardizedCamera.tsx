@@ -283,6 +283,19 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     const v = videoRef.current;
     if (!v || v.videoWidth === 0 || !report) return "skipped";
 
+    // Hard-block capture while exposure is not aligned with the saved reference.
+    if (refMatch && !refMatch.aligned) {
+      const dir = refMatch.steps > 0 ? "obniż" : "podnieś";
+      const n = Math.abs(refMatch.steps);
+      setLastRejection({
+        gateIds: ["histogram-ref"],
+        reasons: [
+          `Histogram odbiega od referencji o ${refMatch.evDelta >= 0 ? "+" : ""}${refMatch.evDelta.toFixed(2)} EV (L1 ${refMatch.l1.toFixed(2)}). ${dir} ekspozycję o ${n} ${n === 1 ? "krok" : "kroków"} (1/3 EV każdy).`,
+        ],
+      });
+      return "rejected";
+    }
+
     lastAttemptAt.current = Date.now();
 
     const c = document.createElement("canvas");
