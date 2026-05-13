@@ -120,6 +120,7 @@ export async function performCaptureAuditInsert(
   if (existingError) throw new Error(existingError.message);
   if (existing) {
     return {
+      status: "deduplicated",
       id: existing.id,
       sha256: existing.jpeg_sha256,
       createdAt: existing.created_at,
