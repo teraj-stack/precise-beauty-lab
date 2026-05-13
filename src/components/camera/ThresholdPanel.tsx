@@ -441,6 +441,15 @@ export function ThresholdPanel({ current, baseline, onChange, refMatch, onRefMat
             łagodniejszych progów (większe wartości). Dla precyzyjnej kalibracji
             studyjnej zmniejsz oba progi.
           </p>
+
+          <RefMatchProfiles
+            profiles={profiles}
+            activeId={activeProfileId}
+            current={refDraft}
+            onSave={handleProfileSave}
+            onActivate={handleProfileActivate}
+            onDelete={handleProfileDelete}
+          />
         </div>
       )}
     </div>
