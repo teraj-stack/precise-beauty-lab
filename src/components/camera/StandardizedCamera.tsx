@@ -1175,10 +1175,16 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                   const res = await submitCaptureAudit({ data: { jpegBase64: base64 } });
                   setAuditState("saved");
                   if (res.deduplicated) {
+                    setDedupInfo({ id: res.id, sha256: res.sha256, createdAt: res.createdAt });
+                    const openExisting = () =>
+                      navigate({ to: "/audits", search: { sha: res.sha256, open: res.id } });
                     toast.info("Audyt już istniał — pominięto duplikat", {
-                      description: `SHA-256 ${res.sha256.slice(0, 12)}…`,
+                      description: `SHA-256 ${res.sha256.slice(0, 12)}… · zapisany ${new Date(res.createdAt).toLocaleString("pl-PL")}`,
+                      action: { label: "Otwórz audyt", onClick: openExisting },
+                      duration: 8000,
                     });
                   } else {
+                    setDedupInfo(null);
                     toast.success("Audyt zapisany", {
                       description: `SHA-256 ${res.sha256.slice(0, 12)}…`,
                     });
