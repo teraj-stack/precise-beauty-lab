@@ -598,6 +598,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
               {shot.validation.report.temporal.colorCastStd.toFixed(4)}
             </dd>
           </dl>
+          <CaptureReportDetails report={shot.qualityReport} />
           <div className="flex flex-wrap gap-2 pt-1">
             <a
               href={shot.dataUrl}
