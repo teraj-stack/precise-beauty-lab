@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
+import mscLogo from "@/assets/msc-logo-mini.jpeg";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [{ title: "Dashboard — MySkinCode" }] }),
