@@ -61,6 +61,7 @@ import {
   loadActiveId,
   setActiveId as persistActiveRefId,
   addReference,
+  duplicateReference,
   removeReference,
   updateReference,
   findById as findRefById,
