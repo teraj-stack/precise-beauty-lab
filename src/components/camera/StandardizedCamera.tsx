@@ -18,6 +18,11 @@ import { useFrameAnalysis } from "@/hooks/useFrameAnalysis";
 import { DEFAULT_FACE_ROI } from "@/lib/camera/quality";
 import { validateCapture, type CaptureValidation } from "@/lib/camera/validate-capture";
 import { QUALITY_PROFILE_V1 } from "@/lib/camera/quality-profiles";
+import {
+  buildCaptureMetadata,
+  embedQualityReportInJpeg,
+  type CaptureQualityReport,
+} from "@/lib/camera/capture-metadata";
 import { FaceGuideOverlay } from "./FaceGuideOverlay";
 import { QualityHUD } from "./QualityHUD";
 import { HistogramHUD } from "./HistogramHUD";
