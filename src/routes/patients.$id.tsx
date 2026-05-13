@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { PatientCaptureAudits } from "@/components/camera/PatientCaptureAudits";
 
 export const Route = createFileRoute("/patients/$id")({
   component: PatientDetail,
