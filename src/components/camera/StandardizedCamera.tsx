@@ -394,7 +394,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
 
   // Auto-retry: when shutter was rejected, keep trying as soon as live gates pass.
   useEffect(() => {
-    if (!autoRetry || !liveReady) return;
+    if (!autoRetry || !liveReady || refBlocked) return;
     if (Date.now() - lastAttemptAt.current < RETRY_DEBOUNCE_MS) return;
     if (retryAttempt >= MAX_AUTO_RETRIES) {
       setAutoRetry(false);
