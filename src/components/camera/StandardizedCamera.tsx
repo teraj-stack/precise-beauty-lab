@@ -181,6 +181,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
   const stability = useDeviceStability(!!stream);
   const report = useFrameAnalysis(videoRef, stability, { intervalMs: 220, profile });
   const [shot, setShot] = useState<ValidatedCapture | null>(null);
+  const [auditState, setAuditState] = useState<"idle" | "saving" | "saved">("idle");
   const autoLockTried = useRef(false);
 
   useEffect(() => {
