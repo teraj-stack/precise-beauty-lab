@@ -1020,6 +1020,8 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
         )}
       </div>
 
+      <AlignmentSummary state={alignmentTracker} refAligned={refMatch?.aligned ?? undefined} />
+
       <p className="text-center text-[11px] text-muted-foreground">
         Profil progów: <span className="font-mono">{profile.version}</span>
       </p>
