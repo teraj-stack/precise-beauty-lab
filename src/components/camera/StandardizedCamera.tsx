@@ -37,6 +37,7 @@ import {
   type ThresholdOverrides,
 } from "./ThresholdPanel";
 import { CaptureReportDetails } from "./CaptureReportDetails";
+import { HistogramHistory } from "./HistogramHistory";
 
 const HIST_REF_STORAGE_KEY = "msc:hist-reference:v1";
 
