@@ -39,7 +39,17 @@ function fmtMode(m: string | string[]): string {
 
 function ProtocolsEl950Page() {
   const kb = PROTOCOL_RULES_EL950;
-  const device = getDevice("DEV-EL950-PICO-001");
+  const device = getDevice("DEV-EL950-PICO-001") as
+    | (NonNullable<ReturnType<typeof getDevice>> & {
+        physics: {
+          wavelengths_nm: number[];
+          spot_size_mm: [number, number];
+          frequency_hz: [number, number];
+          energy_mj_by_wavelength: Record<"532" | "755" | "1064", [number, number]>;
+          power_supply_w: number;
+        };
+      })
+    | undefined;
 
   return (
     <main className="min-h-screen bg-background">
