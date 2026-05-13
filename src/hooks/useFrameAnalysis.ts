@@ -61,7 +61,7 @@ export function useFrameAnalysis(
           const img = ctx.getImageData(0, 0, w, h);
           const m = analyzeFrame(img.data, w, h, roi);
           const temporal = trackerRef.current.push(m);
-          setReport(evaluateGates(m, stabRef.current, temporal, QUALITY_PROFILE_V1.live));
+          setReport(evaluateGates(m, stabRef.current, temporal, profile.live));
         } catch {
           /* cross-origin guard */
         }
@@ -74,7 +74,7 @@ export function useFrameAnalysis(
       stopped = true;
       if (timer != null) window.clearTimeout(timer);
     };
-  }, [videoRef, intervalMs, roi, analysisWidth, windowSize]);
+  }, [videoRef, intervalMs, roi, analysisWidth, windowSize, profile]);
 
   return report;
 }
