@@ -154,13 +154,18 @@ function clippingAndHistogram(gray: Float32Array): ClippingStats {
   return { low: low / n, high: high / n, total: (low + high) / n, histogram: bins };
 }
 
-function grayWorldCast(meanR: number, meanG: number, meanB: number): number {
+function grayWorldCast(meanR: number, meanG: number, meanB: number) {
   const m = (meanR + meanG + meanB) / 3;
-  if (m < 1e-3) return 1;
+  if (m < 1e-3) return { magnitude: 1, dr: 0, dg: 0, db: 0 };
   const dr = (meanR - m) / m;
   const dg = (meanG - m) / m;
   const db = (meanB - m) / m;
-  return Math.min(1, Math.sqrt(dr * dr + dg * dg + db * db));
+  return {
+    magnitude: Math.min(1, Math.sqrt(dr * dr + dg * dg + db * db)),
+    dr,
+    dg,
+    db,
+  };
 }
 
 /** Skin centroid (in normalized ROI coords 0..1) and skin pixel ratio. */
@@ -202,6 +207,7 @@ export function analyzeFrame(
   const { ratio, offset } = skinStats(skin, w, h);
   const clip = clippingAndHistogram(gray);
 
+  const cast = grayWorldCast(meanR, meanG, meanB);
   return {
     luminance,
     sharpness: laplacianVariance(gray, w, h),
@@ -209,7 +215,10 @@ export function analyzeFrame(
     clippingLow: clip.low,
     clippingHigh: clip.high,
     histogram: clip.histogram,
-    colorCast: grayWorldCast(meanR, meanG, meanB),
+    colorCast: cast.magnitude,
+    castR: cast.dr,
+    castG: cast.dg,
+    castB: cast.db,
     skinRatio: ratio,
     centerOffset: offset,
     roiPixels: gray.length,

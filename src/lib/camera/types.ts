@@ -18,6 +18,10 @@ export interface FrameMetrics {
   histogram: number[];
   /** Color cast estimate using gray-world: distance of mean(R,G,B) from neutral, 0..1. */
   colorCast: number;
+  /** Signed per-channel deviation from gray-world neutral (R-mean)/mean. Positive = channel above neutral. */
+  castR: number;
+  castG: number;
+  castB: number;
   /** Fraction of ROI pixels classified as skin (HSV heuristic). Proxy for face-fill / distance. */
   skinRatio: number;
   /** Distance of skin centroid from ROI center, normalised by ROI half-diagonal. 0 = perfect. */
