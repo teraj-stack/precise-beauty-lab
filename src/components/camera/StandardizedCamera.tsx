@@ -1,32 +1,40 @@
 import { useEffect, useRef, useState } from "react";
-import { Camera, CameraOff, Aperture, Lock, LockOpen } from "lucide-react";
+import { Camera, CameraOff, Aperture, Lock, LockOpen, AlertCircle, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useCameraStream } from "@/hooks/useCameraStream";
 import { useDeviceStability } from "@/hooks/useDeviceStability";
 import { useFrameAnalysis } from "@/hooks/useFrameAnalysis";
 import { DEFAULT_FACE_ROI } from "@/lib/camera/quality";
-import { QUALITY_KB_VERSION } from "@/lib/camera/types";
+import { validateCapture, type CaptureValidation } from "@/lib/camera/validate-capture";
+import { QUALITY_PROFILE_V1 } from "@/lib/camera/quality-profiles";
 import { FaceGuideOverlay } from "./FaceGuideOverlay";
 import { QualityHUD } from "./QualityHUD";
 
-interface Props {
-  onCapture?: (frame: {
-    dataUrl: string;
-    width: number;
-    height: number;
-    metrics: unknown;
-    capturedAt: string;
-    kbVersion: string;
-  }) => void;
+export interface ValidatedCapture {
+  dataUrl: string;
+  width: number;
+  height: number;
+  validation: CaptureValidation;
+  capturedAt: string;
+  profileVersion: string;
 }
 
-export function StandardizedCamera({ onCapture }: Props) {
+interface Props {
+  /**
+   * Called ONLY for accepted captures. Use it to POST to backend.
+   * Rejected captures never reach this callback.
+   */
+  onAccepted?: (frame: ValidatedCapture) => void;
+}
+
+export function StandardizedCamera({ onAccepted }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const { stream, error, starting, locked, start, stop, lockHardware, unlockHardware } =
     useCameraStream({ facingMode: "user" });
   const stability = useDeviceStability(!!stream);
   const report = useFrameAnalysis(videoRef, stability, { intervalMs: 220 });
-  const [shot, setShot] = useState<string | null>(null);
+  const [shot, setShot] = useState<ValidatedCapture | null>(null);
   const autoLockTried = useRef(false);
 
   useEffect(() => {
@@ -36,7 +44,6 @@ export function StandardizedCamera({ onCapture }: Props) {
     }
   }, [stream]);
 
-  // Auto-lock hardware AE/AWB once temporal stability is reached.
   useEffect(() => {
     if (!report || locked || autoLockTried.current) return;
     const aeOk = report.gates.find((g) => g.id === "ae-stable")?.status === "ok";
@@ -47,32 +54,65 @@ export function StandardizedCamera({ onCapture }: Props) {
     }
   }, [report, locked, lockHardware]);
 
-  // Reset auto-lock attempt when stream restarts.
   useEffect(() => {
     if (!stream) autoLockTried.current = false;
   }, [stream]);
 
-  const ready = report?.ready ?? false;
+  const liveReady = report?.ready ?? false;
 
   const capture = () => {
     const v = videoRef.current;
-    if (!v || v.videoWidth === 0) return;
+    if (!v || v.videoWidth === 0 || !report) return;
+
+    // 1. Pull full-resolution pixels
     const c = document.createElement("canvas");
     c.width = v.videoWidth;
     c.height = v.videoHeight;
     const ctx = c.getContext("2d");
     if (!ctx) return;
     ctx.drawImage(v, 0, 0);
+    const img = ctx.getImageData(0, 0, c.width, c.height);
+
+    // 2. Re-validate with STRICT capture profile
+    const validation = validateCapture({
+      rgba: img.data,
+      width: c.width,
+      height: c.height,
+      roi: DEFAULT_FACE_ROI,
+      stability,
+      temporal: report.temporal,
+      profile: QUALITY_PROFILE_V1,
+    });
+
+    // 3. Reject path — DO NOT call onAccepted, do not surface dataUrl
+    if (validation.status === "rejected") {
+      toast.error("Zdjęcie odrzucone", {
+        description: validation.reasons.join(" · "),
+        duration: 6000,
+      });
+      console.warn("[capture-rejected]", {
+        profile: validation.profileVersion,
+        reasons: validation.reasons,
+        metrics: validation.report.metrics,
+      });
+      return;
+    }
+
+    // 4. Accept path
     const dataUrl = c.toDataURL("image/jpeg", 0.92);
-    setShot(dataUrl);
-    onCapture?.({
+    const frame: ValidatedCapture = {
       dataUrl,
       width: c.width,
       height: c.height,
-      metrics: report?.metrics,
+      validation,
       capturedAt: new Date().toISOString(),
-      kbVersion: QUALITY_KB_VERSION,
+      profileVersion: validation.profileVersion,
+    };
+    setShot(frame);
+    toast.success("Zdjęcie zaakceptowane", {
+      description: `Profil ${validation.profileVersion} — gotowe do analizy CV.`,
     });
+    onAccepted?.(frame);
   };
 
   return (
@@ -98,7 +138,7 @@ export function StandardizedCamera({ onCapture }: Props) {
               muted
               className="absolute inset-0 h-full w-full object-cover"
             />
-            <FaceGuideOverlay roi={DEFAULT_FACE_ROI} ready={ready} />
+            <FaceGuideOverlay roi={DEFAULT_FACE_ROI} ready={liveReady} />
             {report && (
               <div className="absolute inset-x-2 top-2">
                 <QualityHUD gates={report.gates} />
@@ -133,29 +173,59 @@ export function StandardizedCamera({ onCapture }: Props) {
             </Button>
             <Button
               onClick={capture}
-              disabled={!ready}
+              disabled={!liveReady}
               className="flex-1"
-              variant={ready ? "default" : "secondary"}
+              variant={liveReady ? "default" : "secondary"}
             >
-              <Aperture /> {ready ? "Wykonaj zdjęcie" : "Czekam na bramki…"}
+              <Aperture /> {liveReady ? "Wykonaj zdjęcie" : "Czekam na bramki…"}
             </Button>
           </>
         )}
       </div>
 
       <p className="text-center text-[11px] text-muted-foreground">
-        KB jakości kadru: <span className="font-mono">{QUALITY_KB_VERSION}</span>
+        Profil progów: <span className="font-mono">{QUALITY_PROFILE_V1.version}</span>
       </p>
 
       {shot && (
-        <div className="space-y-2">
-          <p className="text-sm font-medium">Ostatnie zdjęcie</p>
+        <div className="space-y-2 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3">
+          <div className="flex items-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-300">
+            <CheckCircle2 className="h-4 w-4" />
+            Zaakceptowano · gotowe do wysłania do CV
+          </div>
           <img
-            src={shot}
-            alt="Ostatnio uchwycony kadr w trybie ustandaryzowanej kamery"
-            className="w-full rounded-xl border border-border"
+            src={shot.dataUrl}
+            alt="Zaakceptowany kadr diagnostyczny"
+            className="w-full rounded-lg border border-border"
           />
+          <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+            <dt>LapVar</dt>
+            <dd className="text-right font-mono">
+              {shot.validation.report.metrics.sharpness.toFixed(0)}
+            </dd>
+            <dt>Luma</dt>
+            <dd className="text-right font-mono">
+              {shot.validation.report.metrics.luminance.toFixed(3)}
+            </dd>
+            <dt>Cast</dt>
+            <dd className="text-right font-mono">
+              {(shot.validation.report.metrics.colorCast * 100).toFixed(2)}%
+            </dd>
+            <dt>Skin</dt>
+            <dd className="text-right font-mono">
+              {(shot.validation.report.metrics.skinRatio * 100).toFixed(0)}%
+            </dd>
+          </dl>
         </div>
+      )}
+
+      {!shot && (
+        <p className="flex items-start gap-1.5 text-[11px] leading-snug text-muted-foreground">
+          <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
+          Bramki LIVE odblokowują migawkę, ale finalna walidacja używa progów CAPTURE
+          (ostrzejszych). Zdjęcia, które nie przejdą, są odrzucane lokalnie i nie trafiają do
+          backendu.
+        </p>
       )}
     </div>
   );
