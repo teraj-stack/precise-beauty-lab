@@ -28,6 +28,7 @@ import {
   type AuditSearchResult,
 } from "@/lib/camera/capture-audit-search.functions";
 import type { CaptureAuditRow } from "@/lib/camera/capture-audit-list.functions";
+import { IntegrityBadge } from "@/components/camera/IntegrityBadge";
 
 export const Route = createFileRoute("/audits")({
   head: () => ({
