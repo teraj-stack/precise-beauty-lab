@@ -1,5 +1,15 @@
-import { useEffect, useRef, useState } from "react";
-import { Camera, CameraOff, Aperture, Lock, LockOpen, AlertCircle, CheckCircle2 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Camera,
+  CameraOff,
+  Aperture,
+  Lock,
+  LockOpen,
+  AlertCircle,
+  CheckCircle2,
+  Loader2,
+  RefreshCw,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useCameraStream } from "@/hooks/useCameraStream";
@@ -10,6 +20,28 @@ import { validateCapture, type CaptureValidation } from "@/lib/camera/validate-c
 import { QUALITY_PROFILE_V1 } from "@/lib/camera/quality-profiles";
 import { FaceGuideOverlay } from "./FaceGuideOverlay";
 import { QualityHUD } from "./QualityHUD";
+
+const MAX_AUTO_RETRIES = 5;
+const RETRY_DEBOUNCE_MS = 350;
+
+/** Human-readable hint per gate, shown when that gate is the blocker. */
+const GATE_HINTS: Record<string, string> = {
+  "face-fill": "Zbliż lub oddal twarz, aż owal wypełni ramkę.",
+  "face-center": "Wycentruj twarz w ramce — kieruj nos na środek.",
+  sharpness: "Trzymaj telefon nieruchomo i poczekaj na ostrość.",
+  luminance: "Zmień oświetlenie — za jasno lub za ciemno.",
+  clipping: "Usuń źródła silnego światła z kadru.",
+  "color-cast": "Neutralne oświetlenie — odsuń się od kolorowych lamp.",
+  stability: "Trzymaj telefon nieruchomo (lub oprzyj na statywie).",
+  "ae-stable": "Czekam, aż auto-ekspozycja się ustabilizuje…",
+  "awb-stable": "Czekam, aż balans bieli się ustabilizuje…",
+};
+
+function blockingHint(gateIds: string[], reasons: string[]): string {
+  const id = gateIds[0];
+  const hint = id ? GATE_HINTS[id] : undefined;
+  return hint ?? reasons[0] ?? "Bramka jakości nieaktywna.";
+}
 
 export interface ValidatedCapture {
   dataUrl: string;
