@@ -20,6 +20,7 @@ import { validateCapture, type CaptureValidation } from "@/lib/camera/validate-c
 import { QUALITY_PROFILE_V1 } from "@/lib/camera/quality-profiles";
 import { FaceGuideOverlay } from "./FaceGuideOverlay";
 import { QualityHUD } from "./QualityHUD";
+import { HistogramHUD } from "./HistogramHUD";
 
 const MAX_AUTO_RETRIES = 5;
 const RETRY_DEBOUNCE_MS = 350;
