@@ -316,6 +316,16 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     [],
   );
 
+  const handleDuplicateRef = useCallback((id: string) => {
+    setRefLibrary((prev) => {
+      const result = duplicateReference(prev, id);
+      if (!result) return prev;
+      saveLibrary(result.library);
+      toast.success(`Zduplikowano jako „${result.entry.label}"`);
+      return result.library;
+    });
+  }, []);
+
   const saveCurrentAsRef = useCallback(
     (meta: { label: string; conditions: string }) => {
       if (!report) {
