@@ -67,7 +67,7 @@ export async function performCaptureAuditInsert(
   supabase: AuditSupabaseLike,
   userId: string,
   input: CaptureAuditInsertInput,
-): Promise<CaptureAuditInsertResult> {
+): Promise<CaptureAuditSubmitResult> {
   const bytes = input.jpegBytes;
   if (bytes.length < 4 || bytes[0] !== 0xff || bytes[1] !== 0xd8) {
     throw new Error("[E_JPEG_INVALID] Nieprawidłowy plik JPEG (brak nagłówka SOI)");
