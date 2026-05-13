@@ -39,6 +39,24 @@ export const submitCaptureAudit = createServerFn({ method: "POST" })
 
     const sha256 = createHash("sha256").update(bytes).digest("hex");
 
+    // Idempotency: same (owner, sha256, capturedAt) → return existing row.
+    const { data: existing, error: existingError } = await supabase
+      .from("capture_audits")
+      .select("id, created_at, jpeg_sha256")
+      .eq("owner_id", userId)
+      .eq("jpeg_sha256", sha256)
+      .eq("captured_at", report.capturedAt)
+      .maybeSingle();
+    if (existingError) throw new Error(existingError.message);
+    if (existing) {
+      return {
+        id: existing.id,
+        sha256: existing.jpeg_sha256,
+        createdAt: existing.created_at,
+        deduplicated: true as const,
+      };
+    }
+
     const { data: row, error } = await supabase
       .from("capture_audits")
       .insert({
@@ -58,6 +76,31 @@ export const submitCaptureAudit = createServerFn({ method: "POST" })
       .select("id, created_at, jpeg_sha256")
       .single();
 
-    if (error) throw new Error(error.message);
-    return { id: row.id, sha256: row.jpeg_sha256, createdAt: row.created_at };
+    if (error) {
+      // Race: a parallel request inserted the same (owner, sha256, capturedAt)
+      // between our existence check and insert. Re-fetch and return it.
+      if ((error as { code?: string }).code === "23505") {
+        const { data: dup, error: dupErr } = await supabase
+          .from("capture_audits")
+          .select("id, created_at, jpeg_sha256")
+          .eq("owner_id", userId)
+          .eq("jpeg_sha256", sha256)
+          .eq("captured_at", report.capturedAt)
+          .single();
+        if (dupErr) throw new Error(dupErr.message);
+        return {
+          id: dup.id,
+          sha256: dup.jpeg_sha256,
+          createdAt: dup.created_at,
+          deduplicated: true as const,
+        };
+      }
+      throw new Error(error.message);
+    }
+    return {
+      id: row.id,
+      sha256: row.jpeg_sha256,
+      createdAt: row.created_at,
+      deduplicated: false as const,
+    };
   });
