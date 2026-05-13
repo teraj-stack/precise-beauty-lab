@@ -566,6 +566,35 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
             >
               Sidecar JSON
             </a>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const { exportQualityReportPdf } = await import(
+                    "@/lib/camera/quality-report-pdf"
+                  );
+                  const { blob, filename } = await exportQualityReportPdf({
+                    report: shot.qualityReport,
+                    jpegDataUrl: shot.dataUrl,
+                  });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = filename;
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+                  setTimeout(() => URL.revokeObjectURL(url), 1500);
+                  toast.success("Raport PDF wygenerowany");
+                } catch (e) {
+                  console.error(e);
+                  toast.error("Nie udało się wygenerować PDF");
+                }
+              }}
+              className="inline-flex items-center rounded-md border border-primary/40 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary hover:bg-primary/20"
+            >
+              Raport PDF
+            </button>
           </div>
           <p className="text-[10px] leading-snug text-muted-foreground">
             Pełny raport jakości (luminancja, ostrość, skóra, histogram, AE/AWB
