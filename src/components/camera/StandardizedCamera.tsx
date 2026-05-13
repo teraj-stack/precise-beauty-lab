@@ -51,32 +51,22 @@ import {
   matchPreset,
   type CapturePreset,
 } from "@/lib/camera/capture-presets";
+import {
+  loadLibrary,
+  saveLibrary,
+  loadActiveId,
+  setActiveId as persistActiveRefId,
+  addReference,
+  removeReference,
+  updateReference,
+  findById as findRefById,
+  type StoredHistogramReference,
+} from "@/lib/camera/hist-reference-library";
+import { HistReferenceLibrary } from "./HistReferenceLibrary";
 
-const HIST_REF_STORAGE_KEY = "msc:hist-reference:v1";
-
-function loadHistReference(): HistogramReference | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(HIST_REF_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as HistogramReference;
-    if (
-      parsed &&
-      Array.isArray(parsed.histogram) &&
-      typeof parsed.luminance === "number"
-    )
-      return parsed;
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-function saveHistReference(ref: HistogramReference | null) {
-  if (typeof window === "undefined") return;
-  if (ref) window.localStorage.setItem(HIST_REF_STORAGE_KEY, JSON.stringify(ref));
-  else window.localStorage.removeItem(HIST_REF_STORAGE_KEY);
-}
+// Histogram reference storage now lives in hist-reference-library.ts (multi-entry,
+// with conditions + active selection). Legacy single-key store
+// `msc:hist-reference:v1` is auto-migrated by loadLibrary().
 
 const MAX_AUTO_RETRIES = 5;
 const RETRY_DEBOUNCE_MS = 350;
@@ -244,10 +234,18 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
   } | null>(null);
   const lastAttemptAt = useRef(0);
 
-  // ---- Histogram reference (persistent across reloads) ----
-  const [manualHistRef, setManualHistRef] = useState<HistogramReference | null>(() =>
-    loadHistReference(),
-  );
+  // ---- Histogram reference library (multiple entries + active selection) ----
+  const [refLibrary, setRefLibrary] = useState<StoredHistogramReference[]>(() => loadLibrary());
+  const [activeRefId, setActiveRefId] = useState<string | null>(() => loadActiveId());
+  const activeStoredRef = findRefById(refLibrary, activeRefId);
+  const manualHistRef: HistogramReference | null = activeStoredRef
+    ? {
+        histogram: activeStoredRef.histogram,
+        luminance: activeStoredRef.luminance,
+        capturedAt: activeStoredRef.capturedAt,
+        label: activeStoredRef.label,
+      }
+    : null;
 
   // ---- Calibration presets (per device + mode) ----
   const [presets, setPresets] = useState<CapturePreset[]>(() => loadPresets());
@@ -270,45 +268,88 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     activePreset && report ? matchPreset(activePreset, report.metrics) : null;
   const presetBlocked = !!presetMatch && !presetMatch.distanceOk;
 
+  const handleActivateRef = useCallback((id: string | null) => {
+    setActiveRefId(id);
+    persistActiveRefId(id);
+  }, []);
+
+  const handleDeleteRef = useCallback((id: string) => {
+    setRefLibrary((prev) => {
+      const next = removeReference(prev, id);
+      saveLibrary(next);
+      return next;
+    });
+    setActiveRefId((curr) => {
+      if (curr === id) {
+        persistActiveRefId(null);
+        return null;
+      }
+      return curr;
+    });
+    toast.message("Referencja usunięta z biblioteki");
+  }, []);
+
+  const handleRenameRef = useCallback(
+    (id: string, patch: { label?: string; conditions?: string }) => {
+      setRefLibrary((prev) => {
+        const next = updateReference(prev, id, patch);
+        saveLibrary(next);
+        return next;
+      });
+    },
+    [],
+  );
+
+  const saveCurrentAsRef = useCallback(
+    (meta: { label: string; conditions: string }) => {
+      if (!report) {
+        toast.error("Brak metryk — uruchom kamerę i poczekaj na pierwszy frame.");
+        return;
+      }
+      const { library: nextLib, entry } = addReference(refLibrary, {
+        histogram: [...report.metrics.histogram],
+        luminance: report.metrics.luminance,
+        capturedAt: Date.now(),
+        label: meta.label,
+        conditions: meta.conditions || undefined,
+      });
+      setRefLibrary(nextLib);
+      saveLibrary(nextLib);
+      setActiveRefId(entry.id);
+      persistActiveRefId(entry.id);
+      toast.success(`Referencja „${entry.label}" zapisana (μ ${entry.luminance.toFixed(2)})`);
+    },
+    [report, refLibrary],
+  );
+
+  // Quick-save (toolbar button): no metadata prompt, auto-labelled.
   const captureHistRef = useCallback(() => {
-    if (!report) {
-      toast.error("Brak metryk — uruchom kamerę i poczekaj na pierwszy frame.");
-      return;
-    }
-    const ref: HistogramReference = {
-      histogram: [...report.metrics.histogram],
-      luminance: report.metrics.luminance,
-      capturedAt: Date.now(),
-      label: `Próba ${new Date().toLocaleTimeString()}`,
-    };
-    setManualHistRef(ref);
-    saveHistReference(ref);
-    toast.success(`Histogram zarejestrowany (μ ${ref.luminance.toFixed(2)})`);
-  }, [report]);
+    saveCurrentAsRef({
+      label: `Próba ${new Date().toLocaleTimeString("pl-PL")}`,
+      conditions: "",
+    });
+  }, [saveCurrentAsRef]);
 
   const clearHistRef = useCallback(() => {
-    setManualHistRef(null);
-    saveHistReference(null);
-    toast.message("Referencja histogramu wyczyszczona");
-  }, []);
+    handleActivateRef(null);
+    toast.message("Aktywna referencja wyłączona (biblioteka zachowana)");
+  }, [handleActivateRef]);
 
   const exportHistRef = useCallback(() => {
     if (!histRef) {
-      toast.error("Brak referencji do wyeksportowania.");
+      toast.error("Brak aktywnej referencji do wyeksportowania.");
       return;
     }
     const payload = {
       schema: "msc:hist-reference:v1",
       exportedAt: new Date().toISOString(),
-      reference: histRef,
+      reference: { ...histRef, conditions: activeStoredRef?.conditions },
     };
     const json = JSON.stringify(payload, null, 2);
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    const stamp = new Date(histRef.capturedAt)
-      .toISOString()
-      .replace(/[:.]/g, "-");
+    const stamp = new Date(histRef.capturedAt).toISOString().replace(/[:.]/g, "-");
     a.href = url;
     a.download = `hist-reference-${stamp}.json`;
     document.body.appendChild(a);
@@ -316,41 +357,48 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1500);
     toast.success("Referencja wyeksportowana (JSON)");
-  }, [histRef]);
+  }, [histRef, activeStoredRef]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const importHistRef = useCallback(async (file: File) => {
-    try {
-      const text = await file.text();
-      const parsed = JSON.parse(text);
-      const ref: HistogramReference | undefined = parsed?.reference ?? parsed;
-      if (
-        !ref ||
-        !Array.isArray(ref.histogram) ||
-        ref.histogram.length === 0 ||
-        typeof ref.luminance !== "number"
-      ) {
-        toast.error("Nieprawidłowy plik referencji histogramu.");
-        return;
+  const importHistRef = useCallback(
+    async (file: File) => {
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        const ref: (HistogramReference & { conditions?: string }) | undefined =
+          parsed?.reference ?? parsed;
+        if (
+          !ref ||
+          !Array.isArray(ref.histogram) ||
+          ref.histogram.length === 0 ||
+          typeof ref.luminance !== "number"
+        ) {
+          toast.error("Nieprawidłowy plik referencji histogramu.");
+          return;
+        }
+        const sum = ref.histogram.reduce((a, b) => a + (Number(b) || 0), 0);
+        if (Math.abs(sum - 1) > 0.05) {
+          toast.warning("Histogram nie jest znormalizowany (suma ≠ 1) — importuję mimo to.");
+        }
+        const { library: nextLib, entry } = addReference(refLibrary, {
+          histogram: ref.histogram.map((v) => Number(v) || 0),
+          luminance: ref.luminance,
+          capturedAt: ref.capturedAt ?? Date.now(),
+          label: ref.label ?? `Import ${new Date().toLocaleString("pl-PL")}`,
+          conditions: ref.conditions,
+        });
+        setRefLibrary(nextLib);
+        saveLibrary(nextLib);
+        setActiveRefId(entry.id);
+        persistActiveRefId(entry.id);
+        toast.success(`Referencja zaimportowana (μ ${entry.luminance.toFixed(2)})`);
+      } catch (e) {
+        console.error(e);
+        toast.error("Nie udało się odczytać pliku JSON.");
       }
-      const sum = ref.histogram.reduce((a, b) => a + (Number(b) || 0), 0);
-      if (Math.abs(sum - 1) > 0.05) {
-        toast.warning("Histogram nie jest znormalizowany (suma ≠ 1) — importuję mimo to.");
-      }
-      const clean: HistogramReference = {
-        histogram: ref.histogram.map((v) => Number(v) || 0),
-        luminance: ref.luminance,
-        capturedAt: ref.capturedAt ?? Date.now(),
-        label: ref.label ?? `Import ${new Date().toLocaleString()}`,
-      };
-      setManualHistRef(clean);
-      saveHistReference(clean);
-      toast.success(`Referencja zaimportowana (μ ${clean.luminance.toFixed(2)})`);
-    } catch (e) {
-      console.error(e);
-      toast.error("Nie udało się odczytać pliku JSON.");
-    }
-  }, []);
+    },
+    [refLibrary],
+  );
 
   const handleSavePreset = useCallback((p: CapturePreset) => {
     setPresets((prev) => {
@@ -964,6 +1012,17 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
         onChange={setOverrides}
         refMatch={refMatchThresholds}
         onRefMatchChange={setRefMatchThresholds}
+      />
+
+      <HistReferenceLibrary
+        library={refLibrary}
+        activeId={activeRefId}
+        canSaveCurrent={!!report}
+        onSaveCurrent={saveCurrentAsRef}
+        onActivate={handleActivateRef}
+        onDelete={handleDeleteRef}
+        onRename={handleRenameRef}
+        presetActive={!!activePreset}
       />
 
       <CalibrationPresets
