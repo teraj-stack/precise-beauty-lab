@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { ValidatedCapture } from "@/lib/camera/validate-capture";
+import type { ValidatedCapture } from "@/components/camera/StandardizedCamera";
 
 interface Props {
   session: ValidatedCapture[];
