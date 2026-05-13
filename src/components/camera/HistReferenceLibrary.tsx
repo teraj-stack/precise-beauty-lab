@@ -53,11 +53,39 @@ export function HistReferenceLibrary({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editLabel, setEditLabel] = useState("");
   const [editConditions, setEditConditions] = useState("");
+  const [query, setQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "label" | "conditions">("newest");
 
-  const sorted = useMemo(
-    () => [...library].sort((a, b) => b.createdAt - a.createdAt),
-    [library],
-  );
+  const sorted = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const filtered = q
+      ? library.filter((r) => {
+          const label = (r.label ?? "").toLowerCase();
+          const cond = (r.conditions ?? "").toLowerCase();
+          return label.includes(q) || cond.includes(q);
+        })
+      : library;
+    const arr = [...filtered];
+    switch (sortBy) {
+      case "oldest":
+        arr.sort((a, b) => a.createdAt - b.createdAt);
+        break;
+      case "label":
+        arr.sort((a, b) =>
+          (a.label ?? "").localeCompare(b.label ?? "", "pl", { sensitivity: "base" }),
+        );
+        break;
+      case "conditions":
+        arr.sort((a, b) =>
+          (a.conditions ?? "").localeCompare(b.conditions ?? "", "pl", { sensitivity: "base" }),
+        );
+        break;
+      case "newest":
+      default:
+        arr.sort((a, b) => b.createdAt - a.createdAt);
+    }
+    return arr;
+  }, [library, query, sortBy]);
 
   function handleSave() {
     const label = draftLabel.trim() || `Próba ${new Date().toLocaleTimeString("pl-PL")}`;
