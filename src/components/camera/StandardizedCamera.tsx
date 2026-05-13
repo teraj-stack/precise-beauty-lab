@@ -71,6 +71,7 @@ import { HistReferenceLibrary } from "./HistReferenceLibrary";
 import { AutoReferenceSelector } from "./AutoReferenceSelector";
 import {
   describeCaptureAuditResult,
+  parseCaptureAuditSubmitResult,
   type CaptureAuditDeduplicatedResult,
 } from "@/lib/camera/capture-audit-types";
 
@@ -1224,7 +1225,24 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                     "@/lib/camera/capture-audit.functions"
                   );
                   const base64 = shot.dataUrl.slice(shot.dataUrl.indexOf(",") + 1);
-                  const res = await submitCaptureAudit({ data: { jpegBase64: base64 } });
+                  const rawRes = await submitCaptureAudit({ data: { jpegBase64: base64 } });
+                  const parsed = parseCaptureAuditSubmitResult(rawRes);
+                  if (!parsed.ok) {
+                    console.error("CaptureAuditSubmitResult validation failed", parsed.issues);
+                    setAuditState("idle");
+                    setAuditError({
+                      code: "E_INVALID_RESPONSE",
+                      title: "Niezgodny format odpowiedzi serwera",
+                      message: parsed.message,
+                      hint: `Niezgodne pola: ${parsed.issues}.`,
+                    });
+                    toast.error(parsed.message, {
+                      description: `Niezgodne pola: ${parsed.issues}. Spróbuj ponownie lub zgłoś incydent.`,
+                      duration: 8000,
+                    });
+                    return;
+                  }
+                  const res = parsed.value;
                   setAuditState("saved");
                   const view = describeCaptureAuditResult(res);
                   if (res.status === "deduplicated") {

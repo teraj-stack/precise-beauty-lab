@@ -11,6 +11,8 @@
  * compatibility with existing call sites).
  */
 
+import { z } from "zod";
+
 export type CaptureAuditSubmitStatus = "created" | "deduplicated";
 
 export interface CaptureAuditSubmitResultBase {
@@ -93,5 +95,63 @@ export function describeCaptureAuditResult(
     description,
     ariaLabel: `Audyt zapisany. ${description}`,
     openExistingLabel: null,
+  };
+}
+
+// ---------- Runtime validation (defensive against malformed server responses) ----------
+
+const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})$/;
+const SHA256_HEX_RE = /^[a-f0-9]{64}$/;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const BaseSchema = z.object({
+  id: z.string().regex(UUID_RE, "id must be a UUID"),
+  sha256: z.string().regex(SHA256_HEX_RE, "sha256 must be 64 hex chars"),
+  createdAt: z.string().regex(ISO_DATE_RE, "createdAt must be ISO-8601"),
+});
+
+export const CaptureAuditSubmitResultSchema: z.ZodType<CaptureAuditSubmitResult> =
+  z.discriminatedUnion("status", [
+    BaseSchema.extend({
+      status: z.literal("created"),
+      deduplicated: z.literal(false),
+    }),
+    BaseSchema.extend({
+      status: z.literal("deduplicated"),
+      deduplicated: z.literal(true),
+    }),
+  ]);
+
+export interface CaptureAuditParseSuccess {
+  ok: true;
+  value: CaptureAuditSubmitResult;
+}
+export interface CaptureAuditParseFailure {
+  ok: false;
+  /** Short, user-safe error summary (no raw payload — avoid leaking PII). */
+  message: string;
+  /** Field paths that failed validation, joined with commas. */
+  issues: string;
+}
+
+/**
+ * Validate an unknown server response against the unified result shape.
+ * Use this before passing the value to {@link describeCaptureAuditResult}
+ * or any UI surface so a malformed payload surfaces as a controlled
+ * fallback toast instead of a runtime crash.
+ */
+export function parseCaptureAuditSubmitResult(
+  raw: unknown,
+): CaptureAuditParseSuccess | CaptureAuditParseFailure {
+  const r = CaptureAuditSubmitResultSchema.safeParse(raw);
+  if (r.success) return { ok: true, value: r.data };
+  const issues = r.error.issues
+    .map((i) => i.path.join(".") || "(root)")
+    .slice(0, 4)
+    .join(", ");
+  return {
+    ok: false,
+    message: "Serwer zwrócił odpowiedź w niezgodnym formacie.",
+    issues: issues || "(nieznane pole)",
   };
 }
