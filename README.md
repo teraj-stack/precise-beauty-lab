@@ -2,10 +2,16 @@
 
 ## MIGRACJA: `CaptureAuditInsertResult` → `CaptureAuditSubmitResult`
 
-Stary alias `CaptureAuditInsertResult` został usunięty. Używaj zunifikowanego
-typu `CaptureAuditSubmitResult` z `@/lib/camera/capture-audit-types`.
+**TL;DR** — stary alias `CaptureAuditInsertResult` został usunięty. Używaj
+zunifikowanego typu `CaptureAuditSubmitResult` z
+`@/lib/camera/capture-audit-types` (dyskryminator `status: "created" |
+"deduplicated"`, walidacja Zod przez `parseCaptureAuditSubmitResult`,
+prezentacja przez `describeCaptureAuditResult`, FSM w
+`audit-save-machine.ts`). Egzekwowane przez ESLint (`no-restricted-syntax`)
+i test kompilacyjny.
 
-Pełny opis: [src/lib/camera/MIGRATION.md](src/lib/camera/MIGRATION.md).
+- Pełny opis migracji: [src/lib/camera/MIGRATION.md](src/lib/camera/MIGRATION.md)
+- Wpis w changelogu: [CHANGELOG.md](CHANGELOG.md)
 
 Najważniejsze kroki:
 
