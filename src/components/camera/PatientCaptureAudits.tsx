@@ -7,6 +7,7 @@ import {
   listCaptureAuditsForPatient,
   type CaptureAuditRow,
 } from "@/lib/camera/capture-audit-list.functions";
+import { IntegrityBadge } from "./IntegrityBadge";
 
 interface Props {
   patientId: string;
@@ -124,9 +125,10 @@ export function PatientCaptureAudits({ patientId }: Props) {
                       <Field label="Profil" value={r.profile_version} />
                       <Field label="Thresholds" value={r.thresholds_version} />
                     </div>
-                    <div className="flex items-center gap-2 text-[11px]">
+                    <div className="flex flex-wrap items-center gap-2 text-[11px]">
                       <FileJson className="h-3 w-3 text-muted-foreground" />
                       <span className="font-medium">Raport jakości (JSONB)</span>
+                      <IntegrityBadge report={r.report} />
                       <a
                         href={`data:application/json;charset=utf-8,${encodeURIComponent(
                           JSON.stringify(r.report, null, 2),

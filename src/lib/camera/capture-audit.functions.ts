@@ -4,6 +4,12 @@ import { createHash } from "crypto";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { readQualityReportFromJpeg } from "./capture-metadata";
 import { validateQualityReport } from "./quality-report-schema";
+import {
+  PARSER_VERSION,
+  INTEGRITY_VERSION,
+  computeReportSignature,
+  type IntegrityEnvelope,
+} from "./parser-integrity";
 
 const InputSchema = z.object({
   jpegBase64: z.string().min(64).max(20_000_000),
@@ -48,7 +54,19 @@ export const submitCaptureAudit = createServerFn({ method: "POST" })
 
     const sha256 = createHash("sha256").update(bytes).digest("hex");
 
-    // Idempotency: same (owner, sha256, capturedAt) → return existing row.
+    // Compute integrity envelope: parser version + canonical-JSON SHA-256
+    // signature of the report. Stored inline so any client can re-verify.
+    const reportPlain = JSON.parse(JSON.stringify(report)) as Record<string, unknown>;
+    const signature = await computeReportSignature(reportPlain);
+    const integrity: IntegrityEnvelope = {
+      parserVersion: PARSER_VERSION,
+      integrityVersion: INTEGRITY_VERSION,
+      signature,
+      signedAt: new Date().toISOString(),
+      algorithm: "sha256-canonical-json",
+    };
+    const reportWithIntegrity = { ...reportPlain, _integrity: integrity };
+
     const { data: existing, error: existingError } = await supabase
       .from("capture_audits")
       .select("id, created_at, jpeg_sha256")
@@ -79,7 +97,7 @@ export const submitCaptureAudit = createServerFn({ method: "POST" })
         image_height: report.image.height,
         image_bytes: bytes.length,
         jpeg_sha256: sha256,
-        report: JSON.parse(JSON.stringify(report)),
+        report: JSON.parse(JSON.stringify(reportWithIntegrity)),
         source: "jpeg-com",
       })
       .select("id, created_at, jpeg_sha256")
