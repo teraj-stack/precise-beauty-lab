@@ -4,6 +4,12 @@ import { createHash } from "crypto";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { readQualityReportFromJpeg } from "./capture-metadata";
 import { validateQualityReport } from "./quality-report-schema";
+import {
+  PARSER_VERSION,
+  INTEGRITY_VERSION,
+  computeReportSignature,
+  type IntegrityEnvelope,
+} from "./parser-integrity";
 
 const InputSchema = z.object({
   jpegBase64: z.string().min(64).max(20_000_000),
