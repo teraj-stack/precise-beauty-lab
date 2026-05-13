@@ -29,6 +29,12 @@ import {
 import { FaceGuideOverlay } from "./FaceGuideOverlay";
 import { QualityHUD } from "./QualityHUD";
 import { HistogramHUD, type HistogramReference } from "./HistogramHUD";
+import {
+  ThresholdPanel,
+  applyOverrides,
+  loadOverrides,
+  type ThresholdOverrides,
+} from "./ThresholdPanel";
 
 const HIST_REF_STORAGE_KEY = "msc:hist-reference:v1";
 
@@ -65,7 +71,8 @@ const GATE_HINTS: Record<string, string> = {
   position: "Wycentruj twarz w ramce — kieruj nos na środek owalu.",
   sharpness: "Trzymaj telefon nieruchomo i poczekaj na ostrość.",
   exposure: "Zmień oświetlenie — kadr za jasny lub za ciemny.",
-  clipping: "Usuń źródła silnego światła z kadru (przepalenia/cienie).",
+  "clipping-low": "Dodaj światło wypełniające — zbyt wiele pikseli ROI w cieniach.",
+  "clipping-high": "Usuń silne światło/odbicia z kadru — przepalenia w ROI.",
   "ae-stable": "Czekam, aż auto-ekspozycja się ustabilizuje…",
   "awb-stable": "Czekam, aż balans bieli się ustabilizuje (neutralne światło).",
   stability: "Trzymaj telefon nieruchomo (lub oprzyj na statywie).",
@@ -87,11 +94,13 @@ function gateHint(
         return `Za jasno (luma ${m.luminance.toFixed(2)}). Odsuń się od źródła światła lub przyciemnij lampę.`;
       break;
     }
-    case "clipping": {
+    case "clipping-low": {
       if (!m) break;
-      if (m.clippingHigh > m.clippingLow)
-        return `Przepalenia ${(m.clippingHigh * 100).toFixed(1)}% pikseli — usuń silne światło/odbicia w kadrze.`;
-      return `Niedoświetlone cienie ${(m.clippingLow * 100).toFixed(1)}% — dodaj światło wypełniające.`;
+      return `Niedoświetlone cienie ${(m.clippingLow * 100).toFixed(2)}% w ROI — dodaj światło wypełniające.`;
+    }
+    case "clipping-high": {
+      if (!m) break;
+      return `Przepalenia ${(m.clippingHigh * 100).toFixed(2)}% w ROI — usuń silne światło/odbicia w kadrze.`;
     }
     case "ae-stable": {
       if (!temporal) break;
@@ -163,7 +172,9 @@ interface Props {
 
 export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) {
   const calibration = profileProp ? null : loadCalibration();
-  const profile = profileProp ?? calibration?.profile ?? QUALITY_PROFILE_V1;
+  const baseProfile = profileProp ?? calibration?.profile ?? QUALITY_PROFILE_V1;
+  const [overrides, setOverrides] = useState<ThresholdOverrides>(() => loadOverrides());
+  const profile = applyOverrides(baseProfile, overrides);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { stream, error, starting, locked, start, stop, lockHardware, unlockHardware } =
     useCameraStream({ facingMode: "user" });
@@ -493,6 +504,12 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
       <p className="text-center text-[11px] text-muted-foreground">
         Profil progów: <span className="font-mono">{profile.version}</span>
       </p>
+
+      <ThresholdPanel
+        current={profile.live}
+        baseline={baseProfile.live}
+        onChange={setOverrides}
+      />
 
       {/* Last rejection details — clear, persistent until accepted */}
       {lastRejection && !shot && (

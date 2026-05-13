@@ -76,7 +76,12 @@ export interface QualityThresholds {
   luminanceMin: number;
   luminanceMax: number;
   sharpnessMin: number;
+  /** Legacy combined clipping cap (low+high). Kept for backward compatibility / fallback. */
   clippingMax: number;
+  /** Max fraction of ROI pixels at the dark extreme (≤2/255). 0..1. */
+  clippingLowMax: number;
+  /** Max fraction of ROI pixels at the bright extreme (≥253/255). 0..1. */
+  clippingHighMax: number;
   colorCastMax: number;
   angularVelocityMax: number; // rad/s
   /** Skin fill in ROI: too low = za daleko, too high = za blisko. */
@@ -97,6 +102,8 @@ export const DEFAULT_THRESHOLDS: QualityThresholds = {
   luminanceMax: 0.68,
   sharpnessMin: 120,
   clippingMax: 0.04,
+  clippingLowMax: 0.03,
+  clippingHighMax: 0.03,
   colorCastMax: 0.08,
   angularVelocityMax: 0.15,
   skinRatioMin: 0.35,

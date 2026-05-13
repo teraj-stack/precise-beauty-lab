@@ -341,12 +341,26 @@ export function evaluateGates(
     });
   }
 
-  // 4. Clipping
+  // 4a. Clipping LOW (cienie) — ROI metric vs configurable threshold
   gates.push({
-    id: "clipping",
-    label: "Brak przepaleń",
-    status: metrics.clipping > thresholds.clippingMax ? "warn" : "ok",
-    detail: `${(metrics.clipping * 100).toFixed(1)}% pikseli skrajnych`,
+    id: "clipping-low",
+    label: "Clipping LOW (ROI)",
+    status:
+      metrics.clippingLow > thresholds.clippingLowMax
+        ? "warn"
+        : "ok",
+    detail: `${(metrics.clippingLow * 100).toFixed(2)}% (max ${(thresholds.clippingLowMax * 100).toFixed(1)}%)`,
+  });
+
+  // 4b. Clipping HIGH (przepalenia) — ROI metric vs configurable threshold
+  gates.push({
+    id: "clipping-high",
+    label: "Clipping HIGH (ROI)",
+    status:
+      metrics.clippingHigh > thresholds.clippingHighMax
+        ? "warn"
+        : "ok",
+    detail: `${(metrics.clippingHigh * 100).toFixed(2)}% (max ${(thresholds.clippingHighMax * 100).toFixed(1)}%)`,
   });
 
   // 5. Sharpness
