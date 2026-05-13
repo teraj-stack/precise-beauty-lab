@@ -1025,6 +1025,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
         onChange={setOverrides}
         refMatch={refMatchThresholds}
         onRefMatchChange={setRefMatchThresholds}
+        liveRefSample={refMatch ? { evDelta: refMatch.evDelta, l1: refMatch.l1 } : null}
       />
 
       <HistReferenceLibrary

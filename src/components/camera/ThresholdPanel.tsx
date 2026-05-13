@@ -23,6 +23,7 @@ import {
   type RefMatchProfile,
 } from "@/lib/camera/ref-match-profiles";
 import { RefMatchProfiles } from "./RefMatchProfiles";
+import { RefMatchAutoCalibrate } from "./RefMatchAutoCalibrate";
 
 const STORAGE_KEY = "msc:threshold-overrides:v1";
 const REF_MATCH_STORAGE_KEY = "msc:ref-match-thresholds:v1";
@@ -117,6 +118,8 @@ interface Props {
   /** Reference-match thresholds (shutter gate vs saved histogram reference). */
   refMatch?: RefMatchThresholds;
   onRefMatchChange?: (next: RefMatchThresholds) => void;
+  /** Live sample {evDelta, l1} from current frame vs active reference (for auto-calibration). */
+  liveRefSample?: { evDelta: number; l1: number } | null;
 }
 
 const FIELDS: Array<{
@@ -161,7 +164,7 @@ const FIELDS: Array<{
   },
 ];
 
-export function ThresholdPanel({ current, baseline, onChange, refMatch, onRefMatchChange }: Props) {
+export function ThresholdPanel({ current, baseline, onChange, refMatch, onRefMatchChange, liveRefSample }: Props) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<ThresholdOverrides>(() => loadOverrides());
   const [refDraft, setRefDraft] = useState<RefMatchThresholds>(
@@ -441,6 +444,19 @@ export function ThresholdPanel({ current, baseline, onChange, refMatch, onRefMat
             łagodniejszych progów (większe wartości). Dla precyzyjnej kalibracji
             studyjnej zmniejsz oba progi.
           </p>
+
+          <RefMatchAutoCalibrate
+            liveSample={liveRefSample ?? null}
+            onApply={(t) => {
+              setRefDraft(t);
+              saveRefMatchThresholds(t);
+              onRefMatchChange?.(t);
+              if (activeProfileId) {
+                setActiveProfileId(null);
+                saveActiveRefMatchProfileId(null);
+              }
+            }}
+          />
 
           <RefMatchProfiles
             profiles={profiles}
