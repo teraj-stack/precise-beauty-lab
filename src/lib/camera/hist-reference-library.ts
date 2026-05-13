@@ -155,6 +155,28 @@ export function removeReference(
   return library.filter((r) => r.id !== id);
 }
 
+/**
+ * Duplicate an existing reference (histogram + luminance + conditions are
+ * cloned). Optional patch lets the caller override label/conditions to
+ * support quick variants ("Gabinet — wariant B"). Returns the new entry.
+ */
+export function duplicateReference(
+  library: StoredHistogramReference[],
+  id: string,
+  patch?: Partial<Pick<StoredHistogramReference, "label" | "conditions">>,
+): { library: StoredHistogramReference[]; entry: StoredHistogramReference } | null {
+  const src = library.find((r) => r.id === id);
+  if (!src) return null;
+  const baseLabel = patch?.label ?? `${src.label ?? "Referencja"} (kopia)`;
+  return addReference(library, {
+    histogram: [...src.histogram],
+    luminance: src.luminance,
+    capturedAt: Date.now(),
+    label: baseLabel,
+    conditions: patch?.conditions ?? src.conditions,
+  });
+}
+
 export function updateReference(
   library: StoredHistogramReference[],
   id: string,

@@ -7,7 +7,7 @@
  */
 
 import { useMemo, useState } from "react";
-import { ArrowDownAZ, BookmarkPlus, Check, Pencil, Search, Trash2, X } from "lucide-react";
+import { ArrowDownAZ, BookmarkPlus, Check, Copy, Pencil, Search, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { StoredHistogramReference } from "@/lib/camera/hist-reference-library";
 
@@ -20,6 +20,8 @@ interface Props {
   onActivate: (id: string | null) => void;
   onDelete: (id: string) => void;
   onRename: (id: string, patch: { label?: string; conditions?: string }) => void;
+  /** Clone an existing reference (histogram + conditions) for quick variants. */
+  onDuplicate?: (id: string) => void;
   /** Optional indicator: external preset takes priority over manual references. */
   presetActive?: boolean;
 }
@@ -46,6 +48,7 @@ export function HistReferenceLibrary({
   onActivate,
   onDelete,
   onRename,
+  onDuplicate,
   presetActive,
 }: Props) {
   const [draftLabel, setDraftLabel] = useState("");
@@ -275,6 +278,17 @@ export function HistReferenceLibrary({
                       >
                         <Pencil className="h-3 w-3" />
                       </Button>
+                      {onDuplicate && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => onDuplicate(r.id)}
+                          title="Duplikuj (kopia z tymi samymi warunkami)"
+                          className="h-6 w-6"
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      )}
                       <Button
                         size="icon"
                         variant="ghost"

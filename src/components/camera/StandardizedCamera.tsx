@@ -61,6 +61,7 @@ import {
   loadActiveId,
   setActiveId as persistActiveRefId,
   addReference,
+  duplicateReference,
   removeReference,
   updateReference,
   findById as findRefById,
@@ -314,6 +315,16 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     },
     [],
   );
+
+  const handleDuplicateRef = useCallback((id: string) => {
+    setRefLibrary((prev) => {
+      const result = duplicateReference(prev, id);
+      if (!result) return prev;
+      saveLibrary(result.library);
+      toast.success(`Zduplikowano jako „${result.entry.label}"`);
+      return result.library;
+    });
+  }, []);
 
   const saveCurrentAsRef = useCallback(
     (meta: { label: string; conditions: string }) => {
@@ -1071,6 +1082,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
         onActivate={handleActivateRef}
         onDelete={handleDeleteRef}
         onRename={handleRenameRef}
+        onDuplicate={handleDuplicateRef}
         presetActive={!!activePreset}
       />
 
