@@ -167,6 +167,10 @@ export function ThresholdPanel({ current, baseline, onChange, refMatch, onRefMat
   const [refDraft, setRefDraft] = useState<RefMatchThresholds>(
     () => refMatch ?? loadRefMatchThresholds(),
   );
+  const [profiles, setProfiles] = useState<RefMatchProfile[]>(() => loadRefMatchProfiles());
+  const [activeProfileId, setActiveProfileId] = useState<string | null>(
+    () => loadActiveRefMatchProfileId(),
+  );
 
   // Re-sync draft if external `current` changes (e.g. profile swap).
   useEffect(() => {
