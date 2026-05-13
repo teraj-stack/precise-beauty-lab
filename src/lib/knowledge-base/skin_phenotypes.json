@@ -1,0 +1,282 @@
+{
+  "schema": "msc.skin-phenotypes.v1",
+  "version": "2026-05-13",
+  "source": [
+    "MySkinCode (dr — strategia produktowa, 2026)",
+    "System kodowania MSC (MSC-MATRIX, 2026)",
+    "Metabolizm żelaza w układzie powłokowym (oś żelazo–skóra, 2026)",
+    "Chirurgia, biochemia i mikrobiom — perspektywa (2026)"
+  ],
+  "code_format": "MSC-[FENOTYP]-[GRADE]",
+  "grades": {
+    "G1": "Defekt powierzchowny / łagodny",
+    "G2": "Defekt strukturalny / umiarkowany",
+    "G3": "Defekt utrwalony / oporny (przebudowa macierzy i SMAS)"
+  },
+  "phenotypes": [
+    {
+      "id": "SEB",
+      "name": "Seborrheic — skóra oporna, łojotokowa",
+      "biophysical_goal": "Niszczenie biofilmu C. acnes (RONS), termiczne obkurczenie gruczołów łojowych, ewakuacja mas rogowych, różnicowanie PIE/PIH.",
+      "key_phenomena": [
+        {
+          "id": "biofilm_c_acnes",
+          "label": "Biofilm Cutibacterium acnes",
+          "description": "Wielowarstwowa, oporna na antybiotyki kolonia w ujściach mieszków włosowych; wymaga RONS (zimna plazma) lub fotomechanicznego rozbicia."
+        },
+        {
+          "id": "hyperkeratosis_retentionalis",
+          "label": "Hiperkeratoza retencyjna",
+          "description": "Zaleganie korneocytów blokujące ujścia mieszków; usuwana sub-ablacyjną falą 1927 nm (penetracja ~200 µm) lub frakcyjną ablacją."
+        },
+        {
+          "id": "ser_sebum_excretion_rate",
+          "label": "SER — Sebum Excretion Rate",
+          "description": "Wskaźnik wydzielania łoju; trwale obniżany termiczną koagulacją gruczołów łojowych (60–70 °C) falą Er:Glass 1550 nm."
+        },
+        {
+          "id": "pie_vs_pih_differentiation",
+          "label": "Różnicowanie PIE vs PIH",
+          "description": "PIE (rumień pozapalny, oksyhemoglobina) wymaga fototermolizy naczyniowej; PIH (melanina) — usunięcia melanin shuttle."
+        },
+        {
+          "id": "atrophic_scarring",
+          "label": "Blizny zanikowe / włóknik",
+          "description": "Twardy włóknik rozrywany karboksyterapią (efekt Bohra) i waporyzacją Er:YAG 2940 nm wymuszającą skokową neokolagenezę."
+        }
+      ],
+      "grades": {
+        "G1": {
+          "indication": "Zaskórniki, początkowy łojotok",
+          "protocol": "Zimna Plazma Atmosferyczna (CAP) + Laser tulowy 1927 nm (sub-ablacja)",
+          "mechanism": "CAP uwalnia RONS — głęboka sterylizacja mikrobiomu bez szoku termicznego. Fala 1927 nm (powinowactwo do wody) odblokowuje ujścia mieszków i włącza melanin shuttle."
+        },
+        "G2": {
+          "indication": "Aktywny trądzik grudkowo-krostkowy",
+          "protocol": "Peeling węglowy Nd:YAG 1064 nm (Pico/QS) + frakcyjny Er:Glass 1550 nm",
+          "mechanism": "Nd:YAG generuje PTMD na warstwie węgla — niszczenie czopów łojowych. 1550 nm koaguluje termicznie gruczoły łojowe (60–70 °C), trwale obniżając SER."
+        },
+        "G3": {
+          "indication": "Trądzik bliznowaciejący, zrosty",
+          "protocol": "Karboksyterapia śródskórna + frakcyjny Er:YAG 2940 nm (ablacja)",
+          "mechanism": "CO2 wyzwala efekt Bohra (silne dotlenienie, mechaniczne rozrywanie włóknika). 2940 nm waporyzuje blizny — skokowa neokolageneza."
+        }
+      }
+    },
+    {
+      "id": "XER",
+      "name": "Xerosis — skóra sucha, uszkodzona BHL",
+      "biophysical_goal": "Restytucja bariery hydrolipidowej (BHL), zatrzymanie TEWL, modulacja inflammasomów. Bezwzględny zakaz terapii ablacyjno-termicznych.",
+      "contraindications": [
+        "Pełna ablacja (Er:YAG 2940 nm pełnopolowa)",
+        "Agresywne IPL bez wcześniejszej restytucji BHL",
+        "Głębokie peelingi chemiczne na uszkodzonej barierze"
+      ],
+      "key_phenomena": [
+        {
+          "id": "tewl",
+          "label": "TEWL — Transepidermal Water Loss",
+          "description": "Niekontrolowana utrata wody przez naskórek; bramka wymagająca okluzji (np. dimetikon) po każdej interwencji."
+        },
+        {
+          "id": "plasmoporation",
+          "label": "Plazmoporacja",
+          "description": "Tymczasowe rozluźnienie E-kadheryn przez zimną plazmę — kanały hydrofilowe w stratum corneum dla wielkocząsteczkowego HA i ceramidów bez igieł."
+        },
+        {
+          "id": "corneodesmosome_inactivation",
+          "label": "Inaktywacja korneodesmosomów",
+          "description": "Brak wody → enzymy nie rozkładają korneodesmosomów → parakeratotyczne łuszczenie. Wymaga mechanicznej deskwamacji 1927 nm na ultra-niskich parametrach (5–10 mJ)."
+        },
+        {
+          "id": "nlrp3_inflammasome",
+          "label": "Inflammasom NLRP3",
+          "description": "Stany zapalne wywołane załamaniem bariery; wyciszane przez CAP przed LADD/PRP."
+        },
+        {
+          "id": "ladd",
+          "label": "LADD — Laser-Assisted Drug Delivery",
+          "description": "Mikro-kanaliki 1927 nm jako nośnik PRP (TGF-β) do warstwy podstawnej."
+        }
+      ],
+      "grades": {
+        "G1": {
+          "indication": "Przesuszenie, utrata turgoru, matowość",
+          "protocol": "Zimna plazma (plazmoporacja) + infuzja NMF/ceramidów",
+          "mechanism": "Plazmoporacja otwiera kanały hydrofilowe — wtłoczenie HA i ceramidów do skóry właściwej bez igieł i ciepła."
+        },
+        "G2": {
+          "indication": "Szorstkość, łuszczenie parakeratotyczne",
+          "protocol": "Laser tulowy 1927 nm (5–10 mJ) + medyczna okluzja",
+          "mechanism": "Mechaniczna deskwamacja zrogowaciałych komórek; ciężka okluzja (dimetikon) blokuje TEWL."
+        },
+        "G3": {
+          "indication": "Popękana bariera, ukryte mikro-zapalenia",
+          "protocol": "CAP + LADD (1927 nm) + PRP",
+          "mechanism": "CAP wycisza NLRP3; mikro-kanaliki dostarczają PRP (TGF-β) do zniszczonej warstwy podstawnej."
+        }
+      }
+    },
+    {
+      "id": "VAS",
+      "name": "Vascular — skóra naczyniowo-reaktywna",
+      "biophysical_goal": "Selektywna fototermoliza wazodylatacji (oksyhemoglobina), uwięzienie termiczne (TRT), pogrubienie macierzy zewnątrzkomórkowej.",
+      "key_phenomena": [
+        {
+          "id": "selective_photothermolysis",
+          "label": "Selektywna fototermoliza",
+          "description": "Hemoglobina pochłania 1064 nm; impuls dopasowany do TRT naczynia daje koagulację bez przegrzania tła."
+        },
+        {
+          "id": "trt",
+          "label": "TRT — Thermal Relaxation Time",
+          "description": "Czas relaksacji termicznej naczynia: cienkie (FRAC3, sub-ms), grube teleangiektazje (LP 15–40 ms)."
+        },
+        {
+          "id": "rebound_erythema",
+          "label": "Efekt odbicia (rebound)",
+          "description": "Globalne przegrzanie tła bez chłodzenia szafirowego → nasilenie rumienia. Wymaga thermal decoupling."
+        },
+        {
+          "id": "no_cap",
+          "label": "NO z plazmy zimnej",
+          "description": "Tlenek azotu z CAP — dotlenienie i działanie przeciwzapalne, redukcja PIE."
+        },
+        {
+          "id": "matrix_thickening",
+          "label": "Pogrubienie ECM",
+          "description": "Neokolageneza 1550 nm fizycznie 'przykrywa' siatkę naczyń, usztywnia łożysko, redukuje reaktywność termiczną."
+        }
+      ],
+      "grades": {
+        "G1": {
+          "indication": "Rumień napadowy, PIE",
+          "protocol": "CAP + Nd:YAG 1064 nm (FRAC3)",
+          "mechanism": "NO z plazmy działa przeciwzapalnie. FRAC3 (sub-ms) selektywnie koaguluje mikrosieć w 3D bez efektu odbicia."
+        },
+        "G2": {
+          "indication": "Utrwalone teleangiektazje, stazy żylne",
+          "protocol": "Nd:YAG 1064 nm (Long-Pulse 15–40 ms) + chłodzenie szafirowe",
+          "mechanism": "Impulsy ms dopasowane do TRT grubszych naczyń — transmuralna koagulacja ścian. Chłodzenie chroni naskórek."
+        },
+        "G3": {
+          "indication": "Utrwalony trądzik różowaty na zcieńczałej skórze",
+          "protocol": "Nd:YAG 1064 nm (LP) + frakcyjny Er:Glass 1550 nm",
+          "mechanism": "Po zamknięciu pni naczyniowych 1550 nm wywołuje neokolagenezę — fizyczne przykrycie siatki naczyń."
+        }
+      }
+    },
+    {
+      "id": "AGE",
+      "name": "Ageing 40+ — cera zcieńczała, opadająca, dyschromie",
+      "biophysical_goal": "Modelowanie wektorów powięzi (SMAS), ekspresja chaperonów (HSP47), denaturacja potrójnej helisy kolagenu, eliminacja nietrzymania melaniny.",
+      "key_phenomena": [
+        {
+          "id": "hsp47",
+          "label": "HSP47 — chaperon prokolagenu",
+          "description": "Indukowana 1550 nm; wymiana słabego kolagenu typu III na typ I."
+        },
+        {
+          "id": "ita_angle",
+          "label": "Kąt ITA (Individual Typology Angle)",
+          "description": "Wskaźnik fototypu / luminancji; korygowany przez 'zdmuchnięcie' melaniny falą 1927 nm."
+        },
+        {
+          "id": "tcp_hifu",
+          "label": "TCP — punkt koagulacji termicznej HIFU",
+          "description": "65 °C na głębokości 4.5 mm (SMAS) — fizyczne skrócenie i lifting tkanki bez uszkodzenia naskórka."
+        },
+        {
+          "id": "bulk_heating_piano",
+          "label": "Bulk heating — tryb PIANO",
+          "description": "Ultradługie impulsy Nd:YAG (sek.) — głębokie ogrzewanie objętościowe 42–45 °C, biostymulacja fibroblastów bez rekonwalescencji."
+        },
+        {
+          "id": "specular_reflection",
+          "label": "Specular reflection",
+          "description": "Lustrzane odbicie światła z naskórka po hybrydowym 1550+1927 nm — efekt 'glow'."
+        },
+        {
+          "id": "melanin_incontinence",
+          "label": "Nietrzymanie melaniny",
+          "description": "Melanofagi w skórze właściwej (przebarwienia utrwalone) — wymagają warstwowej pracy laser+pico."
+        }
+      ],
+      "grades": {
+        "G1": {
+          "indication": "Utrata blasku, wczesne fotostarzenie, drobne linie",
+          "protocol": "Laser tulowy 1927 nm + Nd:YAG PIANO",
+          "mechanism": "1927 nm zdmuchuje komórki obciążone melaniną (korekta ITA). PIANO daje bulk heating 42–45 °C — biostymulacja bez downtime."
+        },
+        "G2": {
+          "indication": "Wyraźna elastoza, zcieńczenie, dyschromie",
+          "protocol": "Laser hybrydowy frakcyjny (1550 nm + 1927 nm)",
+          "mechanism": "Pełny resurfacing: 1550 nm celuje w wodę (HSP47, kolagen I), 1927 nm odnawia teksturę (specular reflection)."
+        },
+        "G3": {
+          "indication": "Ptoza grawitacyjna, chomiki, głębokie bruzdy strukturalne",
+          "protocol": "HIFU (4.5 + 3.0 mm) + karboksyterapia + odroczony Er:YAG 2940 nm (4–6 tyg.)",
+          "mechanism": "HIFU tworzy TCP 65 °C na SMAS — fizyczny lifting bez naskórka. CO2 dotlenia macierz. Er:YAG waporyzuje pofałdowany naskórek."
+        }
+      }
+    }
+  ],
+  "cross_cutting_phenomena": [
+    {
+      "id": "iron_skin_axis",
+      "label": "Oś żelazo–skóra (iron-skin axis)",
+      "description": "Skóra jako autonomiczny organ gospodarki żelazem. Keratynocyty warstwy podstawnej wykazują najwyższą ekspresję TFR1 (CD71) i ferrytyny; zawartość Fe maleje w kierunku stratum corneum.",
+      "clinical_impact": [
+        "Wolne Fe katalizuje reakcję Fentona → ROS → ferroptoza fibroblastów.",
+        "Złogi hemosyderyny (Fe3+) — utrwalone przebarwienia po stłuczeniach, sklerotyzacjach, zabiegach naczyniowych.",
+        "Hiperkeratoza zwiększa dobową utratę Fe ze skórą (deskwamacja)."
+      ],
+      "affects_phenotypes": ["VAS", "AGE", "SEB"],
+      "therapeutic_levers": [
+        "Chelatory miejscowe (kwas kojowy — bidentatny chelator Fe3+).",
+        "Cyklopiroks z olaminą — chelatuje Fe3+/Al3+ (anty-Malassezia po opatrunku okluzyjnym).",
+        "Laktoferryna i defensyny naskórkowe — sekwestracja wolnego Fe przed mikrobami."
+      ]
+    },
+    {
+      "id": "microbiome_dysbiosis",
+      "label": "Dysbioza mikrobiomu (skóra + jelita)",
+      "description": "Antybiotyki o wydalaniu żółciowym (np. ceftriakson, ~40% niezmieniony) masakrują Lactobacillus/Bifidobacterium, otwierając niszę dla Enterobacteriaceae. Okluzja pooperacyjna sprzyja Malassezia.",
+      "clinical_impact": [
+        "Wzrost ZUM po profilaktyce okołozabiegowej (szczególnie kobiety 65+ z hipoestrogenizmem).",
+        "Ziarniniakowanie blizn pod opatrunkami okluzyjnymi.",
+        "Zaostrzenie SEB i VAS po szerokospektralnej antybiotykoterapii."
+      ],
+      "affects_phenotypes": ["SEB", "XER", "VAS"],
+      "therapeutic_levers": [
+        "Cyklopiroks z olaminą pod opatrunek (chelatacja Fe + przeciwzapalnie).",
+        "Probiotykoterapia ukierunkowana okołozabiegowa (osłona jelitowa + dopochwowa).",
+        "Zimna plazma (CAP) — sterylizacja bez szoku termicznego."
+      ]
+    },
+    {
+      "id": "retinoid_paradox",
+      "label": "Paradoks retinoidów: ogólnie vs miejscowo",
+      "description": "Izotretynoina doustna apoptozuje sebocyty, ale obniża kolagen I/III i hamuje migrację keratynocytów — wydłuża fazę zapalną i opóźnia rychłozrost. Miejscowa witamina A (RAR/RXR) porządkuje proliferację naskórka i hamuje TGF-β płycej, bez blokowania zrostu powięzi.",
+      "clinical_impact": [
+        "Pacjent na izotretynoinie doustnej: odroczyć zabiegi ablacyjne i głębokie peelingi (min. 6 mies.).",
+        "Miejscowy retinol/estry — bezpieczne na blizny, profilaktyka keloidów."
+      ],
+      "affects_phenotypes": ["SEB", "AGE"],
+      "therapeutic_levers": [
+        "Wash-out izotretynoiny przed Er:YAG/HIFU.",
+        "Code Rx z retinoidem miejscowym jako post-treatment (faza remodelingu)."
+      ]
+    },
+    {
+      "id": "post_treatment_hyperpigmentation",
+      "label": "PIH vs PIE — różnicowanie pozapalne",
+      "description": "PIH (melanina, melanofagi) wymaga melanin shuttle (1927 nm) lub pico Nd:YAG. PIE (oksyhemoglobina, mikronaczynia) wymaga FRAC3 / 1064 nm LP. Złogi hemosyderyny po zabiegach naczyniowych — trzecia kategoria.",
+      "affects_phenotypes": ["SEB", "VAS", "AGE"],
+      "therapeutic_levers": [
+        "Diagnostyka różnicowa: lampa Wood, dermoskopia polaryzacyjna, MSC Color Card (kalibracja barwna).",
+        "Chelatory Fe3+ na hemosyderynę; Nd:YAG QS na PIH; FRAC3 na PIE."
+      ]
+    }
+  ]
+}
