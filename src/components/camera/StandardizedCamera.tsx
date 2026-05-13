@@ -725,6 +725,30 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                         </span>
                       </div>
                     )}
+                    {refHints.length > 0 && (
+                      <ul className="mt-1.5 space-y-1 border-t border-white/10 pt-1.5 text-[11px] leading-snug">
+                        {refHints.map((h, i) => {
+                          const glyph =
+                            h.icon === "sun" ? "☀" :
+                            h.icon === "moon" ? "🌙" :
+                            h.icon === "lamp" ? "💡" :
+                            h.icon === "shadow" ? "◐" :
+                            h.icon === "burn" ? "✦" :
+                            h.icon === "frame" ? "▭" :
+                            h.icon === "wb" ? "🎨" : "⏳";
+                          const tone =
+                            h.tone === "act" ? "text-amber-100" :
+                            h.tone === "warn" ? "text-amber-200/90" :
+                            "text-white/85";
+                          return (
+                            <li key={i} className={`flex items-start gap-1.5 ${tone}`}>
+                              <span className="shrink-0 tabular-nums opacity-90">{glyph}</span>
+                              <span>{h.text}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
                     {refHistory.length >= 2 && (
                       <div className="mt-1.5 border-t border-white/10 pt-1.5">
                         <div className="flex items-center justify-between gap-2 text-[10px] uppercase tracking-wide opacity-80">
