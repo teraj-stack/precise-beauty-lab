@@ -445,6 +445,19 @@ export function ThresholdPanel({ current, baseline, onChange, refMatch, onRefMat
             studyjnej zmniejsz oba progi.
           </p>
 
+          <RefMatchAutoCalibrate
+            liveSample={liveRefSample ?? null}
+            onApply={(t) => {
+              setRefDraft(t);
+              saveRefMatchThresholds(t);
+              onRefMatchChange?.(t);
+              if (activeProfileId) {
+                setActiveProfileId(null);
+                saveActiveRefMatchProfileId(null);
+              }
+            }}
+          />
+
           <RefMatchProfiles
             profiles={profiles}
             activeId={activeProfileId}
