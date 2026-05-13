@@ -190,6 +190,9 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
   const calibration = profileProp ? null : loadCalibration();
   const baseProfile = profileProp ?? calibration?.profile ?? QUALITY_PROFILE_V1;
   const [overrides, setOverrides] = useState<ThresholdOverrides>(() => loadOverrides());
+  const [refMatchThresholds, setRefMatchThresholds] = useState<RefMatchThresholds>(
+    () => loadRefMatchThresholds(),
+  );
   const profile = applyOverrides(baseProfile, overrides);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { stream, error, starting, locked, start, stop, lockHardware, unlockHardware } =
