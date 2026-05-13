@@ -202,7 +202,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     message: string;
     hint?: string;
   } | null>(null);
-  const [dedupInfo, setDedupInfo] = useState<{ id: string; sha256: string; createdAt: string } | null>(null);
+  const [dedupInfo, setDedupInfo] = useState<CaptureAuditDeduplicatedResult | null>(null);
   const navigate = useNavigate();
   const [session, setSession] = useState<ValidatedCapture[]>([]);
   const [zipping, setZipping] = useState(false);
