@@ -233,6 +233,10 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     reasons: string[];
   } | null>(null);
   const lastAttemptAt = useRef(0);
+  // Synchronous guard against double-click / race: setState is async, so a fast
+  // second tap can fire before `disabled` re-renders. This ref short-circuits
+  // re-entry immediately within the same tick.
+  const auditInFlightRef = useRef(false);
 
   // ---- Histogram reference library (multiple entries + active selection) ----
   const [refLibrary, setRefLibrary] = useState<StoredHistogramReference[]>(() => loadLibrary());
