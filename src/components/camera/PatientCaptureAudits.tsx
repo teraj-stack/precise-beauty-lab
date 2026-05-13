@@ -125,6 +125,11 @@ export function PatientCaptureAudits({ patientId }: Props) {
                       <Field label="Profil" value={r.profile_version} />
                       <Field label="Thresholds" value={r.thresholds_version} />
                     </div>
+                    <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                      <FileJson className="h-3 w-3 text-muted-foreground" />
+                      <span className="font-medium">Raport jakości (JSONB)</span>
+                      <IntegrityBadge report={r.report} />
+                    </div>
                     <div className="flex items-center gap-2 text-[11px]">
                       <FileJson className="h-3 w-3 text-muted-foreground" />
                       <span className="font-medium">Raport jakości (JSONB)</span>
