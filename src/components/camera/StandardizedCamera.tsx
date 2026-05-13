@@ -92,20 +92,35 @@ export function StandardizedCamera({ onAccepted }: Props) {
 
   const liveReady = report?.ready ?? false;
 
-  const capture = () => {
-    const v = videoRef.current;
-    if (!v || v.videoWidth === 0 || !report) return;
+  // ---- Auto-retry state ----
+  const [autoRetry, setAutoRetry] = useState(false);
+  const [retryAttempt, setRetryAttempt] = useState(0);
+  const [lastRejection, setLastRejection] = useState<{
+    gateIds: string[];
+    reasons: string[];
+  } | null>(null);
+  const lastAttemptAt = useRef(0);
 
-    // 1. Pull full-resolution pixels
+  // Blocking gate (live HUD): first failing, otherwise first warning
+  const blockingGate =
+    report?.gates.find((g) => g.status === "fail") ??
+    report?.gates.find((g) => g.status === "warn") ??
+    null;
+
+  const capture = useCallback((): "accepted" | "rejected" | "skipped" => {
+    const v = videoRef.current;
+    if (!v || v.videoWidth === 0 || !report) return "skipped";
+
+    lastAttemptAt.current = Date.now();
+
     const c = document.createElement("canvas");
     c.width = v.videoWidth;
     c.height = v.videoHeight;
     const ctx = c.getContext("2d");
-    if (!ctx) return;
+    if (!ctx) return "skipped";
     ctx.drawImage(v, 0, 0);
     const img = ctx.getImageData(0, 0, c.width, c.height);
 
-    // 2. Re-validate with STRICT capture profile
     const validation = validateCapture({
       rgba: img.data,
       width: c.width,
@@ -116,21 +131,20 @@ export function StandardizedCamera({ onAccepted }: Props) {
       profile: QUALITY_PROFILE_V1,
     });
 
-    // 3. Reject path — DO NOT call onAccepted, do not surface dataUrl
     if (validation.status === "rejected") {
-      toast.error("Zdjęcie odrzucone", {
-        description: validation.reasons.join(" · "),
-        duration: 6000,
-      });
+      const failingIds = validation.report.gates
+        .filter((g) => g.status === "fail")
+        .map((g) => g.id);
+      setLastRejection({ gateIds: failingIds, reasons: validation.reasons });
       console.warn("[capture-rejected]", {
         profile: validation.profileVersion,
         reasons: validation.reasons,
+        gateIds: failingIds,
         metrics: validation.report.metrics,
       });
-      return;
+      return "rejected";
     }
 
-    // 4. Accept path
     const dataUrl = c.toDataURL("image/jpeg", 0.92);
     const frame: ValidatedCapture = {
       dataUrl,
@@ -141,11 +155,60 @@ export function StandardizedCamera({ onAccepted }: Props) {
       profileVersion: validation.profileVersion,
     };
     setShot(frame);
-    toast.success("Zdjęcie zaakceptowane", {
-      description: `Profil ${validation.profileVersion} — gotowe do analizy CV.`,
-    });
+    setLastRejection(null);
     onAccepted?.(frame);
+    return "accepted";
+  }, [report, stability, onAccepted]);
+
+  // Manual shutter — also enables auto-retry mode if rejected.
+  const onShutter = () => {
+    setRetryAttempt(0);
+    const result = capture();
+    if (result === "accepted") {
+      toast.success("Zdjęcie zaakceptowane", {
+        description: `Profil ${QUALITY_PROFILE_V1.version}.`,
+      });
+      setAutoRetry(false);
+    } else if (result === "rejected") {
+      setAutoRetry(true);
+      toast.info("Auto-retry włączone", {
+        description: "Spróbuję ponownie, gdy bramki będą OK.",
+        duration: 3500,
+      });
+    }
   };
+
+  // Auto-retry: when shutter was rejected, keep trying as soon as live gates pass.
+  useEffect(() => {
+    if (!autoRetry || !liveReady) return;
+    if (Date.now() - lastAttemptAt.current < RETRY_DEBOUNCE_MS) return;
+    if (retryAttempt >= MAX_AUTO_RETRIES) {
+      setAutoRetry(false);
+      toast.error("Auto-retry przerwane", {
+        description: `Wykonano ${MAX_AUTO_RETRIES} prób. Skoryguj kadr i spróbuj ponownie.`,
+      });
+      return;
+    }
+    const result = capture();
+    if (result === "accepted") {
+      toast.success("Zdjęcie zaakceptowane (auto-retry)", {
+        description: `Próba ${retryAttempt + 1}/${MAX_AUTO_RETRIES}.`,
+      });
+      setAutoRetry(false);
+      setRetryAttempt(0);
+    } else if (result === "rejected") {
+      setRetryAttempt((n) => n + 1);
+    }
+  }, [autoRetry, liveReady, retryAttempt, capture]);
+
+  // Stop auto-retry if user stops the camera
+  useEffect(() => {
+    if (!stream) {
+      setAutoRetry(false);
+      setRetryAttempt(0);
+      setLastRejection(null);
+    }
+  }, [stream]);
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-4">
@@ -181,6 +244,25 @@ export function StandardizedCamera({ onAccepted }: Props) {
                 <Lock className="h-3 w-3" /> AE/AWB lock
               </div>
             )}
+            {/* Blocking-gate banner (live) */}
+            {!liveReady && blockingGate && (
+              <div className="absolute inset-x-2 bottom-2 rounded-lg border border-amber-400/40 bg-amber-500/15 px-3 py-2 text-[12px] text-amber-50 backdrop-blur-md">
+                <div className="flex items-center gap-1.5 font-semibold">
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  Blokada: {blockingGate.label}
+                </div>
+                <p className="mt-0.5 leading-snug opacity-90">
+                  {GATE_HINTS[blockingGate.id] ?? blockingGate.detail}
+                </p>
+              </div>
+            )}
+            {/* Auto-retry overlay */}
+            {autoRetry && (
+              <div className="absolute left-2 bottom-2 flex items-center gap-1.5 rounded-md border border-sky-400/40 bg-sky-500/15 px-2 py-1 text-[11px] font-medium text-sky-50 backdrop-blur">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Auto-retry {retryAttempt}/{MAX_AUTO_RETRIES}
+              </div>
+            )}
           </>
         )}
       </div>
@@ -203,14 +285,28 @@ export function StandardizedCamera({ onAccepted }: Props) {
             >
               {locked ? <Lock /> : <LockOpen />}
             </Button>
-            <Button
-              onClick={capture}
-              disabled={!liveReady}
-              className="flex-1"
-              variant={liveReady ? "default" : "secondary"}
-            >
-              <Aperture /> {liveReady ? "Wykonaj zdjęcie" : "Czekam na bramki…"}
-            </Button>
+            {autoRetry ? (
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setAutoRetry(false);
+                  setRetryAttempt(0);
+                }}
+                className="flex-1"
+              >
+                <RefreshCw /> Anuluj auto-retry
+              </Button>
+            ) : (
+              <Button
+                onClick={onShutter}
+                disabled={!report}
+                className="flex-1"
+                variant={liveReady ? "default" : "secondary"}
+              >
+                <Aperture />{" "}
+                {liveReady ? "Wykonaj zdjęcie" : "Spróbuj — włączę auto-retry"}
+              </Button>
+            )}
           </>
         )}
       </div>
@@ -218,6 +314,26 @@ export function StandardizedCamera({ onAccepted }: Props) {
       <p className="text-center text-[11px] text-muted-foreground">
         Profil progów: <span className="font-mono">{QUALITY_PROFILE_V1.version}</span>
       </p>
+
+      {/* Last rejection details — clear, persistent until accepted */}
+      {lastRejection && !shot && (
+        <div className="space-y-1.5 rounded-xl border border-amber-500/40 bg-amber-500/5 p-3 text-xs">
+          <div className="flex items-center gap-1.5 text-sm font-semibold text-amber-700 dark:text-amber-300">
+            <AlertCircle className="h-4 w-4" />
+            Ostatnia migawka odrzucona
+          </div>
+          <p className="text-amber-800 dark:text-amber-200">
+            {blockingHint(lastRejection.gateIds, lastRejection.reasons)}
+          </p>
+          {lastRejection.reasons.length > 0 && (
+            <ul className="space-y-0.5 pt-1 text-[11px] text-muted-foreground">
+              {lastRejection.reasons.map((r) => (
+                <li key={r}>· {r}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       {shot && (
         <div className="space-y-2 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3">
@@ -251,12 +367,12 @@ export function StandardizedCamera({ onAccepted }: Props) {
         </div>
       )}
 
-      {!shot && (
+      {!shot && !lastRejection && (
         <p className="flex items-start gap-1.5 text-[11px] leading-snug text-muted-foreground">
           <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
-          Bramki LIVE odblokowują migawkę, ale finalna walidacja używa progów CAPTURE
-          (ostrzejszych). Zdjęcia, które nie przejdą, są odrzucane lokalnie i nie trafiają do
-          backendu.
+          Bramki LIVE odblokowują migawkę; finalna walidacja używa progów CAPTURE
+          (ostrzejszych). Jeśli zdjęcie nie przejdzie — auto-retry powtórzy próbę, gdy bramki
+          znów będą OK.
         </p>
       )}
     </div>
