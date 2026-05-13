@@ -903,9 +903,15 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                   const base64 = shot.dataUrl.slice(shot.dataUrl.indexOf(",") + 1);
                   const res = await submitCaptureAudit({ data: { jpegBase64: base64 } });
                   setAuditState("saved");
-                  toast.success("Audyt zapisany", {
-                    description: `SHA-256 ${res.sha256.slice(0, 12)}…`,
-                  });
+                  if (res.deduplicated) {
+                    toast.info("Audyt już istniał — pominięto duplikat", {
+                      description: `SHA-256 ${res.sha256.slice(0, 12)}…`,
+                    });
+                  } else {
+                    toast.success("Audyt zapisany", {
+                      description: `SHA-256 ${res.sha256.slice(0, 12)}…`,
+                    });
+                  }
                 } catch (e) {
                   console.error(e);
                   setAuditState("idle");
