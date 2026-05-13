@@ -64,6 +64,10 @@ import {
   type StoredHistogramReference,
 } from "@/lib/camera/hist-reference-library";
 import { HistReferenceLibrary } from "./HistReferenceLibrary";
+import {
+  describeCaptureAuditResult,
+  type CaptureAuditDeduplicatedResult,
+} from "@/lib/camera/capture-audit-types";
 
 // Histogram reference storage now lives in hist-reference-library.ts (multi-entry,
 // with conditions + active selection). Legacy single-key store
@@ -198,7 +202,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     message: string;
     hint?: string;
   } | null>(null);
-  const [dedupInfo, setDedupInfo] = useState<{ id: string; sha256: string; createdAt: string } | null>(null);
+  const [dedupInfo, setDedupInfo] = useState<CaptureAuditDeduplicatedResult | null>(null);
   const navigate = useNavigate();
   const [session, setSession] = useState<ValidatedCapture[]>([]);
   const [zipping, setZipping] = useState(false);
@@ -1173,13 +1177,10 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                   );
                   const base64 = shot.dataUrl.slice(shot.dataUrl.indexOf(",") + 1);
                   const res = await submitCaptureAudit({ data: { jpegBase64: base64 } });
-                  const { describeCaptureAuditResult } = await import(
-                    "@/lib/camera/capture-audit-types"
-                  );
                   setAuditState("saved");
                   const view = describeCaptureAuditResult(res);
                   if (res.status === "deduplicated") {
-                    setDedupInfo({ id: res.id, sha256: res.sha256, createdAt: res.createdAt });
+                    setDedupInfo(res);
                     const openExisting = () =>
                       navigate({ to: "/audits", search: { sha: res.sha256, open: res.id } });
                     toast.info(view.title, {
@@ -1270,34 +1271,39 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
               </button>
             </div>
           )}
-          {dedupInfo && (
-            <div
-              role="status"
-              className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-2 text-[11px]"
-            >
-              <div className="min-w-0">
-                <p className="font-medium text-amber-700 dark:text-amber-300">
-                  Duplikat — istniejący audyt
-                </p>
-                <p className="mt-0.5 break-all font-mono text-[10px] text-muted-foreground">
-                  SHA-256 {dedupInfo.sha256.slice(0, 16)}… · zapisany{" "}
-                  {new Date(dedupInfo.createdAt).toLocaleString("pl-PL")}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() =>
-                  navigate({
-                    to: "/audits",
-                    search: { sha: dedupInfo.sha256, open: dedupInfo.id },
-                  })
-                }
-                className="inline-flex items-center rounded-md border border-amber-500/50 bg-amber-500/20 px-2.5 py-1 text-[11px] font-medium text-amber-800 hover:bg-amber-500/30 dark:text-amber-200"
+          {dedupInfo && (() => {
+            const view = describeCaptureAuditResult(dedupInfo);
+            return (
+              <div
+                role="status"
+                aria-label={view.ariaLabel}
+                className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-2 text-[11px]"
               >
-                Otwórz istniejący audyt →
-              </button>
-            </div>
-          )}
+                <div className="min-w-0">
+                  <p className="font-medium text-amber-700 dark:text-amber-300">
+                    {view.title}
+                  </p>
+                  <p className="mt-0.5 break-all font-mono text-[10px] text-muted-foreground">
+                    {view.description}
+                  </p>
+                </div>
+                {view.openExistingLabel && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigate({
+                        to: "/audits",
+                        search: { sha: dedupInfo.sha256, open: dedupInfo.id },
+                      })
+                    }
+                    className="inline-flex items-center rounded-md border border-amber-500/50 bg-amber-500/20 px-2.5 py-1 text-[11px] font-medium text-amber-800 hover:bg-amber-500/30 dark:text-amber-200"
+                  >
+                    {view.openExistingLabel} →
+                  </button>
+                )}
+              </div>
+            );
+          })()}
           <p className="text-[10px] leading-snug text-muted-foreground">
             Pełny raport jakości (luminancja, ostrość, skóra, histogram, AE/AWB
             temporal, gates) zapisany w segmencie JPEG COM oraz dostępny jako
