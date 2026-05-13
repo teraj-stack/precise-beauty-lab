@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Camera, ShieldCheck, Microscope, BookOpen } from "lucide-react";
+import { Camera, ShieldCheck, Microscope, BookOpen, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
