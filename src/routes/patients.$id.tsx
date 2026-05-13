@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
+import { PatientCaptureAudits } from "@/components/camera/PatientCaptureAudits";
 
 export const Route = createFileRoute("/patients/$id")({
   component: PatientDetail,
@@ -70,6 +71,7 @@ function PatientDetail() {
           <TabsTrigger value="consult">Wywiad</TabsTrigger>
           <TabsTrigger value="history">Historia</TabsTrigger>
           <TabsTrigger value="gallery">Galeria</TabsTrigger>
+          <TabsTrigger value="audits">Audyty CV</TabsTrigger>
           <TabsTrigger value="plan">Beauty Plan</TabsTrigger>
         </TabsList>
         <TabsContent value="info">
@@ -90,6 +92,16 @@ function PatientDetail() {
         </TabsContent>
         <TabsContent value="gallery">
           <Card><CardContent className="p-6 text-sm text-muted-foreground">Galeria zmian (przed/po) — wkrótce. Aparat dostępny w bocznym menu.</CardContent></Card>
+        </TabsContent>
+        <TabsContent value="audits">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Audyty CV (capture_audits)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PatientCaptureAudits patientId={id} />
+            </CardContent>
+          </Card>
         </TabsContent>
         <TabsContent value="plan">
           <Card><CardContent className="p-6 text-sm text-muted-foreground">Beauty Plan — kreator domowej pielęgnacji wkrótce.</CardContent></Card>
