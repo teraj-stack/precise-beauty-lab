@@ -580,12 +580,21 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
             ) : (
               <Button
                 onClick={onShutter}
-                disabled={!report}
+                disabled={!report || refBlocked}
                 className="flex-1"
-                variant={liveReady ? "default" : "secondary"}
+                variant={liveReady && !refBlocked ? "default" : "secondary"}
+                title={
+                  refBlocked && refMatch
+                    ? `Skoryguj ekspozycję o ${Math.max(1, Math.abs(refMatch.steps))} krok(ów) 1/3 EV (${refMatch.steps > 0 ? "w dół" : "w górę"})`
+                    : undefined
+                }
               >
                 <Aperture />{" "}
-                {liveReady ? "Wykonaj zdjęcie" : "Spróbuj — włączę auto-retry"}
+                {refBlocked && refMatch
+                  ? `Skoryguj o ${Math.max(1, Math.abs(refMatch.steps))} ${Math.max(1, Math.abs(refMatch.steps)) === 1 ? "krok" : "kroków"} (1/3 EV)`
+                  : liveReady
+                    ? "Wykonaj zdjęcie"
+                    : "Spróbuj — włączę auto-retry"}
               </Button>
             )}
           </>
