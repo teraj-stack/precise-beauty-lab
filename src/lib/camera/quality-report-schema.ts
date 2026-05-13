@@ -25,12 +25,6 @@ const TemporalSchema = z.object({
   colorCastSeries: z.array(z.number()).max(64).optional(),
 });
 
-const TemporalSchema = z.object({
-  luminanceStd: z.number(),
-  colorCastStd: z.number(),
-  samples: z.number().int().nonnegative(),
-});
-
 const MetricsSchema = z.object({
   luminance: z.number().min(0).max(1.0001),
   sharpness: z.number().min(0),
