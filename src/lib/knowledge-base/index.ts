@@ -32,7 +32,7 @@ export interface Protocol {
 }
 
 export const DEVICE_CATALOG = deviceCatalog as typeof deviceCatalog;
-export const PROTOCOL_RULES = protocolRules as typeof protocolRules & {
+export const PROTOCOL_RULES = protocolRules as unknown as Omit<typeof protocolRules, "protocols"> & {
   protocols: Protocol[];
 };
 
