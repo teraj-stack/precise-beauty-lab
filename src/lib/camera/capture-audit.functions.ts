@@ -42,7 +42,7 @@ export const submitCaptureAudit = createServerFn({ method: "POST" })
         image_height: report.image.height,
         image_bytes: bytes.length,
         jpeg_sha256: sha256,
-        report: report as unknown as Record<string, unknown>,
+        report: JSON.parse(JSON.stringify(report)),
         source: "jpeg-com",
       })
       .select("id, created_at, jpeg_sha256")
