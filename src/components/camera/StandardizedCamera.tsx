@@ -883,6 +883,8 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
         current={profile.live}
         baseline={baseProfile.live}
         onChange={setOverrides}
+        refMatch={refMatchThresholds}
+        onRefMatchChange={setRefMatchThresholds}
       />
 
       <CalibrationPresets
