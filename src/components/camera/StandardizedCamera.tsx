@@ -249,6 +249,28 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     toast.message("Referencja histogramu wyczyszczona");
   }, []);
 
+  // ---- Auto-comparison vs reference (live exposure guidance) ----
+  // 1 "step" = 1/3 EV (typowy krok kompensacji ekspozycji w aparatach).
+  // Aligned when |ΔEV| ≤ 1/6 EV (½ kroku) AND L1 między histogramami < 0.45.
+  const STEP_EV = 1 / 3;
+  const ALIGN_EV = STEP_EV / 2; // 1/6 EV
+  const ALIGN_L1 = 0.45;
+  const refMatch = (() => {
+    if (!histRef || !report) return null;
+    const curLum = Math.max(0.001, report.metrics.luminance);
+    const refLum = Math.max(0.001, histRef.luminance);
+    const evDelta = Math.log2(curLum / refLum);
+    const steps = Math.round(evDelta / STEP_EV);
+    const a = report.metrics.histogram;
+    const b = histRef.histogram;
+    let l1 = 0;
+    const n = Math.min(a.length, b.length);
+    for (let i = 0; i < n; i++) l1 += Math.abs(a[i] - b[i]);
+    const aligned = Math.abs(evDelta) <= ALIGN_EV && l1 <= ALIGN_L1;
+    return { evDelta, steps, l1, aligned };
+  })();
+  const refBlocked = !!refMatch && !refMatch.aligned;
+
   // Blocking gates (live HUD): all currently failing, plus warnings if no fails
   const blockingGates = (() => {
     if (!report) return [];
