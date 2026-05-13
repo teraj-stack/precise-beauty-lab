@@ -301,6 +301,99 @@ export function ThresholdPanel({ current, baseline, onChange, refMatch, onRefMat
         Zmiany dotyczą tylko progów LIVE (HUD). Progi CAPTURE (final reject) są
         wersjonowane w profilu jakości i nie mogą być nadpisane z UI.
       </p>
+
+      {onRefMatchChange && (
+        <div className="rounded-md border border-border/70 bg-muted/30 p-2.5 space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="font-semibold flex items-center gap-1.5">
+              <Sliders className="h-3.5 w-3.5" />
+              Dopasowanie do referencji (blokada migawki)
+              {refDirty && (
+                <span className="ml-1 rounded bg-amber-500/15 px-1 text-[10px] font-bold uppercase text-amber-600 dark:text-amber-300">
+                  custom
+                </span>
+              )}
+            </div>
+            {refDirty && (
+              <Button variant="ghost" size="sm" onClick={resetRef} className="h-7 px-2 text-[11px]">
+                <RotateCcw className="h-3 w-3" /> Reset
+              </Button>
+            )}
+          </div>
+
+          {[
+            {
+              key: "alignEv" as const,
+              label: "Maks. |ΔEV| do referencji",
+              min: 0.05,
+              max: 0.6,
+              step: 0.01,
+              hint: "Mniej = ostrzejsza blokada (1/6 EV ≈ ½ kroku 1/3 EV).",
+            },
+            {
+              key: "alignL1" as const,
+              label: "Maks. L1 histogramów",
+              min: 0.1,
+              max: 1.5,
+              step: 0.01,
+              hint: "Mniej = wymaga ściślejszej zgodności rozkładu jasności.",
+            },
+          ].map((f) => {
+            const value = refDraft[f.key];
+            const baseVal = DEFAULT_REF_MATCH[f.key];
+            const isOverridden = value !== baseVal;
+            return (
+              <label key={f.key} className="grid gap-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">
+                    {f.label}
+                    {isOverridden && (
+                      <span className="ml-1 rounded bg-amber-500/15 px-1 text-[10px] font-bold uppercase text-amber-600 dark:text-amber-300">
+                        override
+                      </span>
+                    )}
+                  </span>
+                  <span className="tabular-nums text-muted-foreground">
+                    {value.toFixed(3)}
+                    {isOverridden && (
+                      <span className="ml-1 text-[10px] opacity-70">
+                        (base {baseVal.toFixed(3)})
+                      </span>
+                    )}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="range"
+                    min={f.min}
+                    max={f.max}
+                    step={f.step}
+                    value={value}
+                    onChange={(e) => updateRef(f.key, parseFloat(e.target.value))}
+                    className="flex-1 accent-primary"
+                  />
+                  <input
+                    type="number"
+                    min={f.min}
+                    max={f.max}
+                    step={f.step}
+                    value={value}
+                    onChange={(e) => updateRef(f.key, parseFloat(e.target.value))}
+                    className="w-16 rounded border border-input bg-background px-1.5 py-0.5 text-right text-[11px] tabular-nums"
+                  />
+                </div>
+                <span className="text-[10px] text-muted-foreground">{f.hint}</span>
+              </label>
+            );
+          })}
+
+          <p className="text-[10px] leading-snug text-muted-foreground">
+            Telefony z mocnym auto-HDR / silną stabilizacją scen wymagają zwykle
+            łagodniejszych progów (większe wartości). Dla precyzyjnej kalibracji
+            studyjnej zmniejsz oba progi.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
