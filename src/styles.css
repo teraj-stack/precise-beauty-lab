@@ -161,3 +161,13 @@
 .privacy-on .privacy-blur:hover {
   filter: blur(0);
 }
+
+/* Luxury quiet utilities */
+.bg-metal {
+  background-image: var(--metal);
+}
+.text-navy { color: var(--navy); }
+.bg-beige { background-color: var(--beige); }
+.bg-beige-soft { background-color: var(--beige-soft); }
+.shadow-quiet { box-shadow: var(--shadow-quiet); }
+.hairline { border: 1px solid color-mix(in oklab, var(--navy) 12%, transparent); }
