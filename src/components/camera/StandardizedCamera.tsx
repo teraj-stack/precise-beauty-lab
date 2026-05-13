@@ -143,7 +143,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
       roi: DEFAULT_FACE_ROI,
       stability,
       temporal: report.temporal,
-      profile: QUALITY_PROFILE_V1,
+      profile,
     });
 
     if (validation.status === "rejected") {
@@ -193,7 +193,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     const result = capture();
     if (result === "accepted") {
       toast.success("Zdjęcie zaakceptowane", {
-        description: `Profil ${QUALITY_PROFILE_V1.version}.`,
+        description: `Profil ${profile.version}.`,
       });
       setAutoRetry(false);
     } else if (result === "rejected") {
@@ -340,7 +340,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
       </div>
 
       <p className="text-center text-[11px] text-muted-foreground">
-        Profil progów: <span className="font-mono">{QUALITY_PROFILE_V1.version}</span>
+        Profil progów: <span className="font-mono">{profile.version}</span>
       </p>
 
       {/* Last rejection details — clear, persistent until accepted */}
