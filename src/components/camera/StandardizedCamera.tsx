@@ -66,6 +66,7 @@ import {
   type StoredHistogramReference,
 } from "@/lib/camera/hist-reference-library";
 import { HistReferenceLibrary } from "./HistReferenceLibrary";
+import { AutoReferenceSelector } from "./AutoReferenceSelector";
 import {
   describeCaptureAuditResult,
   type CaptureAuditDeduplicatedResult,
@@ -1033,6 +1034,18 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
         refMatch={refMatchThresholds}
         onRefMatchChange={setRefMatchThresholds}
         liveRefSample={refMatch ? { evDelta: refMatch.evDelta, l1: refMatch.l1 } : null}
+      />
+
+      <AutoReferenceSelector
+        library={refLibrary}
+        activeId={activeRefId}
+        current={
+          report
+            ? { histogram: report.metrics.histogram, luminance: report.metrics.luminance }
+            : null
+        }
+        onActivate={handleActivateRef}
+        disabled={!!activePreset}
       />
 
       <HistReferenceLibrary
