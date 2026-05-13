@@ -384,8 +384,8 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
   // 1 "step" = 1/3 EV (typowy krok kompensacji ekspozycji w aparatach).
   // Aligned when |ΔEV| ≤ 1/6 EV (½ kroku) AND L1 między histogramami < 0.45.
   const STEP_EV = 1 / 3;
-  const ALIGN_EV = STEP_EV / 2; // 1/6 EV
-  const ALIGN_L1 = 0.45;
+  const ALIGN_EV = refMatchThresholds.alignEv;
+  const ALIGN_L1 = refMatchThresholds.alignL1;
   const refMatch = (() => {
     if (!histRef || !report) return null;
     const curLum = Math.max(0.001, report.metrics.luminance);
