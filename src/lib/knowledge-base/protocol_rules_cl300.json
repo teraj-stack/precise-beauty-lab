@@ -1,0 +1,229 @@
+{
+  "$schema_version": "1.0.0",
+  "kb_version": "kb-protocols-cl300-2026.05.13-001",
+  "device_id": "DEV-CL300-755-1064-001",
+  "source_documents": ["English_CL300.pdf", "English_CL300_2.pdf", "English_CL300_3.pdf"],
+  "param_units": {
+    "pulse_width": "ms",
+    "spot_size": "mm",
+    "fluence": "J/cm² (z tabeli urządzenia)",
+    "repetition_rate": "Hz",
+    "interval": "weeks"
+  },
+  "general_safety": [
+    "Zawsze wykonaj test plamkowy 2–3 strzałami; eskaluj fluencję małymi krokami.",
+    "Stosuj solidne chłodzenie naskórka (kontaktowe / chłodne powietrze / kriogen).",
+    "Endpoint: szybki rumień/obrzęk okołomieszkowy bez whiteningu, frostingu, pęcherzy.",
+    "Unikaj pulse stackingu; zachowaj overlap ~10–15% (max 20%).",
+    "Po zmianie spot size lub pulse width zawsze dobierz fluencję ponownie.",
+    "Nigdy nie wystrzeliwuj wewnątrz kostnego brzegu oczodołu; ochrona oczu pacjenta i operatora."
+  ],
+  "wavelength_selection": [
+    {
+      "patient_factor": "Fitzpatrick I–III, bez opalenizny",
+      "preferred_wavelength_nm": 755,
+      "notes": "Wyższa absorpcja melaniny → skuteczniej. Zapewnij chłodzenie. Rozważ Nd:YAG jeśli pacjent skłonny do PIH."
+    },
+    {
+      "patient_factor": "Fitzpatrick IV–VI lub świeża opalenizna",
+      "preferred_wavelength_nm": 1064,
+      "notes": "Mniejsza absorpcja w naskórku → bezpieczniej. Może wymagać wyższej fluencji."
+    },
+    {
+      "patient_factor": "Pacjent skłonny do PIH",
+      "preferred_wavelength_nm": 1064,
+      "notes": "Preferuj Nd:YAG. Jeśli testowany 755 — konserwatywne parametry, doskonałe chłodzenie, ocena 48–72 h."
+    },
+    {
+      "patient_factor": "Bardzo cienkie / vellus / słabo pigmentowane włosy",
+      "preferred_wavelength_nm": null,
+      "notes": "Słaba odpowiedź dowolnym laserem. Ostrzeż o ryzyku paradoksalnej hipertrychozy. Rozważ elektrolizę."
+    },
+    {
+      "patient_factor": "Włosy białe / siwe / blond / rude",
+      "preferred_wavelength_nm": null,
+      "notes": "Laser nieskuteczny — preferuj elektrolizę."
+    }
+  ],
+  "pulse_width_by_caliber": [
+    {
+      "hair_caliber": "Fine / tiny",
+      "alex_755_ms": [3, 10],
+      "yag_1064_ms": [10, 20],
+      "guidance": "Krótsze impulsy lepiej sprzęgają się z małymi mieszkami. Wydłuż dla skóry ciemnej/opalonej."
+    },
+    {
+      "hair_caliber": "Medium",
+      "alex_755_ms": [10, 20],
+      "yag_1064_ms": [20, 40],
+      "guidance": "Dopasuj do TRT mieszka; koryguj wg fototypu i tolerancji."
+    },
+    {
+      "hair_caliber": "Coarse / dense",
+      "alex_755_ms": [10, 30],
+      "yag_1064_ms": [30, 60],
+      "guidance": "Skóra ciemna → preferuj Nd:YAG, dłuższe impulsy, intensywne chłodzenie."
+    }
+  ],
+  "spot_size_by_area": [
+    {
+      "area": "Twarz (policzki, górna warga, okolica uszu)",
+      "spot_size_mm": [10, 12],
+      "notes": "Mniejsze spoty w okolicy brwi/linii włosów; osłona granic. Nie wystrzeliwuj w obrębie oczodołu."
+    },
+    {
+      "area": "Pachy / bikini",
+      "spot_size_mm": [12, 16],
+      "notes": "Większy spot przy stabilnym ułożeniu; dostosuj fluencję."
+    },
+    {
+      "area": "Ręce / nogi / tułów",
+      "spot_size_mm": [16, 18],
+      "notes": "Większe spoty zmniejszają rozproszenie boczne i poprawiają głębokie dawkowanie; często niższa fluencja."
+    }
+  ],
+  "repetition_and_overlap": {
+    "repetition_rate_hz": [0.5, 1.0],
+    "overlap_pct": [10, 15],
+    "overlap_max_pct": 20,
+    "notes": "Wolniej = lepsza precyzja i regeneracja chłodzenia; szybciej dopuszczalne na dużych powierzchniach."
+  },
+  "intervals_and_aftercare": {
+    "interval_face_weeks": [4, 6],
+    "interval_body_weeks": [6, 8],
+    "typical_sessions": [6, 8],
+    "aftercare": [
+      "Zimne kompresy, łagodny emolient.",
+      "Unikać ciepła i wysiłku fizycznego w dniu zabiegu.",
+      "Bezwzględna ochrona przeciwsłoneczna SPF 50+ przez kilka tygodni."
+    ]
+  },
+  "patch_test_workflow": [
+    "Potwierdź brak świeżej opalenizny i fotouczulaczy; uzyskaj świadomą zgodę.",
+    "Krótkie ogolenie 12–24 h przed zabiegiem (bez woskowania/wyrywania przez 4–6 tyg).",
+    "Wybierz długość fali wg fototypu/PIH; największy bezpieczny spot dla anatomii.",
+    "Ustaw pulse width wg kalibru włosa i fototypu.",
+    "Zacznij od konserwatywnej fluencji z tabeli urządzenia.",
+    "2–3 testowe impulsy w dyskretnej okolicy; zwiększaj fluencję do osiągnięcia endpointu.",
+    "Jeśli PIH-prone: poczekaj 48–72 h przed pełnym zabiegiem.",
+    "Po 1–2 tyg potwierdź wypadanie; jeśli brak — przeanalizuj wybór długości fali / modalności."
+  ],
+  "pih_mitigation": [
+    "Preferuj Nd:YAG dla ciemniejszych fototypów, opalenizny, pacjentów PIH-prone.",
+    "Ścisła fotoprotekcja przed i przez kilka tygodni po (SPF 50+, kapelusze).",
+    "Rozważ krótką kurację słabego sterydu miejscowego 1–3 dni po (jeśli silna reakcja).",
+    "Pre-treatment topowymi rozjaśniaczami (np. hydrochinon 2–4%) 2–4 tyg u pacjentów wysokiego ryzyka — bilans korzyści/podrażnienie."
+  ],
+  "protocols": [
+    {
+      "id": "PROT-CL300-HR-ALEX-001",
+      "indication": "Depilacja laserowa — fototyp I–III, włosy pigmentowane",
+      "wavelength_nm": 755,
+      "pulse_width_by_caliber_ms": {
+        "fine": [3, 10],
+        "medium": [10, 20],
+        "coarse": [10, 30]
+      },
+      "spot_size_mm": [10, 18],
+      "repetition_rate_hz": [0.5, 1.0],
+      "overlap_pct": [10, 15],
+      "fluence_guidance": "Najwyższa bezpieczna fluencja dająca rumień/obrzęk okołomieszkowy w ciągu minut, bez whiteningu/frostingu. Tabela urządzenia → titracja od dolnej granicy.",
+      "endpoint": "Perifollicular erythema/edema, intact epidermis.",
+      "interval_weeks_face": [4, 6],
+      "interval_weeks_body": [6, 8],
+      "sessions": "6–8",
+      "cooling": "Kontaktowe / chłodne powietrze / kriogen — ciągłe."
+    },
+    {
+      "id": "PROT-CL300-HR-YAG-001",
+      "indication": "Depilacja laserowa — fototyp IV–VI, opalenizna lub PIH-prone",
+      "wavelength_nm": 1064,
+      "pulse_width_by_caliber_ms": {
+        "fine": [10, 20],
+        "medium": [20, 40],
+        "coarse": [30, 60]
+      },
+      "spot_size_mm": [10, 18],
+      "repetition_rate_hz": [0.5, 1.0],
+      "overlap_pct": [10, 15],
+      "fluence_guidance": "Może wymagać wyższej fluencji niż Alex dla porównywalnej skuteczności; titruj do endpointu bez uszkodzenia naskórka.",
+      "endpoint": "Perifollicular erythema/edema, intact epidermis.",
+      "interval_weeks_face": [4, 6],
+      "interval_weeks_body": [6, 8],
+      "sessions": "6–8",
+      "cooling": "Solidne chłodzenie obowiązkowe."
+    },
+    {
+      "id": "PROT-CL300-VASC-FACIAL-TELANG-001",
+      "indication": "Dyskretne teleangiektazje twarzy (głębokie/niebieskie naczynia siatkowate; nie diffuse redness)",
+      "wavelength_nm": 1064,
+      "spot_size_mm": [3, 6],
+      "pulse_width_ms": [10, 30],
+      "pulse_width_note": "Dłuższy impuls dla większych/głębszych naczyń.",
+      "fluence_guidance": "Zacznij od dolnej wartości tabeli urządzenia dla wybranego spotu/impulsu; zwiększaj do blanch/spasm naczynia bez whiteningu naskórka.",
+      "technique": "Pojedyncze przejście, overlap max 10–15%, silne chłodzenie.",
+      "interval_weeks": [6, 8],
+      "sessions": "1–3 wg odpowiedzi"
+    },
+    {
+      "id": "PROT-CL300-VASC-LEG-VEINS-001",
+      "indication": "Naczynia/żyły siatkowate kończyn dolnych ~1–3 mm",
+      "wavelength_nm": 1064,
+      "spot_size_mm": [3, 6],
+      "pulse_width_ms": [10, 30],
+      "fluence_guidance": "Konserwatywnie wg tabeli; titruj do natychmiastowego ściemnienia/spasmu naczynia bez purpury i uszkodzenia naskórka.",
+      "technique": "Pojedyncze przejście; unikaj słońca.",
+      "interval_weeks": [8, 12],
+      "contraindication_note": "Nie leczyć żylaków ani choroby refluksowej bez konsultacji naczyniowej.",
+      "sessions": "1–3 wg odpowiedzi"
+    },
+    {
+      "id": "PROT-CL300-HEMANGIOMA-001",
+      "indication": "Naczyniak (głębszy/mieszany; NIE czysto powierzchowne cherry angiomas)",
+      "wavelength_nm": 1064,
+      "spot_size_mm": [3, 6],
+      "pulse_width_ms": [10, 30],
+      "fluence_guidance": "Zacznij nisko; titruj do zmiany koloru/zapadnięcia przy zachowaniu naskórka.",
+      "technique": "Pojedyncze przejście; dobre chłodzenie.",
+      "interval_weeks": [6, 8],
+      "sessions": "wg odpowiedzi"
+    },
+    {
+      "id": "PROT-CL300-ONYCHOMYCOSIS-001",
+      "indication": "Grzybica paznokci (klirens kosmetyczny)",
+      "wavelength_nm": 1064,
+      "spot_size_mm": [3, 6],
+      "pulse_width_ms": [20, 40],
+      "fluence_guidance": "Zacznij nisko; zwiększaj do uniformnego ciepła płytki przy ochronie skóry okołopaznokciowej.",
+      "technique": "1–2 wolne przejścia.",
+      "interval_weeks": [4, 6],
+      "sessions": "wielokrotne — ograniczone dowody, rozważ kombinację ze standardową terapią"
+    }
+  ],
+  "case_examples": [
+    {
+      "case": "Fitz III, drobne pigmentowane włosy policzka (nie broda)",
+      "setup": "Alex 755; 12 mm (10 mm przy granicach); pulse ~5–10 ms; 0.5–1 Hz; overlap 10–15%.",
+      "notes": "Patch test do endpointu. Jeśli PIH-prone → YAG 10–20 ms. Brak wypadania po 1–2 sesjach → stop, rozważ elektrolizę."
+    },
+    {
+      "case": "Fitz V, gruby włos pachy",
+      "setup": "YAG 1064; 15–18 mm; pulse ~30–50 ms; 0.5–1 Hz; overlap 10–15%.",
+      "notes": "Solidne chłodzenie. Titruj do endpointu; bez stackingu."
+    },
+    {
+      "case": "Opalony Fitz II, podudzia (włos medium)",
+      "setup": "YAG 1064; 15–18 mm; pulse ~20–40 ms; 0.5–1 Hz.",
+      "notes": "YAG ze względu na opaleniznę. Większy spot lepiej grzeje głębiej; obniż fluencję względem mniejszego spota."
+    }
+  ],
+  "indication_to_protocol_index": {
+    "hair_removal_light_skin": ["PROT-CL300-HR-ALEX-001"],
+    "hair_removal_dark_skin": ["PROT-CL300-HR-YAG-001"],
+    "hair_removal_tanned": ["PROT-CL300-HR-YAG-001"],
+    "facial_telangiectasia": ["PROT-CL300-VASC-FACIAL-TELANG-001"],
+    "leg_veins": ["PROT-CL300-VASC-LEG-VEINS-001"],
+    "hemangioma": ["PROT-CL300-HEMANGIOMA-001"],
+    "onychomycosis": ["PROT-CL300-ONYCHOMYCOSIS-001"]
+  }
+}
