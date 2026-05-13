@@ -71,6 +71,7 @@ import { HistReferenceLibrary } from "./HistReferenceLibrary";
 import { AutoReferenceSelector } from "./AutoReferenceSelector";
 import {
   describeCaptureAuditResult,
+  parseCaptureAuditSubmitResult,
   type CaptureAuditDeduplicatedResult,
 } from "@/lib/camera/capture-audit-types";
 
