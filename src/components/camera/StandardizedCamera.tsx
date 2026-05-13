@@ -69,14 +69,18 @@ interface Props {
    * Rejected captures never reach this callback.
    */
   onAccepted?: (frame: ValidatedCapture) => void;
+  /** Override the default quality profile (e.g. personal calibration). */
+  profile?: QualityProfile;
 }
 
-export function StandardizedCamera({ onAccepted }: Props) {
+export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) {
+  const calibration = profileProp ? null : loadCalibration();
+  const profile = profileProp ?? calibration?.profile ?? QUALITY_PROFILE_V1;
   const videoRef = useRef<HTMLVideoElement>(null);
   const { stream, error, starting, locked, start, stop, lockHardware, unlockHardware } =
     useCameraStream({ facingMode: "user" });
   const stability = useDeviceStability(!!stream);
-  const report = useFrameAnalysis(videoRef, stability, { intervalMs: 220 });
+  const report = useFrameAnalysis(videoRef, stability, { intervalMs: 220, profile });
   const [shot, setShot] = useState<ValidatedCapture | null>(null);
   const autoLockTried = useRef(false);
 
