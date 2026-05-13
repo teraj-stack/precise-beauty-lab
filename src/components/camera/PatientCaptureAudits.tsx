@@ -7,6 +7,7 @@ import {
   listCaptureAuditsForPatient,
   type CaptureAuditRow,
 } from "@/lib/camera/capture-audit-list.functions";
+import { IntegrityBadge } from "./IntegrityBadge";
 
 interface Props {
   patientId: string;
