@@ -37,6 +37,7 @@ import {
   type ThresholdOverrides,
 } from "./ThresholdPanel";
 import { CaptureReportDetails } from "./CaptureReportDetails";
+import { HistogramHistory } from "./HistogramHistory";
 
 const HIST_REF_STORAGE_KEY = "msc:hist-reference:v1";
 
@@ -734,6 +735,8 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
           </div>
         </div>
       )}
+
+      {session.length >= 2 && <HistogramHistory session={session} limit={8} />}
 
       {!shot && !lastRejection && (
         <p className="flex items-start gap-1.5 text-[11px] leading-snug text-muted-foreground">
