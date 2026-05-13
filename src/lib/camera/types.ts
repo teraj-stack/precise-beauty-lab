@@ -47,6 +47,10 @@ export interface TemporalStability {
   colorCastStd: number;
   /** Number of samples in the window. */
   samples: number;
+  /** Recent luminance values (oldest → newest), one per sample. Optional for backward compat. */
+  luminanceSeries?: number[];
+  /** Recent color-cast values (oldest → newest), one per sample. Optional for backward compat. */
+  colorCastSeries?: number[];
 }
 
 export type GateStatus = "ok" | "warn" | "fail";
