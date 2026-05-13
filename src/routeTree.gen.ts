@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProtocolsEl950RouteImport } from './routes/protocols-el950'
 import { Route as ProtocolsCl300RouteImport } from './routes/protocols-cl300'
 import { Route as ProtocolsRouteImport } from './routes/protocols'
 import { Route as LaserThuliumRouteImport } from './routes/laser-thulium'
@@ -16,6 +17,11 @@ import { Route as CaptureRouteImport } from './routes/capture'
 import { Route as CalibrateRouteImport } from './routes/calibrate'
 import { Route as IndexRouteImport } from './routes/index'
 
+const ProtocolsEl950Route = ProtocolsEl950RouteImport.update({
+  id: '/protocols-el950',
+  path: '/protocols-el950',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProtocolsCl300Route = ProtocolsCl300RouteImport.update({
   id: '/protocols-cl300',
   path: '/protocols-cl300',
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/laser-thulium': typeof LaserThuliumRoute
   '/protocols': typeof ProtocolsRoute
   '/protocols-cl300': typeof ProtocolsCl300Route
+  '/protocols-el950': typeof ProtocolsEl950Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/laser-thulium': typeof LaserThuliumRoute
   '/protocols': typeof ProtocolsRoute
   '/protocols-cl300': typeof ProtocolsCl300Route
+  '/protocols-el950': typeof ProtocolsEl950Route
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +79,7 @@ export interface FileRoutesById {
   '/laser-thulium': typeof LaserThuliumRoute
   '/protocols': typeof ProtocolsRoute
   '/protocols-cl300': typeof ProtocolsCl300Route
+  '/protocols-el950': typeof ProtocolsEl950Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,6 +90,7 @@ export interface FileRouteTypes {
     | '/laser-thulium'
     | '/protocols'
     | '/protocols-cl300'
+    | '/protocols-el950'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -89,6 +99,7 @@ export interface FileRouteTypes {
     | '/laser-thulium'
     | '/protocols'
     | '/protocols-cl300'
+    | '/protocols-el950'
   id:
     | '__root__'
     | '/'
@@ -97,6 +108,7 @@ export interface FileRouteTypes {
     | '/laser-thulium'
     | '/protocols'
     | '/protocols-cl300'
+    | '/protocols-el950'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -106,10 +118,18 @@ export interface RootRouteChildren {
   LaserThuliumRoute: typeof LaserThuliumRoute
   ProtocolsRoute: typeof ProtocolsRoute
   ProtocolsCl300Route: typeof ProtocolsCl300Route
+  ProtocolsEl950Route: typeof ProtocolsEl950Route
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/protocols-el950': {
+      id: '/protocols-el950'
+      path: '/protocols-el950'
+      fullPath: '/protocols-el950'
+      preLoaderRoute: typeof ProtocolsEl950RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/protocols-cl300': {
       id: '/protocols-cl300'
       path: '/protocols-cl300'
@@ -162,7 +182,18 @@ const rootRouteChildren: RootRouteChildren = {
   LaserThuliumRoute: LaserThuliumRoute,
   ProtocolsRoute: ProtocolsRoute,
   ProtocolsCl300Route: ProtocolsCl300Route,
+  ProtocolsEl950Route: ProtocolsEl950Route,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
