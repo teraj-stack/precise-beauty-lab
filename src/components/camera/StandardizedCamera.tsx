@@ -17,7 +17,8 @@ import { useDeviceStability } from "@/hooks/useDeviceStability";
 import { useFrameAnalysis } from "@/hooks/useFrameAnalysis";
 import { DEFAULT_FACE_ROI } from "@/lib/camera/quality";
 import { validateCapture, type CaptureValidation } from "@/lib/camera/validate-capture";
-import { QUALITY_PROFILE_V1 } from "@/lib/camera/quality-profiles";
+import { QUALITY_PROFILE_V1, type QualityProfile } from "@/lib/camera/quality-profiles";
+import { loadCalibration } from "@/lib/camera/calibration";
 import {
   buildCaptureMetadata,
   embedQualityReportInJpeg,
