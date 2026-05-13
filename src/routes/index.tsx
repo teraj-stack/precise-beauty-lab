@@ -39,7 +39,12 @@ function Index() {
           </Button>
           <Button asChild size="lg" variant="outline">
             <Link to="/protocols">
-              <BookOpen /> Baza protokołów
+              <BookOpen /> Protokoły 1927/1550
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="outline">
+            <Link to="/protocols-cl300">
+              <BookOpen /> Protokoły CL300
             </Link>
           </Button>
         </div>
