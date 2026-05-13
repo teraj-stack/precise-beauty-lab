@@ -43,6 +43,11 @@ function Index() {
             </Link>
           </Button>
           <Button asChild size="lg" variant="outline">
+            <Link to="/calibrate">
+              <SlidersHorizontal /> Kalibracja
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="outline">
             <Link to="/protocols-cl300">
               <BookOpen /> Protokoły CL300
             </Link>
