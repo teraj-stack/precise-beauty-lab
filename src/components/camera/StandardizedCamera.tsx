@@ -38,6 +38,15 @@ import {
 } from "./ThresholdPanel";
 import { CaptureReportDetails } from "./CaptureReportDetails";
 import { HistogramHistory } from "./HistogramHistory";
+import { CalibrationPresets } from "./CalibrationPresets";
+import {
+  loadPresets,
+  savePresets,
+  loadActivePresetId,
+  saveActivePresetId,
+  matchPreset,
+  type CapturePreset,
+} from "@/lib/camera/capture-presets";
 
 const HIST_REF_STORAGE_KEY = "msc:hist-reference:v1";
 
@@ -223,9 +232,30 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
   const lastAttemptAt = useRef(0);
 
   // ---- Histogram reference (persistent across reloads) ----
-  const [histRef, setHistRef] = useState<HistogramReference | null>(() =>
+  const [manualHistRef, setManualHistRef] = useState<HistogramReference | null>(() =>
     loadHistReference(),
   );
+
+  // ---- Calibration presets (per device + mode) ----
+  const [presets, setPresets] = useState<CapturePreset[]>(() => loadPresets());
+  const [activePresetId, setActivePresetId] = useState<string | null>(() =>
+    loadActivePresetId(),
+  );
+  const activePreset = presets.find((p) => p.id === activePresetId) ?? null;
+
+  // Active preset overrides manual reference for histogram comparison.
+  const histRef: HistogramReference | null = activePreset
+    ? {
+        histogram: activePreset.histogram,
+        luminance: activePreset.luminance,
+        capturedAt: activePreset.createdAt,
+        label: `${activePreset.deviceLabel} · ${activePreset.modeLabel}`,
+      }
+    : manualHistRef;
+
+  const presetMatch =
+    activePreset && report ? matchPreset(activePreset, report.metrics) : null;
+  const presetBlocked = !!presetMatch && !presetMatch.distanceOk;
 
   const captureHistRef = useCallback(() => {
     if (!report) {
@@ -238,16 +268,47 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
       capturedAt: Date.now(),
       label: `Próba ${new Date().toLocaleTimeString()}`,
     };
-    setHistRef(ref);
+    setManualHistRef(ref);
     saveHistReference(ref);
     toast.success(`Histogram zarejestrowany (μ ${ref.luminance.toFixed(2)})`);
   }, [report]);
 
   const clearHistRef = useCallback(() => {
-    setHistRef(null);
+    setManualHistRef(null);
     saveHistReference(null);
     toast.message("Referencja histogramu wyczyszczona");
   }, []);
+
+  const handleSavePreset = useCallback((p: CapturePreset) => {
+    setPresets((prev) => {
+      const next = [...prev, p];
+      savePresets(next);
+      return next;
+    });
+  }, []);
+
+  const handleActivatePreset = useCallback((id: string | null) => {
+    setActivePresetId(id);
+    saveActivePresetId(id);
+    if (id) toast.success("Preset aktywny — wymuszam zgodność na sesji.");
+    else toast.message("Preset dezaktywowany.");
+  }, []);
+
+  const handleDeletePreset = useCallback(
+    (id: string) => {
+      setPresets((prev) => {
+        const next = prev.filter((p) => p.id !== id);
+        savePresets(next);
+        return next;
+      });
+      if (activePresetId === id) {
+        setActivePresetId(null);
+        saveActivePresetId(null);
+      }
+      toast.message("Preset usunięty.");
+    },
+    [activePresetId],
+  );
 
   // ---- Auto-comparison vs reference (live exposure guidance) ----
   // 1 "step" = 1/3 EV (typowy krok kompensacji ekspozycji w aparatach).
@@ -269,7 +330,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     const aligned = Math.abs(evDelta) <= ALIGN_EV && l1 <= ALIGN_L1;
     return { evDelta, steps, l1, aligned };
   })();
-  const refBlocked = !!refMatch && !refMatch.aligned;
+  const refBlocked = (!!refMatch && !refMatch.aligned) || presetBlocked;
 
   // Blocking gates (live HUD): all currently failing, plus warnings if no fails
   const blockingGates = (() => {
@@ -282,6 +343,15 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
   const capture = useCallback((): "accepted" | "rejected" | "skipped" => {
     const v = videoRef.current;
     if (!v || v.videoWidth === 0 || !report) return "skipped";
+
+    // Hard-block capture while preset (zoom/odległość) doesn't match.
+    if (presetMatch && !presetMatch.distanceOk) {
+      setLastRejection({
+        gateIds: ["preset-distance"],
+        reasons: [`Niezgodność z presetem kalibracji: ${presetMatch.hint}`],
+      });
+      return "rejected";
+    }
 
     // Hard-block capture while exposure is not aligned with the saved reference.
     if (refMatch && !refMatch.aligned) {
@@ -372,7 +442,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     setLastRejection(null);
     onAccepted?.(frame);
     return "accepted";
-  }, [report, stability, onAccepted, profile, refMatch]);
+  }, [report, stability, onAccepted, profile, refMatch, presetMatch]);
 
   // Manual shutter — also enables auto-retry mode if rejected.
   const onShutter = () => {
@@ -609,6 +679,16 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
         current={profile.live}
         baseline={baseProfile.live}
         onChange={setOverrides}
+      />
+
+      <CalibrationPresets
+        presets={presets}
+        activeId={activePresetId}
+        metrics={report?.metrics ?? null}
+        deviceLabel={stream?.getVideoTracks()[0]?.label}
+        onSave={handleSavePreset}
+        onActivate={handleActivatePreset}
+        onDelete={handleDeletePreset}
       />
 
       {/* Last rejection details — clear, persistent until accepted */}
