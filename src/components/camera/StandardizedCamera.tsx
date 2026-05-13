@@ -400,6 +400,51 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
   })();
   const refBlocked = (!!refMatch && !refMatch.aligned) || presetBlocked;
 
+  // ---- Trend history of ΔEV / L1 vs reference (last N samples) ----
+  type RefSample = { t: number; evDelta: number; l1: number; aligned: boolean };
+  const REF_HISTORY_MAX = 24;
+  const REF_HISTORY_MIN_INTERVAL_MS = 350;
+  const [refHistory, setRefHistory] = useState<RefSample[]>([]);
+  const lastRefSampleAt = useRef(0);
+  // Reset history when reference identity changes (preset switch, manual save, clear)
+  const refKey = histRef ? `${histRef.label ?? ""}@${histRef.capturedAt}` : null;
+  useEffect(() => {
+    setRefHistory([]);
+    lastRefSampleAt.current = 0;
+  }, [refKey]);
+  useEffect(() => {
+    if (!refMatch) return;
+    const now = Date.now();
+    if (now - lastRefSampleAt.current < REF_HISTORY_MIN_INTERVAL_MS) return;
+    lastRefSampleAt.current = now;
+    setRefHistory((prev) => {
+      const last = prev[prev.length - 1];
+      // Skip near-duplicates to keep the trend meaningful
+      if (
+        last &&
+        Math.abs(last.evDelta - refMatch.evDelta) < 0.01 &&
+        Math.abs(last.l1 - refMatch.l1) < 0.005 &&
+        last.aligned === refMatch.aligned
+      ) {
+        return prev;
+      }
+      const next = [...prev, { t: now, evDelta: refMatch.evDelta, l1: refMatch.l1, aligned: refMatch.aligned }];
+      return next.length > REF_HISTORY_MAX ? next.slice(-REF_HISTORY_MAX) : next;
+    });
+  }, [refMatch?.evDelta, refMatch?.l1, refMatch?.aligned]);
+  const refTrend = (() => {
+    if (refHistory.length < 2) return null;
+    const first = refHistory[0];
+    const last = refHistory[refHistory.length - 1];
+    const dEv = Math.abs(last.evDelta) - Math.abs(first.evDelta);
+    const dL1 = last.l1 - first.l1;
+    const evImproving = dEv < -0.02;
+    const evWorsening = dEv > 0.02;
+    const l1Improving = dL1 < -0.02;
+    const l1Worsening = dL1 > 0.02;
+    return { dEv, dL1, evImproving, evWorsening, l1Improving, l1Worsening };
+  })();
+
   // Blocking gates (live HUD): all currently failing, plus warnings if no fails
   const blockingGates = (() => {
     if (!report) return [];
