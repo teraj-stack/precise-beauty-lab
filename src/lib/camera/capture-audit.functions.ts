@@ -19,21 +19,30 @@ export const submitCaptureAudit = createServerFn({ method: "POST" })
     // Decode base64 (no data: prefix expected; client strips it).
     const bytes = Buffer.from(data.jpegBase64, "base64");
     if (bytes.length < 4 || bytes[0] !== 0xff || bytes[1] !== 0xd8) {
-      throw new Error("Nieprawidłowy plik JPEG");
+      throw new Error("[E_JPEG_INVALID] Nieprawidłowy plik JPEG (brak nagłówka SOI)");
     }
 
     const u8 = new Uint8Array(bytes);
     const rawReport = readQualityReportFromJpeg(u8);
     if (!rawReport) {
-      throw new Error("Brak segmentu COM z raportem jakości w pliku JPEG");
+      throw new Error(
+        "[E_NO_COM] Brak segmentu COM z raportem jakości w pliku JPEG. " +
+          "Zdjęcie pochodzi spoza standardowego trybu MSC lub zostało przepisane (re-encode).",
+      );
     }
 
     const validation = validateQualityReport(rawReport);
     if (!validation.ok) {
+      const codeMap = {
+        missing: "E_REPORT_MISSING",
+        schema_mismatch: "E_SCHEMA_MISMATCH",
+        shape_invalid: "E_SCHEMA_INVALID",
+      } as const;
+      const code = codeMap[validation.code];
       const detail = validation.issues?.length
         ? ` — ${validation.issues.join("; ")}`
         : "";
-      throw new Error(`${validation.message}${detail}`);
+      throw new Error(`[${code}] ${validation.message}${detail}`);
     }
     const report = validation.report;
 
