@@ -17,18 +17,19 @@ import {
   computeReportSignature,
   type IntegrityEnvelope,
 } from "./parser-integrity";
+import type { CaptureAuditSubmitResult } from "./capture-audit-types";
 
 export interface CaptureAuditInsertInput {
   jpegBytes: Uint8Array;
   patientId?: string | null;
 }
 
-export interface CaptureAuditInsertResult {
-  id: string;
-  sha256: string;
-  createdAt: string;
-  deduplicated: boolean;
-}
+/**
+ * @deprecated Re-exported alias for {@link CaptureAuditSubmitResult}.
+ * Prefer importing `CaptureAuditSubmitResult` directly from
+ * `./capture-audit-types`.
+ */
+export type CaptureAuditInsertResult = CaptureAuditSubmitResult;
 
 /**
  * Minimal structural type covering the surface of the Supabase JS client
@@ -119,6 +120,7 @@ export async function performCaptureAuditInsert(
   if (existingError) throw new Error(existingError.message);
   if (existing) {
     return {
+      status: "deduplicated",
       id: existing.id,
       sha256: existing.jpeg_sha256,
       createdAt: existing.created_at,
@@ -160,6 +162,7 @@ export async function performCaptureAuditInsert(
       if (dupErr) throw new Error(dupErr.message);
       if (!dup) throw new Error("[E_DEDUP_LOST] Konflikt unikalności bez wiersza zwycięzcy");
       return {
+        status: "deduplicated",
         id: dup.id,
         sha256: dup.jpeg_sha256,
         createdAt: dup.created_at,
@@ -170,6 +173,7 @@ export async function performCaptureAuditInsert(
   }
   if (!row) throw new Error("[E_INSERT_NO_ROW] Insert nie zwrócił wiersza");
   return {
+    status: "created",
     id: row.id,
     sha256: row.jpeg_sha256,
     createdAt: row.created_at,
