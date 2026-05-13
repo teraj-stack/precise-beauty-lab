@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Camera, CameraOff, Aperture } from "lucide-react";
+import { Camera, CameraOff, Aperture, Lock, LockOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCameraStream } from "@/hooks/useCameraStream";
 import { useDeviceStability } from "@/hooks/useDeviceStability";
@@ -8,15 +8,6 @@ import { DEFAULT_FACE_ROI } from "@/lib/camera/quality";
 import { QUALITY_KB_VERSION } from "@/lib/camera/types";
 import { FaceGuideOverlay } from "./FaceGuideOverlay";
 import { QualityHUD } from "./QualityHUD";
-
-export interface CapturedFrame {
-  dataUrl: string;
-  width: number;
-  height: number;
-  metricsAtCapture: ReturnType<typeof JSON.stringify> extends string ? unknown : never;
-  capturedAt: string;
-  kbVersion: string;
-}
 
 interface Props {
   onCapture?: (frame: {
@@ -31,16 +22,34 @@ interface Props {
 
 export function StandardizedCamera({ onCapture }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const { stream, error, starting, start, stop } = useCameraStream({ facingMode: "user" });
+  const { stream, error, starting, locked, start, stop, lockHardware, unlockHardware } =
+    useCameraStream({ facingMode: "user" });
   const stability = useDeviceStability(!!stream);
   const report = useFrameAnalysis(videoRef, stability, { intervalMs: 220 });
   const [shot, setShot] = useState<string | null>(null);
+  const autoLockTried = useRef(false);
 
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
       videoRef.current.play().catch(() => undefined);
     }
+  }, [stream]);
+
+  // Auto-lock hardware AE/AWB once temporal stability is reached.
+  useEffect(() => {
+    if (!report || locked || autoLockTried.current) return;
+    const aeOk = report.gates.find((g) => g.id === "ae-stable")?.status === "ok";
+    const awbOk = report.gates.find((g) => g.id === "awb-stable")?.status !== "fail";
+    if (aeOk && awbOk) {
+      autoLockTried.current = true;
+      void lockHardware();
+    }
+  }, [report, locked, lockHardware]);
+
+  // Reset auto-lock attempt when stream restarts.
+  useEffect(() => {
+    if (!stream) autoLockTried.current = false;
   }, [stream]);
 
   const ready = report?.ready ?? false;
@@ -95,6 +104,11 @@ export function StandardizedCamera({ onCapture }: Props) {
                 <QualityHUD gates={report.gates} />
               </div>
             )}
+            {locked && (
+              <div className="absolute right-2 bottom-2 flex items-center gap-1 rounded-md border border-emerald-400/40 bg-emerald-500/15 px-2 py-1 text-[11px] font-medium text-emerald-50 backdrop-blur">
+                <Lock className="h-3 w-3" /> AE/AWB lock
+              </div>
+            )}
           </>
         )}
       </div>
@@ -110,12 +124,20 @@ export function StandardizedCamera({ onCapture }: Props) {
               <CameraOff /> Stop
             </Button>
             <Button
+              variant="outline"
+              size="icon"
+              onClick={() => (locked ? unlockHardware() : lockHardware())}
+              title={locked ? "Odblokuj AE/AWB" : "Zablokuj AE/AWB"}
+            >
+              {locked ? <Lock /> : <LockOpen />}
+            </Button>
+            <Button
               onClick={capture}
               disabled={!ready}
               className="flex-1"
               variant={ready ? "default" : "secondary"}
             >
-              <Aperture /> {ready ? "Wykonaj zdjęcie" : "Czekam na bramki jakości…"}
+              <Aperture /> {ready ? "Wykonaj zdjęcie" : "Czekam na bramki…"}
             </Button>
           </>
         )}
