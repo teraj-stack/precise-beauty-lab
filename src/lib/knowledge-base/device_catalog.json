@@ -1,0 +1,121 @@
+{
+  "$schema_version": "1.0.0",
+  "kb_version": "kb-devices-2026.05.13-001",
+  "devices": [
+    {
+      "id": "DEV-THUL-1927-1550-001",
+      "name": "Laser tulowo-erbowy frakcyjny 1927/1550 nm",
+      "name_en": "Thulium/Erbium Fiber Laser 1927nm & 1550nm",
+      "vendor_reference": "Cocoon Medical (1550nm+1927nm Fiber Laser System)",
+      "source_documents": [
+        "1927_1550_PDF_2.pdf",
+        "1927_1550_Operation_Detail.xlsx"
+      ],
+      "class": {
+        "samd_class": "IIb",
+        "laser_safety_class": "4",
+        "regulation_note": "Laser klasy 4 — wymagana certyfikacja operatora, gogle ochronne dla pacjenta i personelu, oznakowane pomieszczenie."
+      },
+      "physics": {
+        "type": "fractional_fiber_laser",
+        "wavelengths_nm": [1927, 1550],
+        "max_power_w": 30,
+        "laser_source_origin": "Niemcy (importowane)",
+        "fiber_constraint": "Promień zgięcia światłowodu nie mniejszy niż 90°."
+      },
+      "wavelength_targets": {
+        "1927": {
+          "penetration_depth_mm": 0.3,
+          "depth_layer": "naskórek / granica naskórek-skóra właściwa",
+          "absorption_water_relative": 0.9,
+          "absorption_melanin_relative": 0.2,
+          "primary_indications": [
+            "przebarwienia",
+            "ostuda (chloasma)",
+            "zmarszczki mimiczne powierzchowne",
+            "rozszerzone pory",
+            "rozjaśnianie kolorytu",
+            "skóra ciemna (Fitzpatrick V–VI)",
+            "skóra wrażliwa"
+          ]
+        },
+        "1550": {
+          "penetration_depth_mm": 1.6,
+          "depth_layer": "głęboka skóra właściwa",
+          "absorption_water_relative": 0.6,
+          "absorption_melanin_relative": 0.4,
+          "primary_indications": [
+            "blizny zanikowe i przerostowe",
+            "rozstępy",
+            "zmarszczki głębokie",
+            "trądzik aktywny i pozapalny",
+            "drobne naczynia",
+            "rumień rozsiany"
+          ]
+        }
+      },
+      "operating_modes": [
+        {
+          "id": "fractional",
+          "label_pl": "Tryb frakcyjny",
+          "thermal_effects": ["thermal_effect", "thermal_coagulation", "micro_ablation_or_non_ablation"],
+          "applicators_mm": [10, 20, 30],
+          "notes": "1550nm → mikro-ablacja; 1927nm → bez ablacji (non-ablative). Mikrouszkodzenia + obszary zachowane → samonaprawa."
+        },
+        {
+          "id": "sliding",
+          "label_pl": "Tryb ślizgowy",
+          "thermal_effects": ["thermal_effect", "thermal_coagulation"],
+          "applicators_count": 1,
+          "notes": "Lifting, redukcja zmarszczek dynamicznych, rozjaśnianie."
+        },
+        {
+          "id": "non_invasive",
+          "label_pl": "Tryb nieinwazyjny",
+          "thermal_effects": ["thermal_effect"],
+          "applicators_count": 1,
+          "notes": "Otwarcie bariery skórnej, wprowadzanie substancji aktywnych, leczenie grzybicy paznokci."
+        },
+        {
+          "id": "private",
+          "label_pl": "Tryb intymny",
+          "thermal_effects": ["thermal_effect", "thermal_coagulation"],
+          "applicators": {
+            "vagina": 1,
+            "vulva": 2
+          }
+        }
+      ],
+      "thermal_effect_thresholds": {
+        "thermal_effect_c": 45,
+        "thermal_coagulation_c": "65–70",
+        "thermal_ablation_c": 100,
+        "key_parameters": {
+          "thermal_effect": ["pulse_width", "energy"],
+          "thermal_coagulation": ["pulse_width", "distance", "energy"],
+          "thermal_ablation": ["energy", "distance"]
+        }
+      },
+      "energy_formula": "energy_mj = power_w * pulse_width_ms",
+      "contraindications": [
+        "ciąża i karmienie piersią",
+        "aktywna infekcja skóry w polu zabiegu",
+        "fotouczulenia (leki, choroby)",
+        "świeża opalenizna (do 4 tygodni)",
+        "skłonność do bliznowców (względne)",
+        "izotretynoina <6 miesięcy",
+        "rozrusznik serca (dla strefy zabiegu w pobliżu)",
+        "nowotwór skóry w polu zabiegu",
+        "padaczka światłoczuła"
+      ],
+      "after_care_default": [
+        "Natychmiast medyczna maska na twarz; można schłodzić w lodówce 10 min.",
+        "Esencja/sprej regeneracyjny medical-grade w ciągu 24 h, ponawiać przy uczuciu suchości.",
+        "Po pojawieniu się strupów: bez maski, tylko esencja/sprej.",
+        "Nie drapać; ochrona przeciwsłoneczna SPF50+ przez min. 4 tygodnie."
+      ],
+      "expert_confirmation_required": true,
+      "operator_role_required": "physician_or_certified_cosmetologist"
+    }
+  ]
+}
