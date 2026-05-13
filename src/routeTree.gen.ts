@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProtocolsRouteImport } from './routes/protocols'
+import { Route as LaserThuliumRouteImport } from './routes/laser-thulium'
 import { Route as CaptureRouteImport } from './routes/capture'
 import { Route as IndexRouteImport } from './routes/index'
 
 const ProtocolsRoute = ProtocolsRouteImport.update({
   id: '/protocols',
   path: '/protocols',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LaserThuliumRoute = LaserThuliumRouteImport.update({
+  id: '/laser-thulium',
+  path: '/laser-thulium',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CaptureRoute = CaptureRouteImport.update({
@@ -32,30 +38,34 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/capture': typeof CaptureRoute
+  '/laser-thulium': typeof LaserThuliumRoute
   '/protocols': typeof ProtocolsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/capture': typeof CaptureRoute
+  '/laser-thulium': typeof LaserThuliumRoute
   '/protocols': typeof ProtocolsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/capture': typeof CaptureRoute
+  '/laser-thulium': typeof LaserThuliumRoute
   '/protocols': typeof ProtocolsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/capture' | '/protocols'
+  fullPaths: '/' | '/capture' | '/laser-thulium' | '/protocols'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/capture' | '/protocols'
-  id: '__root__' | '/' | '/capture' | '/protocols'
+  to: '/' | '/capture' | '/laser-thulium' | '/protocols'
+  id: '__root__' | '/' | '/capture' | '/laser-thulium' | '/protocols'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CaptureRoute: typeof CaptureRoute
+  LaserThuliumRoute: typeof LaserThuliumRoute
   ProtocolsRoute: typeof ProtocolsRoute
 }
 
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/protocols'
       fullPath: '/protocols'
       preLoaderRoute: typeof ProtocolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/laser-thulium': {
+      id: '/laser-thulium'
+      path: '/laser-thulium'
+      fullPath: '/laser-thulium'
+      preLoaderRoute: typeof LaserThuliumRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/capture': {
@@ -88,8 +105,19 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CaptureRoute: CaptureRoute,
+  LaserThuliumRoute: LaserThuliumRoute,
   ProtocolsRoute: ProtocolsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
