@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract changelog section for tag
+        id: changelog
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          FILE="CHANGELOG.md"
+
+          if [[ ! -f "$FILE" ]]; then
+            echo "CHANGELOG.md not found" >&2
+            exit 1
+          fi
+
+          # Try to extract the section for this exact version (## [x.y.z] ... until next ## )
+          BODY="$(awk -v ver="$VERSION" '
+            BEGIN { found = 0 }
+            /^##[[:space:]]+\[/ {
+              if (found) { exit }
+              # Match "## [VERSION]" or "## [VERSION] - date"
+              if (index($0, "[" ver "]") > 0) { found = 1; next }
+            }
+            found { print }
+          ' "$FILE")"
+
+          # Fallback: if no matching section, use the [Unreleased] block
+          if [[ -z "${BODY// /}" ]]; then
+            BODY="$(awk '
+              BEGIN { found = 0 }
+              /^##[[:space:]]+\[/ {
+                if (found) { exit }
+                if (tolower($0) ~ /\[unreleased\]/) { found = 1; next }
+              }
+              found { print }
+            ' "$FILE")"
+          fi
+
+          if [[ -z "${BODY// /}" ]]; then
+            BODY="See CHANGELOG.md for details."
+          fi
+
+          {
+            echo "body<<__EOF__"
+            echo "$BODY"
+            echo "__EOF__"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: ${{ steps.changelog.outputs.body }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
