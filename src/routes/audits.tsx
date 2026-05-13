@@ -30,7 +30,14 @@ import {
 import type { CaptureAuditRow } from "@/lib/camera/capture-audit-list.functions";
 import { IntegrityBadge } from "@/components/camera/IntegrityBadge";
 
+type AuditsSearch = { sha?: string; open?: string };
+
 export const Route = createFileRoute("/audits")({
+  validateSearch: (s: Record<string, unknown>): AuditsSearch => {
+    const sha = typeof s.sha === "string" ? s.sha.replace(/[^a-fA-F0-9]/g, "").slice(0, 64) : undefined;
+    const open = typeof s.open === "string" ? s.open.slice(0, 64) : undefined;
+    return { sha: sha || undefined, open: open || undefined };
+  },
   head: () => ({
     meta: [
       { title: "Audyt jakości — MySkinCode" },
