@@ -1,23 +1,54 @@
 import type { FrameMetrics } from "@/lib/camera/types";
 import { DEFAULT_THRESHOLDS } from "@/lib/camera/types";
 
+export interface HistogramReference {
+  /** 32-bin normalized luminance histogram (sums to 1). */
+  histogram: number[];
+  /** Mean luminance 0..1 of the reference frame. */
+  luminance: number;
+  /** Capture timestamp (ms epoch). */
+  capturedAt: number;
+  /** Optional human label, e.g. "Próba 1". */
+  label?: string;
+}
+
 interface Props {
   metrics: FrameMetrics;
-  /** Mean R/G/B of ROI for AWB tint hint (optional — falls back to colorCast only). */
-  meanRgb?: { r: number; g: number; b: number };
+  /** Optional reference histogram from a previous attempt to overlay + diff. */
+  reference?: HistogramReference | null;
+}
+
+/** L1 (Manhattan) distance between two normalized histograms — 0 = identical, 2 = disjoint. */
+function l1Distance(a: number[], b: number[]): number {
+  const n = Math.min(a.length, b.length);
+  let s = 0;
+  for (let i = 0; i < n; i++) s += Math.abs(a[i] - b[i]);
+  return s;
+}
+
+/** Earth Mover's Distance for 1D normalized histograms (assumes equal binning). */
+function emd1d(a: number[], b: number[]): number {
+  const n = Math.min(a.length, b.length);
+  let cum = 0;
+  let s = 0;
+  for (let i = 0; i < n; i++) {
+    cum += a[i] - b[i];
+    s += Math.abs(cum);
+  }
+  // Normalise by number of bins so 0..1
+  return s / n;
 }
 
 /**
- * Compact AE/AWB HUD widget:
- * - 32-bin luminance histogram with target band overlay (luminanceMin..Max)
+ * Compact AE/AWB HUD:
+ * - 32-bin luminance histogram with target band overlay
  * - Mean luma marker
- * - Low/High clipping pips with %
- *
- * Pure SVG, no canvas, no deps. Re-renders ~5×/s with frame analysis.
+ * - Optional reference histogram overlay (line) + Δμ, L1, EMD diff metrics
  */
-export function HistogramHUD({ metrics }: Props) {
+export function HistogramHUD({ metrics, reference }: Props) {
   const bins = metrics.histogram;
-  const max = Math.max(1e-6, ...bins);
+  const refBins = reference?.histogram;
+  const max = Math.max(1e-6, ...bins, ...(refBins ?? []));
   const W = 220;
   const H = 56;
   const barW = W / bins.length;
@@ -35,10 +66,36 @@ export function HistogramHUD({ metrics }: Props) {
   const highBad = clipHighPct > clipMaxPct;
   const inBand = metrics.luminance >= lo && metrics.luminance <= hi;
 
+  // Reference overlay polyline points
+  const refPoints =
+    refBins && refBins.length === bins.length
+      ? refBins
+          .map((v, i) => {
+            const x = i * barW + barW / 2;
+            const y = H - (v / max) * (H - 4);
+            return `${x.toFixed(1)},${y.toFixed(1)}`;
+          })
+          .join(" ")
+      : null;
+
+  // Diff stats
+  const dMean = reference ? metrics.luminance - reference.luminance : 0;
+  const l1 = refBins ? l1Distance(bins, refBins) : 0;
+  const emd = refBins ? emd1d(bins, refBins) : 0;
+
+  // Direction hint: how to move exposure to match reference
+  const dirHint = reference
+    ? Math.abs(dMean) < 0.02
+      ? "≈ trafione"
+      : dMean > 0
+        ? "obniż ekspozycję"
+        : "podnieś ekspozycję"
+    : null;
+
   return (
     <div className="rounded-md border border-border/40 bg-black/55 px-2 py-1.5 text-[10px] text-white backdrop-blur-md">
       <div className="mb-1 flex items-center justify-between font-medium">
-        <span>Histogram (Y)</span>
+        <span>Histogram (Y){reference ? " · vs ref" : ""}</span>
         <span className={inBand ? "text-emerald-300" : "text-amber-300"}>
           μ {metrics.luminance.toFixed(2)}
         </span>
@@ -49,7 +106,9 @@ export function HistogramHUD({ metrics }: Props) {
         height={H}
         preserveAspectRatio="none"
         role="img"
-        aria-label={`Histogram luminancji, średnia ${metrics.luminance.toFixed(2)}`}
+        aria-label={`Histogram luminancji, średnia ${metrics.luminance.toFixed(2)}${
+          reference ? `, referencja ${reference.luminance.toFixed(2)}` : ""
+        }`}
       >
         {/* Target band */}
         <rect
@@ -61,11 +120,10 @@ export function HistogramHUD({ metrics }: Props) {
           stroke="rgb(16 185 129 / 0.45)"
           strokeDasharray="2 2"
         />
-        {/* Bars */}
+        {/* Bars (current) */}
         {bins.map((v, i) => {
           const h = (v / max) * (H - 4);
           const x = i * barW;
-          // Tint extreme bins red if they exceed clipMax
           const isExtreme =
             (i === 0 && lowBad) || (i === bins.length - 1 && highBad);
           return (
@@ -79,7 +137,30 @@ export function HistogramHUD({ metrics }: Props) {
             />
           );
         })}
-        {/* Mean line */}
+        {/* Reference overlay (polyline) */}
+        {refPoints && (
+          <polyline
+            points={refPoints}
+            fill="none"
+            stroke="rgb(56 189 248)"
+            strokeWidth={1.25}
+            strokeLinejoin="round"
+            opacity={0.9}
+          />
+        )}
+        {/* Reference mean line */}
+        {reference && (
+          <line
+            x1={reference.luminance * W}
+            x2={reference.luminance * W}
+            y1={0}
+            y2={H}
+            stroke="rgb(56 189 248)"
+            strokeWidth={1}
+            strokeDasharray="3 2"
+          />
+        )}
+        {/* Current mean line */}
         <line
           x1={meanX}
           x2={meanX}
@@ -96,6 +177,26 @@ export function HistogramHUD({ metrics }: Props) {
         </span>
         <ClipPip label="HIGH" pct={clipHighPct} bad={highBad} />
       </div>
+      {reference && (
+        <div className="mt-1 flex items-center justify-between gap-2 rounded bg-sky-500/10 px-1.5 py-1 text-[10px] tabular-nums text-sky-100">
+          <span className="font-medium">
+            Δμ{" "}
+            <span
+              className={
+                Math.abs(dMean) < 0.02
+                  ? "text-emerald-300"
+                  : "text-amber-200"
+              }
+            >
+              {dMean >= 0 ? "+" : ""}
+              {dMean.toFixed(2)}
+            </span>
+          </span>
+          <span>L1 {l1.toFixed(2)}</span>
+          <span>EMD {emd.toFixed(3)}</span>
+          <span className="font-medium text-white/90">{dirHint}</span>
+        </div>
+      )}
     </div>
   );
 }
