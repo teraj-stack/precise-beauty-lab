@@ -93,11 +93,13 @@ function gateHint(
         return `Za jasno (luma ${m.luminance.toFixed(2)}). Odsuń się od źródła światła lub przyciemnij lampę.`;
       break;
     }
-    case "clipping": {
+    case "clipping-low": {
       if (!m) break;
-      if (m.clippingHigh > m.clippingLow)
-        return `Przepalenia ${(m.clippingHigh * 100).toFixed(1)}% pikseli — usuń silne światło/odbicia w kadrze.`;
-      return `Niedoświetlone cienie ${(m.clippingLow * 100).toFixed(1)}% — dodaj światło wypełniające.`;
+      return `Niedoświetlone cienie ${(m.clippingLow * 100).toFixed(2)}% w ROI — dodaj światło wypełniające.`;
+    }
+    case "clipping-high": {
+      if (!m) break;
+      return `Przepalenia ${(m.clippingHigh * 100).toFixed(2)}% w ROI — usuń silne światło/odbicia w kadrze.`;
     }
     case "ae-stable": {
       if (!temporal) break;
