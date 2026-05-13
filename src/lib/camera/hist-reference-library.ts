@@ -176,7 +176,6 @@ export function duplicateReference(
     conditions: patch?.conditions ?? src.conditions,
   });
 }
-}
 
 export function updateReference(
   library: StoredHistogramReference[],
