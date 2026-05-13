@@ -48,6 +48,7 @@ export function HistReferenceLibrary({
   onActivate,
   onDelete,
   onRename,
+  onDuplicate,
   presetActive,
 }: Props) {
   const [draftLabel, setDraftLabel] = useState("");
