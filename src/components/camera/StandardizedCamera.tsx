@@ -1082,6 +1082,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
         onActivate={handleActivateRef}
         onDelete={handleDeleteRef}
         onRename={handleRenameRef}
+        onDuplicate={handleDuplicateRef}
         presetActive={!!activePreset}
       />
 
