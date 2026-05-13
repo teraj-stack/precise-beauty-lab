@@ -36,6 +36,7 @@ import {
   loadOverrides,
   type ThresholdOverrides,
 } from "./ThresholdPanel";
+import { CaptureReportDetails } from "./CaptureReportDetails";
 
 const HIST_REF_STORAGE_KEY = "msc:hist-reference:v1";
 
@@ -597,6 +598,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
               {shot.validation.report.temporal.colorCastStd.toFixed(4)}
             </dd>
           </dl>
+          <CaptureReportDetails report={shot.qualityReport} />
           <div className="flex flex-wrap gap-2 pt-1">
             <a
               href={shot.dataUrl}
