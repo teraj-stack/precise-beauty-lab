@@ -681,6 +681,16 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
         onChange={setOverrides}
       />
 
+      <CalibrationPresets
+        presets={presets}
+        activeId={activePresetId}
+        metrics={report?.metrics ?? null}
+        deviceLabel={stream?.getVideoTracks()[0]?.label}
+        onSave={handleSavePreset}
+        onActivate={handleActivatePreset}
+        onDelete={handleDeletePreset}
+      />
+
       {/* Last rejection details — clear, persistent until accepted */}
       {schemaError && (
         <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-[11px] text-destructive">
