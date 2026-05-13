@@ -55,9 +55,17 @@ export function HistogramHUD({ metrics, reference }: Props) {
 
   const lo = DEFAULT_THRESHOLDS.luminanceMin;
   const hi = DEFAULT_THRESHOLDS.luminanceMax;
+  const target = (lo + hi) / 2;
   const meanX = metrics.luminance * W;
   const bandX = lo * W;
   const bandW = (hi - lo) * W;
+
+  // Relative EV offset vs band midpoint. Negative = under, positive = over.
+  // Clamp luminance to avoid log(0).
+  const evOffset = Math.log2(Math.max(0.001, metrics.luminance) / target);
+  const evRefOffset = reference
+    ? Math.log2(Math.max(0.001, reference.luminance) / target)
+    : null;
 
   const clipLowPct = metrics.clippingLow * 100;
   const clipHighPct = metrics.clippingHigh * 100;
