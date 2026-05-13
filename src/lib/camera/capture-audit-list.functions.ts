@@ -7,6 +7,8 @@ const InputSchema = z.object({
   limit: z.number().int().min(1).max(100).default(20),
 });
 
+type Json = string | number | boolean | null | { [k: string]: Json } | Json[];
+
 export interface CaptureAuditRow {
   id: string;
   created_at: string;
@@ -19,7 +21,7 @@ export interface CaptureAuditRow {
   image_bytes: number;
   jpeg_sha256: string;
   source: string;
-  report: unknown;
+  report: Json;
 }
 
 export const listCaptureAuditsForPatient = createServerFn({ method: "POST" })
