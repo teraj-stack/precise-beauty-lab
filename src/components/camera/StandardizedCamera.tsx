@@ -692,6 +692,35 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
               <Button
                 variant="outline"
                 size="icon"
+                onClick={exportHistRef}
+                title="Eksportuj referencję histogramu (JSON)"
+              >
+                <Download />
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => fileInputRef.current?.click()}
+              title="Importuj referencję histogramu z pliku JSON"
+            >
+              <Upload />
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) void importHistRef(f);
+                e.target.value = "";
+              }}
+            />
+            {histRef && (
+              <Button
+                variant="outline"
+                size="icon"
                 onClick={clearHistRef}
                 title="Wyczyść referencję histogramu"
               >
