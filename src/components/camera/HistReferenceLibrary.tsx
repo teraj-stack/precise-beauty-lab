@@ -104,14 +104,14 @@ export function HistReferenceLibrary({
           type="text"
           value={draftLabel}
           onChange={(e) => setDraftLabel(e.target.value)}
-          placeholder="Etykieta (np. „Gabinet — światło dzienne")"
+          placeholder='Etykieta (np. „Gabinet — światło dzienne")'
           className="rounded border border-input bg-background px-2 py-1 text-[11px]"
         />
         <input
           type="text"
           value={draftConditions}
           onChange={(e) => setDraftConditions(e.target.value)}
-          placeholder="Warunki (np. „Pora poranna, lampa LED 3000K, brak okna")"
+          placeholder='Warunki (np. „Pora poranna, lampa LED 3000K, brak okna")'
           className="rounded border border-input bg-background px-2 py-1 text-[11px]"
         />
         <Button
