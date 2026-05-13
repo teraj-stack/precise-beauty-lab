@@ -201,6 +201,93 @@
       ],
       "expert_confirmation_required": true,
       "operator_role_required": "trained_qualified_operator"
+    },
+    {
+      "id": "DEV-EL950-PICO-001",
+      "name": "Picolaser EL950 (PicoKing) — 532/755/1064 nm",
+      "name_en": "Winkonlaser Picolaser EL950 (PicoKing)",
+      "vendor_reference": "Winkonlaser EL950 (PicoKing™)",
+      "source_documents": ["English_EL950_user_manual.pdf"],
+      "class": {
+        "samd_class": "IIb",
+        "laser_safety_class": "4",
+        "regulation_note": "Laser klasy 4 — przeszkolony i wykwalifikowany personel; gogle ochronne dla pacjenta i personelu; oznakowane pomieszczenie."
+      },
+      "physics": {
+        "type": "picosecond_q_switched_dual_chamber",
+        "wavelengths_nm": [532, 755, 1064],
+        "power_supply_w": 5000,
+        "spot_size_mm": [2, 10],
+        "frequency_hz": [1, 10],
+        "energy_mj_by_wavelength": {
+          "532": [50, 600],
+          "755": [100, 1200],
+          "1064": [100, 1200]
+        },
+        "articulated_arm": "Korean Imported Laser Arm",
+        "cooling": "Built-in closed water circulation (distilled/deionized water 1.5–2 L)",
+        "weight_kg": 130
+      },
+      "wavelength_targets": {
+        "1064": {
+          "primary_chromophore": "deep_melanin / dark_ink",
+          "primary_indications": [
+            "tatuaże ciemne (czarne, niebieskie, fioletowe)",
+            "głęboka pigmentacja, znamię Ota/Ito",
+            "grzybica paznokci",
+            "pory/meszek (Long Pulse, 10 mm)"
+          ]
+        },
+        "755": {
+          "primary_chromophore": "melanin",
+          "primary_indications": [
+            "ostuda (melasma)",
+            "rozjaśnianie kolorytu",
+            "powierzchowne przebarwienia"
+          ],
+          "notes": "Wyłącznie z głowicą Honeycomb (filtr konwertujący 1064→755 + macierz mikrowiązek)."
+        },
+        "532": {
+          "primary_chromophore": "epidermal_melanin / warm_ink",
+          "primary_indications": [
+            "powierzchowne przebarwienia (piegi, soczewicowate)",
+            "tatuaże ciepłe (czerwony, pomarańczowy, żółty, zielony)"
+          ]
+        }
+      },
+      "operating_modes": [
+        { "id": "standard", "label_pl": "Standard", "notes": "Pojedynczy impuls — domyślny dla większości protokołów." },
+        { "id": "dual_pulse_ptp", "label_pl": "Dual Pulse / PTP", "notes": "Energia w dwóch szybkich impulsach — niższe ryzyko PIH (skóra IV–VI), oporne tatuaże." },
+        { "id": "multipulse", "label_pl": "Multipulse", "notes": "Seria impulsów — okolice wrażliwe, powierzchowne przebarwienia, skóra ciemna." },
+        { "id": "long_pulse", "label_pl": "Long Pulse", "notes": "Mechanizm fototermiczny — pory, meszek, odmładzanie. Tylko spot 10 mm." }
+      ],
+      "handpieces": [
+        "default_silver (1064/532, 2–10 mm single round)",
+        "honeycomb_755 (filtr + macierz mikrowiązek 755 nm)",
+        "carbon_peel (skanowanie 1064 do Hollywood Peel)",
+        "red (frakcyjna 1064/532, siatka kołowa)",
+        "golden (frakcyjna 1064, siatka kwadratowa)",
+        "blue (rozproszona 1064, duże powierzchnie)"
+      ],
+      "contraindications": [
+        "ciąża i karmienie piersią",
+        "świeża opalenizna (do 4 tyg.)",
+        "fotouczulenia (leki, choroby)",
+        "aktywna infekcja skóry w polu zabiegu",
+        "izotretynoina <6 miesięcy",
+        "skłonność do bliznowców (względne)",
+        "rozrusznik serca / wszczepialne defibrylatory bez konsultacji",
+        "nowotwór skóry w polu zabiegu",
+        "padaczka światłoczuła"
+      ],
+      "after_care_default": [
+        "Chłodne kompresy 10–15 min bezpośrednio po zabiegu.",
+        "Po tatuażach: opatrunek, brak moczenia 24 h, antybiotyk miejscowy wg wskazań.",
+        "Fotoprotekcja SPF 50+ przez min. 4 tygodnie.",
+        "Unikać sauny, basenu, intensywnego treningu 24–72 h."
+      ],
+      "expert_confirmation_required": true,
+      "operator_role_required": "trained_qualified_operator"
     }
   ]
 }
