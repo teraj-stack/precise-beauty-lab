@@ -208,14 +208,12 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
   const stability = useDeviceStability(!!stream);
   const report = useFrameAnalysis(videoRef, stability, { intervalMs: 220, profile });
   const [shot, setShot] = useState<ValidatedCapture | null>(null);
-  const [auditState, setAuditState] = useState<"idle" | "saving" | "saved">("idle");
-  const [auditError, setAuditError] = useState<{
-    code: string;
-    title: string;
-    message: string;
-    hint?: string;
-  } | null>(null);
-  const [dedupInfo, setDedupInfo] = useState<CaptureAuditDeduplicatedResult | null>(null);
+  const [auditSave, dispatchAudit] = useReducer(auditSaveReducer, initialAuditSaveState);
+  // Derived views — single source of truth, mirrored from the FSM phase so
+  // existing render code reads naturally and cannot drift apart.
+  const auditError = auditSave.phase === "error" ? auditSave.error : null;
+  const dedupInfo: CaptureAuditDeduplicatedResult | null =
+    auditSave.phase === "deduplicated" ? auditSave.result : null;
   const navigate = useNavigate();
   const [session, setSession] = useState<ValidatedCapture[]>([]);
   const [zipping, setZipping] = useState(false);
