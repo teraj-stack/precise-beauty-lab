@@ -368,13 +368,21 @@ function AuditRow({
   row,
   open,
   onToggle,
+  highlighted,
+  rowRef,
 }: {
   row: CaptureAuditRow;
   open: boolean;
   onToggle: () => void;
+  highlighted?: boolean;
+  rowRef?: React.Ref<HTMLLIElement>;
 }) {
   return (
-    <li className="rounded-lg border border-border bg-card">
+    <li
+      ref={rowRef}
+      className={`rounded-lg border bg-card transition-colors ${highlighted ? "border-primary ring-2 ring-primary/30" : "border-border"}`}
+    ></li>
+
       <button
         type="button"
         onClick={onToggle}
