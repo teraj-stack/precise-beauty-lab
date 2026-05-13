@@ -127,13 +127,31 @@ function laplacianVariance(gray: Float32Array, w: number, h: number): number {
   return sumSq / n - mean * mean;
 }
 
-function clippingRatio(gray: Float32Array): number {
-  let clipped = 0;
-  for (let i = 0; i < gray.length; i++) {
+export const HISTOGRAM_BINS = 32;
+
+interface ClippingStats {
+  low: number;
+  high: number;
+  total: number;
+  histogram: number[];
+}
+
+function clippingAndHistogram(gray: Float32Array): ClippingStats {
+  const bins = new Array<number>(HISTOGRAM_BINS).fill(0);
+  let low = 0;
+  let high = 0;
+  const n = gray.length;
+  for (let i = 0; i < n; i++) {
     const v = gray[i];
-    if (v <= 2 || v >= 253) clipped++;
+    if (v <= 2) low++;
+    else if (v >= 253) high++;
+    let bin = Math.floor((v / 256) * HISTOGRAM_BINS);
+    if (bin < 0) bin = 0;
+    else if (bin >= HISTOGRAM_BINS) bin = HISTOGRAM_BINS - 1;
+    bins[bin]++;
   }
-  return clipped / gray.length;
+  for (let i = 0; i < HISTOGRAM_BINS; i++) bins[i] = bins[i] / n;
+  return { low: low / n, high: high / n, total: (low + high) / n, histogram: bins };
 }
 
 function grayWorldCast(meanR: number, meanG: number, meanB: number): number {
@@ -182,11 +200,15 @@ export function analyzeFrame(
   const luminance = lumSum / gray.length / 255;
 
   const { ratio, offset } = skinStats(skin, w, h);
+  const clip = clippingAndHistogram(gray);
 
   return {
     luminance,
     sharpness: laplacianVariance(gray, w, h),
-    clipping: clippingRatio(gray),
+    clipping: clip.total,
+    clippingLow: clip.low,
+    clippingHigh: clip.high,
+    histogram: clip.histogram,
     colorCast: grayWorldCast(meanR, meanG, meanB),
     skinRatio: ratio,
     centerOffset: offset,

@@ -20,6 +20,7 @@ import { validateCapture, type CaptureValidation } from "@/lib/camera/validate-c
 import { QUALITY_PROFILE_V1 } from "@/lib/camera/quality-profiles";
 import { FaceGuideOverlay } from "./FaceGuideOverlay";
 import { QualityHUD } from "./QualityHUD";
+import { HistogramHUD } from "./HistogramHUD";
 
 const MAX_AUTO_RETRIES = 5;
 const RETRY_DEBOUNCE_MS = 350;
@@ -234,8 +235,9 @@ export function StandardizedCamera({ onAccepted }: Props) {
             />
             <FaceGuideOverlay roi={DEFAULT_FACE_ROI} ready={liveReady} />
             {report && (
-              <div className="absolute inset-x-2 top-2">
+              <div className="absolute inset-x-2 top-2 space-y-1.5">
                 <QualityHUD gates={report.gates} />
+                <HistogramHUD metrics={report.metrics} />
               </div>
             )}
             {locked && (

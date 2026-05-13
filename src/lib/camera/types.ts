@@ -10,6 +10,12 @@ export interface FrameMetrics {
   sharpness: number;
   /** Histogram clipping: fraction of pixels at extremes (0 or 255). 0..1, lower better. */
   clipping: number;
+  /** Fraction of ROI pixels at the dark extreme (≤2/255). 0..1. */
+  clippingLow: number;
+  /** Fraction of ROI pixels at the bright extreme (≥253/255). 0..1. */
+  clippingHigh: number;
+  /** Luminance histogram (32 bins, sums to 1). Bin i covers luma range i/32..(i+1)/32. */
+  histogram: number[];
   /** Color cast estimate using gray-world: distance of mean(R,G,B) from neutral, 0..1. */
   colorCast: number;
   /** Fraction of ROI pixels classified as skin (HSV heuristic). Proxy for face-fill / distance. */
