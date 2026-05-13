@@ -1021,6 +1021,20 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
         )}
       </div>
 
+      {report && histRef && (
+        <HistogramReferenceCompare
+          current={{ histogram: report.metrics.histogram, luminance: report.metrics.luminance }}
+          reference={{
+            histogram: histRef.histogram,
+            luminance: histRef.luminance,
+            label: histRef.label,
+            capturedAt: histRef.capturedAt,
+          }}
+          alignEv={ALIGN_EV}
+          alignL1={ALIGN_L1}
+        />
+      )}
+
       <AlignmentSummary state={alignmentTracker} refAligned={refMatch?.aligned ?? undefined} />
 
       <p className="text-center text-[11px] text-muted-foreground">
