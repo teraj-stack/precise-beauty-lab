@@ -269,12 +269,36 @@ export function HistogramHUD({ metrics, reference }: Props) {
           strokeWidth={1.5}
         />
       </svg>
-      <div className="mt-1 flex items-center justify-between text-[10px] tabular-nums">
-        <ClipPip label="LOW" pct={clipLowPct} bad={lowBad} />
-        <span className="text-white/60">
-          band {lo.toFixed(2)}–{hi.toFixed(2)}
+      <div className="mt-1 grid grid-cols-2 gap-1 text-[10px] tabular-nums">
+        <SidePip
+          side="dark"
+          label="ZA CIEMNE"
+          massPct={darkPct}
+          clipPct={clipLowPct}
+          clipBad={lowBad}
+          heavy={darkHeavy}
+          skewed={darkSkewed}
+        />
+        <SidePip
+          side="bright"
+          label="ZA JASNE"
+          massPct={brightPct}
+          clipPct={clipHighPct}
+          clipBad={highBad}
+          heavy={brightHeavy}
+          skewed={brightSkewed}
+        />
+      </div>
+      <div
+        className={`mt-1 rounded border px-1.5 py-1 text-[10px] leading-snug ${sideToneCls}`}
+        role="status"
+        aria-live="polite"
+      >
+        <span className="font-semibold">Diagnoza tonów:</span>{" "}
+        <span className="opacity-95">{sideHint.text}</span>
+        <span className="ml-1 text-white/60">
+          · band {lo.toFixed(2)}–{hi.toFixed(2)}
         </span>
-        <ClipPip label="HIGH" pct={clipHighPct} bad={highBad} />
       </div>
       {reference && (
         <div className="mt-1 flex items-center justify-between gap-2 rounded bg-sky-500/10 px-1.5 py-1 text-[10px] tabular-nums text-sky-100">
