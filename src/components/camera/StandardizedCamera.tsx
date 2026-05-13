@@ -29,6 +29,12 @@ import {
 import { FaceGuideOverlay } from "./FaceGuideOverlay";
 import { QualityHUD } from "./QualityHUD";
 import { HistogramHUD, type HistogramReference } from "./HistogramHUD";
+import {
+  ThresholdPanel,
+  applyOverrides,
+  loadOverrides,
+  type ThresholdOverrides,
+} from "./ThresholdPanel";
 
 const HIST_REF_STORAGE_KEY = "msc:hist-reference:v1";
 
@@ -163,7 +169,9 @@ interface Props {
 
 export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) {
   const calibration = profileProp ? null : loadCalibration();
-  const profile = profileProp ?? calibration?.profile ?? QUALITY_PROFILE_V1;
+  const baseProfile = profileProp ?? calibration?.profile ?? QUALITY_PROFILE_V1;
+  const [overrides, setOverrides] = useState<ThresholdOverrides>(() => loadOverrides());
+  const profile = applyOverrides(baseProfile, overrides);
   const videoRef = useRef<HTMLVideoElement>(null);
   const { stream, error, starting, locked, start, stop, lockHardware, unlockHardware } =
     useCameraStream({ facingMode: "user" });
@@ -493,6 +501,12 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
       <p className="text-center text-[11px] text-muted-foreground">
         Profil progów: <span className="font-mono">{profile.version}</span>
       </p>
+
+      <ThresholdPanel
+        current={profile.live}
+        baseline={baseProfile.live}
+        onChange={setOverrides}
+      />
 
       {/* Last rejection details — clear, persistent until accepted */}
       {lastRejection && !shot && (
