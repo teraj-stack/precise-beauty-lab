@@ -278,6 +278,17 @@ export function HistReferenceLibrary({
                       >
                         <Pencil className="h-3 w-3" />
                       </Button>
+                      {onDuplicate && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => onDuplicate(r.id)}
+                          title="Duplikuj (kopia z tymi samymi warunkami)"
+                          className="h-6 w-6"
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                      )}
                       <Button
                         size="icon"
                         variant="ghost"
