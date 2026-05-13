@@ -66,6 +66,7 @@ import {
   type StoredHistogramReference,
 } from "@/lib/camera/hist-reference-library";
 import { HistReferenceLibrary } from "./HistReferenceLibrary";
+import { AutoReferenceSelector } from "./AutoReferenceSelector";
 import {
   describeCaptureAuditResult,
   type CaptureAuditDeduplicatedResult,
