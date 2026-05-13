@@ -24,12 +24,10 @@ export interface CaptureAuditInsertInput {
   patientId?: string | null;
 }
 
-/**
- * @deprecated Re-exported alias for {@link CaptureAuditSubmitResult}.
- * Prefer importing `CaptureAuditSubmitResult` directly from
- * `./capture-audit-types`.
- */
-export type CaptureAuditInsertResult = CaptureAuditSubmitResult;
+// NOTE: The legacy `CaptureAuditInsertResult` alias has been removed.
+// Always use `CaptureAuditSubmitResult` from `./capture-audit-types`.
+// An ESLint `no-restricted-syntax` rule (see eslint.config) blocks new
+// imports/usages of the old name to prevent regressions.
 
 /**
  * Minimal structural type covering the surface of the Supabase JS client
@@ -69,7 +67,7 @@ export async function performCaptureAuditInsert(
   supabase: AuditSupabaseLike,
   userId: string,
   input: CaptureAuditInsertInput,
-): Promise<CaptureAuditInsertResult> {
+): Promise<CaptureAuditSubmitResult> {
   const bytes = input.jpegBytes;
   if (bytes.length < 4 || bytes[0] !== 0xff || bytes[1] !== 0xd8) {
     throw new Error("[E_JPEG_INVALID] Nieprawidłowy plik JPEG (brak nagłówka SOI)");

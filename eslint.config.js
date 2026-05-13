@@ -32,6 +32,18 @@ export default tseslint.config(
           ],
         },
       ],
+      // Block the deprecated `CaptureAuditInsertResult` alias from creeping
+      // back in. Always use `CaptureAuditSubmitResult` from
+      // `@/lib/camera/capture-audit-types`.
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector:
+            "ImportSpecifier[imported.name='CaptureAuditInsertResult'], ExportSpecifier[exported.name='CaptureAuditInsertResult'], TSTypeReference[typeName.name='CaptureAuditInsertResult'], TSTypeAliasDeclaration[id.name='CaptureAuditInsertResult'], TSInterfaceDeclaration[id.name='CaptureAuditInsertResult']",
+          message:
+            "CaptureAuditInsertResult is deprecated and removed. Import CaptureAuditSubmitResult from '@/lib/camera/capture-audit-types' instead.",
+        },
+      ],
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
     },
