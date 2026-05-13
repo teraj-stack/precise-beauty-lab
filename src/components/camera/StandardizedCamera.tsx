@@ -38,6 +38,15 @@ import {
 } from "./ThresholdPanel";
 import { CaptureReportDetails } from "./CaptureReportDetails";
 import { HistogramHistory } from "./HistogramHistory";
+import { CalibrationPresets } from "./CalibrationPresets";
+import {
+  loadPresets,
+  savePresets,
+  loadActivePresetId,
+  saveActivePresetId,
+  matchPreset,
+  type CapturePreset,
+} from "@/lib/camera/capture-presets";
 
 const HIST_REF_STORAGE_KEY = "msc:hist-reference:v1";
 
