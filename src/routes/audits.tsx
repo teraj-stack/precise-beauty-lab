@@ -381,7 +381,7 @@ function AuditRow({
     <li
       ref={rowRef}
       className={`rounded-lg border bg-card transition-colors ${highlighted ? "border-primary ring-2 ring-primary/30" : "border-border"}`}
-    ></li>
+    >
 
       <button
         type="button"
