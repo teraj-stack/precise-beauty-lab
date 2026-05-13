@@ -1,0 +1,150 @@
+{
+  "$schema_version": "1.0.0",
+  "kb_version": "kb-protocols-2026.05.13-001",
+  "device_id": "DEV-THUL-1927-1550-001",
+  "param_units": {
+    "power": "W",
+    "pulse_width": "ms",
+    "energy": "mJ",
+    "distance": "mm",
+    "interval": "days",
+    "_note": "energy = power × pulse_width. Distance = odstęp mikropunktów dla trybu frakcyjnego (lub krok ślizgu)."
+  },
+  "skin_modifiers": {
+    "dark_or_sensitive_or_vascular": {
+      "rule": "Dla skóry ciemnej (Fitz V–VI), wrażliwej, naczyniowej lub z silnym trądzikiem różowatym: zmniejsz moc lasera, zwiększ pulse width.",
+      "rationale": "Ciemna skóra: większa zawartość melaniny → wyższa absorpcja; naczyniowa: hemoglobina absorbuje. Dłuższy impuls + niższa moc = łagodniejszy gradient termiczny."
+    }
+  },
+  "titration_procedure": [
+    "Po znieczuleniu osusz dokładnie pole zabiegowe.",
+    "Wybierz parametry bazowe wg fototypu i wskazania.",
+    "Wykonaj 2–3 strzały próbne; zapytaj o uczucie ciepła i oceń rumień.",
+    "Jeśli brak reakcji: zwiększ moc o 1–2 W LUB pulse width o 0.1–0.5 ms.",
+    "Wzrost energii ≤ 2 mJ na iterację. Powtarzaj do uzyskania ciepła/rumienia.",
+    "Zwykle 1–3 powtórzeń przejść (PASS). Maks. 2 PASS przy łączeniu długości fal.",
+    "Maska medyczna po zabiegu, instrukcja pielęgnacji domowej."
+  ],
+  "expert_override": {
+    "requires": "physician_or_certified_cosmetologist",
+    "blocking": "Protokół pozostaje w stanie SUGGESTED do momentu zatwierdzenia (confirmation_event)."
+  },
+  "protocols": [
+    {
+      "id": "PROT-THUL-1550-RAISED-SCAR-001",
+      "indication": "Blizny przerostowe (raised scar)",
+      "wavelength_nm": 1550,
+      "mode": "fractional",
+      "params_skin_iii": { "power_w": 10, "pulse_width_ms": 1.4, "energy_mj": 14, "distance_mm": 0.5 },
+      "params_dark_sensitive_vascular": { "power_w": 9, "pulse_width_ms": 1.5, "energy_mj": 13.5, "distance_mm": 0.4 },
+      "post_treatment": "Rumień ustępuje 1–3 dni; widoczne strupy. Esencja/sprej regeneracyjny.",
+      "interval_days": 60,
+      "sessions": "3–6",
+      "alternative": "Lepszy efekt uzyskuje laser CO2.",
+      "severity_rule": "Im poważniejszy problem: większa moc, mniejsza odległość mikropunktów."
+    },
+    {
+      "id": "PROT-THUL-1550-WRINKLE-SCAR-STRETCH-001",
+      "indication": "Zmarszczki statyczne, blizny zanikowe, rozstępy, fat marks",
+      "wavelength_nm": 1550,
+      "mode": "fractional",
+      "params_skin_iii": { "power_w": 10, "pulse_width_ms": 1.0, "energy_mj": 10, "distance_mm": 0.8 },
+      "params_dark_sensitive_vascular": { "power_w": 9, "pulse_width_ms": 1.1, "energy_mj": 9.9, "distance_mm": 0.6 },
+      "post_treatment": "Rumień 1–3 dni, drobne strupy. Esencja/sprej.",
+      "interval_days_range": [45, 60],
+      "sessions": "3–6",
+      "severity_rule": "Im poważniejszy problem: mniejsza odległość, większa pulse width."
+    },
+    {
+      "id": "PROT-THUL-1927-PIGMENT-ACNE-PORES-001",
+      "indication": "Przebarwienia, działanie przeciwzapalne, ślady po trądziku, rozjaśnianie kolorytu, rozszerzone pory, wzrost włosów",
+      "wavelength_nm": 1927,
+      "mode": "fractional",
+      "params_skin_iii": { "power_w": 8, "pulse_width_ms": 1.0, "energy_mj": 8, "distance_mm": 1.0 },
+      "params_dark_sensitive_vascular": { "power_w": 6, "pulse_width_ms": 1.2, "energy_mj": 7.2, "distance_mm": 0.8 },
+      "post_treatment": "Rumień ustępuje w 24 h, brak strupów. Esencja/sprej.",
+      "interval_days": 30,
+      "sessions": "6–8",
+      "severity_rule": "Im poważniejszy problem: większa pulse width i moc."
+    },
+    {
+      "id": "PROT-THUL-DUAL-LIFTING-DYNAMIC-001",
+      "indication": "Lifting i ujędrnianie, zmarszczki dynamiczne, leczenie skóry głowy / stymulacja wzrostu włosów",
+      "wavelength_nm": [1927, 1550],
+      "mode": "sliding",
+      "params_skin_iii": { "power_w": 6, "pulse_width_ms": 1.0, "energy_mj": 6, "distance_mm": 1.0 },
+      "params_dark_sensitive_vascular": { "power_w": 5, "pulse_width_ms": 1.2, "energy_mj": 6, "distance_mm": 1.0 },
+      "post_treatment": "Rumień do 24 h, brak strupów. Esencja/sprej.",
+      "interval_days": 30,
+      "sessions": "6–8",
+      "severity_rule": "Im poważniejszy problem: większa pulse width i moc."
+    },
+    {
+      "id": "PROT-THUL-1927-HAIR-GROWTH-001",
+      "indication": "Stymulacja wzrostu włosów (łysienie)",
+      "wavelength_nm": 1927,
+      "mode": ["fractional", "sliding"],
+      "params_skin_iii": { "power_w": 6, "pulse_width_ms": 1.0, "energy_mj": 6, "distance_mm": 1.0 },
+      "params_dark_sensitive_vascular": { "power_w": 5, "pulse_width_ms": 1.2, "energy_mj": 6, "distance_mm": 0.8 },
+      "post_treatment": "Rumień do 24 h, brak strupów. Esencja/sprej.",
+      "adjuvant": "Minoxidil topowo po zabiegu wg zaleceń lekarza.",
+      "interval_days": 30,
+      "sessions": "6–8",
+      "severity_rule": "Im poważniejszy problem: większa moc, mniejsza odległość."
+    },
+    {
+      "id": "PROT-THUL-DUAL-REJUV-OIL-DELIVERY-001",
+      "indication": "Odmładzanie skóry, kontrola łojotoku, otwarcie bariery i wprowadzanie kosmetyków funkcjonalnych",
+      "wavelength_nm": [1927, 1550],
+      "mode": "non_invasive",
+      "params_skin_iii": { "power_w": 5, "pulse_width_ms": 1.0, "energy_mj": 5, "distance_mm": 1.0 },
+      "params_dark_sensitive_vascular": { "power_w": 3, "pulse_width_ms": 1.5, "energy_mj": 4.5, "distance_mm": 1.0 },
+      "post_treatment": "Rumień ustępuje w ~2 h, brak strupów. Maska medyczna; esencja/sprej.",
+      "interval_days_range": [7, 15],
+      "sessions": "8–10"
+    },
+    {
+      "id": "PROT-THUL-DUAL-VAGINA-TIGHTEN-001",
+      "indication": "Zwężenie pochwy (vaginal tightening)",
+      "wavelength_nm": [1550, 1927],
+      "mode": "private",
+      "applicator": "vagina",
+      "params_skin_iii": { "power_w": 6, "pulse_width_ms": 1.0, "energy_mj": 6, "distance_mm": 1.0 },
+      "params_dark_sensitive_vascular": { "power_w": 5, "pulse_width_ms": 1.1, "energy_mj": 5.5, "distance_mm": 1.0 },
+      "post_treatment": "Bez współżycia 3–7 dni.",
+      "interval_days_range": [30, 45],
+      "sessions": "3–4",
+      "operator_role_required": "physician_only"
+    },
+    {
+      "id": "PROT-THUL-DUAL-VULVA-TENDER-001",
+      "indication": "Rozjaśnienie i ujędrnienie sromu (vulva pink and tender)",
+      "wavelength_nm": [1927, 1550],
+      "mode": "private",
+      "applicator": "vulva",
+      "params_skin_iii": { "power_w": 6, "pulse_width_ms": 1.0, "energy_mj": 6, "distance_mm": 1.0 },
+      "params_dark_sensitive_vascular": { "power_w": 5, "pulse_width_ms": 1.1, "energy_mj": 5.5, "distance_mm": 1.0 },
+      "post_treatment": "Bez współżycia 3–7 dni.",
+      "interval_days_range": [30, 45],
+      "sessions": "3–4",
+      "operator_role_required": "physician_only"
+    }
+  ],
+  "indication_to_protocol_index": {
+    "raised_scar": ["PROT-THUL-1550-RAISED-SCAR-001"],
+    "static_wrinkle": ["PROT-THUL-1550-WRINKLE-SCAR-STRETCH-001"],
+    "atrophic_scar": ["PROT-THUL-1550-WRINKLE-SCAR-STRETCH-001"],
+    "stretch_marks": ["PROT-THUL-1550-WRINKLE-SCAR-STRETCH-001"],
+    "pigmentation": ["PROT-THUL-1927-PIGMENT-ACNE-PORES-001"],
+    "chloasma": ["PROT-THUL-1927-PIGMENT-ACNE-PORES-001"],
+    "acne_marks": ["PROT-THUL-1927-PIGMENT-ACNE-PORES-001"],
+    "enlarged_pores": ["PROT-THUL-1927-PIGMENT-ACNE-PORES-001"],
+    "skin_lifting": ["PROT-THUL-DUAL-LIFTING-DYNAMIC-001"],
+    "dynamic_wrinkle": ["PROT-THUL-DUAL-LIFTING-DYNAMIC-001"],
+    "hair_growth": ["PROT-THUL-1927-HAIR-GROWTH-001", "PROT-THUL-DUAL-LIFTING-DYNAMIC-001"],
+    "skin_rejuvenation": ["PROT-THUL-DUAL-REJUV-OIL-DELIVERY-001"],
+    "oil_control": ["PROT-THUL-DUAL-REJUV-OIL-DELIVERY-001"],
+    "vaginal_tightening": ["PROT-THUL-DUAL-VAGINA-TIGHTEN-001"],
+    "vulva_pink": ["PROT-THUL-DUAL-VULVA-TENDER-001"]
+  }
+}

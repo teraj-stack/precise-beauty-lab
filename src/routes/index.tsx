@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Camera, ShieldCheck, Microscope } from "lucide-react";
+import { Camera, ShieldCheck, Microscope, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
@@ -35,6 +35,11 @@ function Index() {
           <Button asChild size="lg">
             <Link to="/capture">
               <Camera /> Otwórz Moduł 1 — Kamerę
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="outline">
+            <Link to="/protocols">
+              <BookOpen /> Baza protokołów
             </Link>
           </Button>
         </div>
