@@ -13,6 +13,8 @@ import { Route as ProtocolsPs30RouteImport } from './routes/protocols-ps30'
 import { Route as ProtocolsEl950RouteImport } from './routes/protocols-el950'
 import { Route as ProtocolsCl300RouteImport } from './routes/protocols-cl300'
 import { Route as ProtocolsRouteImport } from './routes/protocols'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as LaserThuliumRouteImport } from './routes/laser-thulium'
 import { Route as CaptureRouteImport } from './routes/capture'
 import { Route as CalibrateRouteImport } from './routes/calibrate'
@@ -36,6 +38,16 @@ const ProtocolsCl300Route = ProtocolsCl300RouteImport.update({
 const ProtocolsRoute = ProtocolsRouteImport.update({
   id: '/protocols',
   path: '/protocols',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LaserThuliumRoute = LaserThuliumRouteImport.update({
@@ -64,6 +76,8 @@ export interface FileRoutesByFullPath {
   '/calibrate': typeof CalibrateRoute
   '/capture': typeof CaptureRoute
   '/laser-thulium': typeof LaserThuliumRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/protocols': typeof ProtocolsRoute
   '/protocols-cl300': typeof ProtocolsCl300Route
   '/protocols-el950': typeof ProtocolsEl950Route
@@ -74,6 +88,8 @@ export interface FileRoutesByTo {
   '/calibrate': typeof CalibrateRoute
   '/capture': typeof CaptureRoute
   '/laser-thulium': typeof LaserThuliumRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/protocols': typeof ProtocolsRoute
   '/protocols-cl300': typeof ProtocolsCl300Route
   '/protocols-el950': typeof ProtocolsEl950Route
@@ -85,6 +101,8 @@ export interface FileRoutesById {
   '/calibrate': typeof CalibrateRoute
   '/capture': typeof CaptureRoute
   '/laser-thulium': typeof LaserThuliumRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
   '/protocols': typeof ProtocolsRoute
   '/protocols-cl300': typeof ProtocolsCl300Route
   '/protocols-el950': typeof ProtocolsEl950Route
@@ -97,6 +115,8 @@ export interface FileRouteTypes {
     | '/calibrate'
     | '/capture'
     | '/laser-thulium'
+    | '/login'
+    | '/onboarding'
     | '/protocols'
     | '/protocols-cl300'
     | '/protocols-el950'
@@ -107,6 +127,8 @@ export interface FileRouteTypes {
     | '/calibrate'
     | '/capture'
     | '/laser-thulium'
+    | '/login'
+    | '/onboarding'
     | '/protocols'
     | '/protocols-cl300'
     | '/protocols-el950'
@@ -117,6 +139,8 @@ export interface FileRouteTypes {
     | '/calibrate'
     | '/capture'
     | '/laser-thulium'
+    | '/login'
+    | '/onboarding'
     | '/protocols'
     | '/protocols-cl300'
     | '/protocols-el950'
@@ -128,6 +152,8 @@ export interface RootRouteChildren {
   CalibrateRoute: typeof CalibrateRoute
   CaptureRoute: typeof CaptureRoute
   LaserThuliumRoute: typeof LaserThuliumRoute
+  LoginRoute: typeof LoginRoute
+  OnboardingRoute: typeof OnboardingRoute
   ProtocolsRoute: typeof ProtocolsRoute
   ProtocolsCl300Route: typeof ProtocolsCl300Route
   ProtocolsEl950Route: typeof ProtocolsEl950Route
@@ -162,6 +188,20 @@ declare module '@tanstack/react-router' {
       path: '/protocols'
       fullPath: '/protocols'
       preLoaderRoute: typeof ProtocolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/laser-thulium': {
@@ -200,6 +240,8 @@ const rootRouteChildren: RootRouteChildren = {
   CalibrateRoute: CalibrateRoute,
   CaptureRoute: CaptureRoute,
   LaserThuliumRoute: LaserThuliumRoute,
+  LoginRoute: LoginRoute,
+  OnboardingRoute: OnboardingRoute,
   ProtocolsRoute: ProtocolsRoute,
   ProtocolsCl300Route: ProtocolsCl300Route,
   ProtocolsEl950Route: ProtocolsEl950Route,
@@ -208,3 +250,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
