@@ -61,6 +61,57 @@ export type Database = {
           },
         ]
       }
+      capture_audits: {
+        Row: {
+          captured_at: string
+          created_at: string
+          decision: string
+          id: string
+          image_bytes: number
+          image_height: number
+          image_width: number
+          jpeg_sha256: string
+          owner_id: string
+          patient_id: string | null
+          profile_version: string
+          report: Json
+          source: string
+          thresholds_version: string
+        }
+        Insert: {
+          captured_at: string
+          created_at?: string
+          decision: string
+          id?: string
+          image_bytes: number
+          image_height: number
+          image_width: number
+          jpeg_sha256: string
+          owner_id: string
+          patient_id?: string | null
+          profile_version: string
+          report: Json
+          source?: string
+          thresholds_version: string
+        }
+        Update: {
+          captured_at?: string
+          created_at?: string
+          decision?: string
+          id?: string
+          image_bytes?: number
+          image_height?: number
+          image_width?: number
+          jpeg_sha256?: string
+          owner_id?: string
+          patient_id?: string | null
+          profile_version?: string
+          report?: Json
+          source?: string
+          thresholds_version?: string
+        }
+        Relationships: []
+      }
       consultations: {
         Row: {
           created_at: string
