@@ -74,6 +74,63 @@ export function HistogramHUD({ metrics, reference }: Props) {
   const highBad = clipHighPct > clipMaxPct;
   const inBand = metrics.luminance >= lo && metrics.luminance <= hi;
 
+  // ---- Per-side mass: split histogram into dark (lewa) and bright (prawa) halves.
+  const half = Math.floor(bins.length / 2);
+  let darkMass = 0;
+  let brightMass = 0;
+  for (let i = 0; i < bins.length; i++) {
+    if (i < half) darkMass += bins[i];
+    else brightMass += bins[i];
+  }
+  const darkPct = darkMass * 100;
+  const brightPct = brightMass * 100;
+  // Heavy = >60% masy w jednej połowie — wyraźna asymetria histogramu.
+  const darkHeavy = darkMass > 0.6;
+  const brightHeavy = brightMass > 0.6;
+  const darkSkewed = darkMass > 0.5 && !darkHeavy;
+  const brightSkewed = brightMass > 0.5 && !brightHeavy;
+
+  // Diagnostic verdict: czy problem to cienie czy prześwietlenia?
+  const sideHint: { text: string; tone: "ok" | "warn" | "fail" } = (() => {
+    if (lowBad && highBad)
+      return {
+        text: "Skrajne cienie i prześwietlenia jednocześnie — scena ma za duży kontrast.",
+        tone: "fail",
+      };
+    if (highBad)
+      return {
+        text: "Prześwietlenia w jasnych partiach — usuń odbicia / przyciemnij światło.",
+        tone: "fail",
+      };
+    if (lowBad)
+      return {
+        text: "Głębokie cienie — dodaj światło wypełniające od przodu.",
+        tone: "fail",
+      };
+    if (brightHeavy)
+      return {
+        text: "Histogram zepchnięty w prawo — kadr za jasny, zmniejsz ekspozycję.",
+        tone: "warn",
+      };
+    if (darkHeavy)
+      return {
+        text: "Histogram zepchnięty w lewo — kadr za ciemny, zwiększ ekspozycję.",
+        tone: "warn",
+      };
+    if (brightSkewed)
+      return { text: "Lekka przewaga jasnych tonów — pilnuj prześwietleń.", tone: "warn" };
+    if (darkSkewed)
+      return { text: "Lekka przewaga cieni — pilnuj niedoświetlenia.", tone: "warn" };
+    return { text: "Rozkład tonów zrównoważony.", tone: "ok" };
+  })();
+  const sideToneCls =
+    sideHint.tone === "ok"
+      ? "bg-emerald-500/15 text-emerald-100 border-emerald-400/30"
+      : sideHint.tone === "fail"
+        ? "bg-red-500/20 text-red-50 border-red-400/40"
+        : "bg-amber-500/15 text-amber-50 border-amber-400/40";
+
+
   // Reference overlay polyline points
   const refPoints =
     refBins && refBins.length === bins.length
