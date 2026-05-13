@@ -232,9 +232,30 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
   const lastAttemptAt = useRef(0);
 
   // ---- Histogram reference (persistent across reloads) ----
-  const [histRef, setHistRef] = useState<HistogramReference | null>(() =>
+  const [manualHistRef, setManualHistRef] = useState<HistogramReference | null>(() =>
     loadHistReference(),
   );
+
+  // ---- Calibration presets (per device + mode) ----
+  const [presets, setPresets] = useState<CapturePreset[]>(() => loadPresets());
+  const [activePresetId, setActivePresetId] = useState<string | null>(() =>
+    loadActivePresetId(),
+  );
+  const activePreset = presets.find((p) => p.id === activePresetId) ?? null;
+
+  // Active preset overrides manual reference for histogram comparison.
+  const histRef: HistogramReference | null = activePreset
+    ? {
+        histogram: activePreset.histogram,
+        luminance: activePreset.luminance,
+        capturedAt: activePreset.createdAt,
+        label: `${activePreset.deviceLabel} · ${activePreset.modeLabel}`,
+      }
+    : manualHistRef;
+
+  const presetMatch =
+    activePreset && report ? matchPreset(activePreset, report.metrics) : null;
+  const presetBlocked = !!presetMatch && !presetMatch.distanceOk;
 
   const captureHistRef = useCallback(() => {
     if (!report) {
@@ -247,16 +268,47 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
       capturedAt: Date.now(),
       label: `Próba ${new Date().toLocaleTimeString()}`,
     };
-    setHistRef(ref);
+    setManualHistRef(ref);
     saveHistReference(ref);
     toast.success(`Histogram zarejestrowany (μ ${ref.luminance.toFixed(2)})`);
   }, [report]);
 
   const clearHistRef = useCallback(() => {
-    setHistRef(null);
+    setManualHistRef(null);
     saveHistReference(null);
     toast.message("Referencja histogramu wyczyszczona");
   }, []);
+
+  const handleSavePreset = useCallback((p: CapturePreset) => {
+    setPresets((prev) => {
+      const next = [...prev, p];
+      savePresets(next);
+      return next;
+    });
+  }, []);
+
+  const handleActivatePreset = useCallback((id: string | null) => {
+    setActivePresetId(id);
+    saveActivePresetId(id);
+    if (id) toast.success("Preset aktywny — wymuszam zgodność na sesji.");
+    else toast.message("Preset dezaktywowany.");
+  }, []);
+
+  const handleDeletePreset = useCallback(
+    (id: string) => {
+      setPresets((prev) => {
+        const next = prev.filter((p) => p.id !== id);
+        savePresets(next);
+        return next;
+      });
+      if (activePresetId === id) {
+        setActivePresetId(null);
+        saveActivePresetId(null);
+      }
+      toast.message("Preset usunięty.");
+    },
+    [activePresetId],
+  );
 
   // ---- Auto-comparison vs reference (live exposure guidance) ----
   // 1 "step" = 1/3 EV (typowy krok kompensacji ekspozycji w aparatach).
