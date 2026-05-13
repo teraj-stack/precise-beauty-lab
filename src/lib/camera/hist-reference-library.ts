@@ -175,6 +175,7 @@ export function duplicateReference(
     label: baseLabel,
     conditions: patch?.conditions ?? src.conditions,
   });
+}
 
 export function updateReference(
   library: StoredHistogramReference[],
