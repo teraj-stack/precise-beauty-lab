@@ -17,18 +17,19 @@ import {
   computeReportSignature,
   type IntegrityEnvelope,
 } from "./parser-integrity";
+import type { CaptureAuditSubmitResult } from "./capture-audit-types";
 
 export interface CaptureAuditInsertInput {
   jpegBytes: Uint8Array;
   patientId?: string | null;
 }
 
-export interface CaptureAuditInsertResult {
-  id: string;
-  sha256: string;
-  createdAt: string;
-  deduplicated: boolean;
-}
+/**
+ * @deprecated Re-exported alias for {@link CaptureAuditSubmitResult}.
+ * Prefer importing `CaptureAuditSubmitResult` directly from
+ * `./capture-audit-types`.
+ */
+export type CaptureAuditInsertResult = CaptureAuditSubmitResult;
 
 /**
  * Minimal structural type covering the surface of the Supabase JS client
