@@ -11,6 +11,8 @@
  * compatibility with existing call sites).
  */
 
+import { z } from "zod";
+
 export type CaptureAuditSubmitStatus = "created" | "deduplicated";
 
 export interface CaptureAuditSubmitResultBase {
