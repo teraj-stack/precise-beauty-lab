@@ -153,17 +153,26 @@ const FIELDS: Array<{
   },
 ];
 
-export function ThresholdPanel({ current, baseline, onChange }: Props) {
+export function ThresholdPanel({ current, baseline, onChange, refMatch, onRefMatchChange }: Props) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<ThresholdOverrides>(() => loadOverrides());
+  const [refDraft, setRefDraft] = useState<RefMatchThresholds>(
+    () => refMatch ?? loadRefMatchThresholds(),
+  );
 
   // Re-sync draft if external `current` changes (e.g. profile swap).
   useEffect(() => {
     setDraft(loadOverrides());
   }, []);
+  useEffect(() => {
+    if (refMatch) setRefDraft(refMatch);
+  }, [refMatch?.alignEv, refMatch?.alignL1]);
 
   const base = baseline ?? QUALITY_PROFILE_V1.live;
   const dirty = Object.keys(draft).length > 0;
+  const refDirty =
+    refDraft.alignEv !== DEFAULT_REF_MATCH.alignEv ||
+    refDraft.alignL1 !== DEFAULT_REF_MATCH.alignL1;
 
   function update(key: TunableKey, value: number) {
     const next: ThresholdOverrides = { ...draft, [key]: value };
@@ -177,6 +186,20 @@ export function ThresholdPanel({ current, baseline, onChange }: Props) {
     setDraft(next);
     saveOverrides(next);
     onChange(next);
+  }
+
+  function updateRef(key: keyof RefMatchThresholds, value: number) {
+    const next = { ...refDraft, [key]: value };
+    setRefDraft(next);
+    saveRefMatchThresholds(next);
+    onRefMatchChange?.(next);
+  }
+
+  function resetRef() {
+    const next = { ...DEFAULT_REF_MATCH };
+    setRefDraft(next);
+    saveRefMatchThresholds(next);
+    onRefMatchChange?.(next);
   }
 
   function resetAll() {
@@ -194,7 +217,7 @@ export function ThresholdPanel({ current, baseline, onChange }: Props) {
         className="text-xs"
       >
         <Sliders className="h-3.5 w-3.5" />
-        Progi {dirty ? "(custom)" : ""}
+        Progi {dirty || refDirty ? "(custom)" : ""}
       </Button>
     );
   }
