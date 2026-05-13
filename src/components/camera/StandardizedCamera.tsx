@@ -44,6 +44,7 @@ import {
 import { CaptureReportDetails } from "./CaptureReportDetails";
 import { HistogramHistory } from "./HistogramHistory";
 import { AlignmentSummary } from "./AlignmentSummary";
+import { HistogramReferenceCompare } from "./HistogramReferenceCompare";
 import { useAlignmentTracker } from "@/lib/camera/alignment-tracker";
 import { CalibrationPresets } from "./CalibrationPresets";
 import {
