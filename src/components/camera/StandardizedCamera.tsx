@@ -1212,18 +1212,17 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
             </button>
             <button
               type="button"
-              disabled={auditState === "saving" || auditState === "saved"}
-              aria-busy={auditState === "saving"}
-              aria-disabled={auditState === "saving" || auditState === "saved"}
+              disabled={isAuditSaveDisabled(auditSave)}
+              aria-busy={isAuditSaveBusy(auditSave)}
+              aria-disabled={isAuditSaveDisabled(auditSave)}
               onClick={async () => {
                 // Sync re-entry guard — wins the race against React re-render
                 // when the user double-taps faster than the disabled attribute
                 // propagates.
                 if (auditInFlightRef.current) return;
-                if (auditState === "saving" || auditState === "saved") return;
+                if (isAuditSaveDisabled(auditSave)) return;
                 auditInFlightRef.current = true;
-                setAuditState("saving");
-                setAuditError(null);
+                dispatchAudit({ type: "submit" });
                 try {
                   const { submitCaptureAudit } = await import(
                     "@/lib/camera/capture-audit.functions"
@@ -1233,12 +1232,14 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                   const parsed = parseCaptureAuditSubmitResult(rawRes);
                   if (!parsed.ok) {
                     console.error("CaptureAuditSubmitResult validation failed", parsed.issues);
-                    setAuditState("idle");
-                    setAuditError({
-                      code: "E_INVALID_RESPONSE",
-                      title: "Niezgodny format odpowiedzi serwera",
-                      message: parsed.message,
-                      hint: `Niezgodne pola: ${parsed.issues}.`,
+                    dispatchAudit({
+                      type: "fail",
+                      error: {
+                        code: "E_INVALID_RESPONSE",
+                        title: "Niezgodny format odpowiedzi serwera",
+                        message: parsed.message,
+                        hint: `Niezgodne pola: ${parsed.issues}.`,
+                      },
                     });
                     toast.error(parsed.message, {
                       description: `Niezgodne pola: ${parsed.issues}. Spróbuj ponownie lub zgłoś incydent.`,
@@ -1247,10 +1248,9 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                     return;
                   }
                   const res = parsed.value;
-                  setAuditState("saved");
+                  dispatchAudit({ type: "ok", result: res });
                   const view = describeCaptureAuditResult(res);
                   if (res.status === "deduplicated") {
-                    setDedupInfo(res);
                     const openExisting = () =>
                       navigate({ to: "/audits", search: { sha: res.sha256, open: res.id } });
                     toast.info(view.title, {
@@ -1261,12 +1261,10 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                       duration: 8000,
                     });
                   } else {
-                    setDedupInfo(null);
                     toast.success(view.title, { description: view.description });
                   }
                 } catch (e) {
                   console.error(e);
-                  setAuditState("idle");
                   const raw = e instanceof Error ? e.message : String(e);
                   const m = raw.match(/^\[(E_[A-Z_]+)\]\s*(.*)$/);
                   const code = m?.[1] ?? "E_UNKNOWN";
@@ -1298,7 +1296,10 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                     },
                   };
                   const info = meta[code] ?? meta.E_UNKNOWN;
-                  setAuditError({ code, title: info.title, message: msg, hint: info.hint });
+                  dispatchAudit({
+                    type: "fail",
+                    error: { code, title: info.title, message: msg, hint: info.hint },
+                  });
                   toast.error(`${info.title} (${code})`, { description: msg });
                 } finally {
                   // Always release the sync guard so a retry after error works.
@@ -1307,14 +1308,10 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
               }}
               className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-[11px] font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-background"
             >
-              {auditState === "saving" && (
+              {isAuditSaveBusy(auditSave) && (
                 <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
               )}
-              {auditState === "saving"
-                ? "Zapisuję…"
-                : auditState === "saved"
-                  ? "Audyt zapisany ✓"
-                  : "Zapisz audyt"}
+              {auditSaveButtonLabel(auditSave)}
             </button>
           </div>
           {auditError && (
