@@ -314,6 +314,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     };
     setShot(frame);
     setAuditState("idle");
+    setSession((s) => [...s, frame]);
     setLastRejection(null);
     onAccepted?.(frame);
     return "accepted";
