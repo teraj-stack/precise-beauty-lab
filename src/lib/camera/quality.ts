@@ -244,7 +244,11 @@ export class TemporalTracker {
 
   private compute(): TemporalStability {
     const n = this.buf.length;
-    if (n < 2) return { luminanceStd: 0, colorCastStd: 0, samples: n };
+    const luminanceSeries = this.buf.map((m) => +m.luminance.toFixed(5));
+    const colorCastSeries = this.buf.map((m) => +m.colorCast.toFixed(5));
+    if (n < 2) {
+      return { luminanceStd: 0, colorCastStd: 0, samples: n, luminanceSeries, colorCastSeries };
+    }
     let lumSum = 0;
     let castSum = 0;
     for (const m of this.buf) {
@@ -263,6 +267,8 @@ export class TemporalTracker {
       luminanceStd: Math.sqrt(lumVar / n),
       colorCastStd: Math.sqrt(castVar / n),
       samples: n,
+      luminanceSeries,
+      colorCastSeries,
     };
   }
 }
