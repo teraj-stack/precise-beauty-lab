@@ -1230,7 +1230,12 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                   if (!parsed.ok) {
                     console.error("CaptureAuditSubmitResult validation failed", parsed.issues);
                     setAuditState("idle");
-                    setAuditError(`${parsed.message} (pola: ${parsed.issues})`);
+                    setAuditError({
+                      code: "E_INVALID_RESPONSE",
+                      title: "Niezgodny format odpowiedzi serwera",
+                      message: parsed.message,
+                      hint: `Niezgodne pola: ${parsed.issues}.`,
+                    });
                     toast.error(parsed.message, {
                       description: `Niezgodne pola: ${parsed.issues}. Spróbuj ponownie lub zgłoś incydent.`,
                       duration: 8000,
