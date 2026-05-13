@@ -666,6 +666,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     };
     setShot(frame);
     setAuditState("idle");
+    setDedupInfo(null);
     auditInFlightRef.current = false;
     setSession((s) => [...s, frame]);
     setLastRejection(null);
