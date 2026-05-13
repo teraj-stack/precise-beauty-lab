@@ -17,7 +17,8 @@ import { useDeviceStability } from "@/hooks/useDeviceStability";
 import { useFrameAnalysis } from "@/hooks/useFrameAnalysis";
 import { DEFAULT_FACE_ROI } from "@/lib/camera/quality";
 import { validateCapture, type CaptureValidation } from "@/lib/camera/validate-capture";
-import { QUALITY_PROFILE_V1 } from "@/lib/camera/quality-profiles";
+import { QUALITY_PROFILE_V1, type QualityProfile } from "@/lib/camera/quality-profiles";
+import { loadCalibration } from "@/lib/camera/calibration";
 import {
   buildCaptureMetadata,
   embedQualityReportInJpeg,
@@ -68,14 +69,18 @@ interface Props {
    * Rejected captures never reach this callback.
    */
   onAccepted?: (frame: ValidatedCapture) => void;
+  /** Override the default quality profile (e.g. personal calibration). */
+  profile?: QualityProfile;
 }
 
-export function StandardizedCamera({ onAccepted }: Props) {
+export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) {
+  const calibration = profileProp ? null : loadCalibration();
+  const profile = profileProp ?? calibration?.profile ?? QUALITY_PROFILE_V1;
   const videoRef = useRef<HTMLVideoElement>(null);
   const { stream, error, starting, locked, start, stop, lockHardware, unlockHardware } =
     useCameraStream({ facingMode: "user" });
   const stability = useDeviceStability(!!stream);
-  const report = useFrameAnalysis(videoRef, stability, { intervalMs: 220 });
+  const report = useFrameAnalysis(videoRef, stability, { intervalMs: 220, profile });
   const [shot, setShot] = useState<ValidatedCapture | null>(null);
   const autoLockTried = useRef(false);
 
@@ -138,7 +143,7 @@ export function StandardizedCamera({ onAccepted }: Props) {
       roi: DEFAULT_FACE_ROI,
       stability,
       temporal: report.temporal,
-      profile: QUALITY_PROFILE_V1,
+      profile,
     });
 
     if (validation.status === "rejected") {
@@ -180,7 +185,7 @@ export function StandardizedCamera({ onAccepted }: Props) {
     setLastRejection(null);
     onAccepted?.(frame);
     return "accepted";
-  }, [report, stability, onAccepted]);
+  }, [report, stability, onAccepted, profile]);
 
   // Manual shutter — also enables auto-retry mode if rejected.
   const onShutter = () => {
@@ -188,7 +193,7 @@ export function StandardizedCamera({ onAccepted }: Props) {
     const result = capture();
     if (result === "accepted") {
       toast.success("Zdjęcie zaakceptowane", {
-        description: `Profil ${QUALITY_PROFILE_V1.version}.`,
+        description: `Profil ${profile.version}.`,
       });
       setAutoRetry(false);
     } else if (result === "rejected") {
@@ -335,7 +340,7 @@ export function StandardizedCamera({ onAccepted }: Props) {
       </div>
 
       <p className="text-center text-[11px] text-muted-foreground">
-        Profil progów: <span className="font-mono">{QUALITY_PROFILE_V1.version}</span>
+        Profil progów: <span className="font-mono">{profile.version}</span>
       </p>
 
       {/* Last rejection details — clear, persistent until accepted */}

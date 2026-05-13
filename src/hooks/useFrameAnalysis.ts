@@ -6,7 +6,7 @@ import {
   TemporalTracker,
   type RoiRect,
 } from "@/lib/camera/quality";
-import { QUALITY_PROFILE_V1 } from "@/lib/camera/quality-profiles";
+import { QUALITY_PROFILE_V1, type QualityProfile } from "@/lib/camera/quality-profiles";
 import type { QualityReport, StabilityMetrics } from "@/lib/camera/types";
 
 interface Options {
@@ -14,6 +14,8 @@ interface Options {
   roi?: RoiRect;
   analysisWidth?: number;
   windowSize?: number;
+  /** Profile whose `live` thresholds drive HUD gates. Defaults to v1 baseline. */
+  profile?: QualityProfile;
 }
 
 export function useFrameAnalysis(
@@ -21,7 +23,13 @@ export function useFrameAnalysis(
   stability: StabilityMetrics,
   opts: Options = {},
 ) {
-  const { intervalMs = 220, roi = DEFAULT_FACE_ROI, analysisWidth = 480, windowSize = 8 } = opts;
+  const {
+    intervalMs = 220,
+    roi = DEFAULT_FACE_ROI,
+    analysisWidth = 480,
+    windowSize = 8,
+    profile = QUALITY_PROFILE_V1,
+  } = opts;
   const [report, setReport] = useState<QualityReport | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const trackerRef = useRef<TemporalTracker>(new TemporalTracker(windowSize));
@@ -53,7 +61,7 @@ export function useFrameAnalysis(
           const img = ctx.getImageData(0, 0, w, h);
           const m = analyzeFrame(img.data, w, h, roi);
           const temporal = trackerRef.current.push(m);
-          setReport(evaluateGates(m, stabRef.current, temporal, QUALITY_PROFILE_V1.live));
+          setReport(evaluateGates(m, stabRef.current, temporal, profile.live));
         } catch {
           /* cross-origin guard */
         }
@@ -66,7 +74,7 @@ export function useFrameAnalysis(
       stopped = true;
       if (timer != null) window.clearTimeout(timer);
     };
-  }, [videoRef, intervalMs, roi, analysisWidth, windowSize]);
+  }, [videoRef, intervalMs, roi, analysisWidth, windowSize, profile]);
 
   return report;
 }

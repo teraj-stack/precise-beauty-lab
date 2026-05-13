@@ -13,6 +13,7 @@ import { Route as ProtocolsCl300RouteImport } from './routes/protocols-cl300'
 import { Route as ProtocolsRouteImport } from './routes/protocols'
 import { Route as LaserThuliumRouteImport } from './routes/laser-thulium'
 import { Route as CaptureRouteImport } from './routes/capture'
+import { Route as CalibrateRouteImport } from './routes/calibrate'
 import { Route as IndexRouteImport } from './routes/index'
 
 const ProtocolsCl300Route = ProtocolsCl300RouteImport.update({
@@ -35,6 +36,11 @@ const CaptureRoute = CaptureRouteImport.update({
   path: '/capture',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CalibrateRoute = CalibrateRouteImport.update({
+  id: '/calibrate',
+  path: '/calibrate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -43,6 +49,7 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/calibrate': typeof CalibrateRoute
   '/capture': typeof CaptureRoute
   '/laser-thulium': typeof LaserThuliumRoute
   '/protocols': typeof ProtocolsRoute
@@ -50,6 +57,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/calibrate': typeof CalibrateRoute
   '/capture': typeof CaptureRoute
   '/laser-thulium': typeof LaserThuliumRoute
   '/protocols': typeof ProtocolsRoute
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/calibrate': typeof CalibrateRoute
   '/capture': typeof CaptureRoute
   '/laser-thulium': typeof LaserThuliumRoute
   '/protocols': typeof ProtocolsRoute
@@ -67,15 +76,23 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/calibrate'
     | '/capture'
     | '/laser-thulium'
     | '/protocols'
     | '/protocols-cl300'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/capture' | '/laser-thulium' | '/protocols' | '/protocols-cl300'
+  to:
+    | '/'
+    | '/calibrate'
+    | '/capture'
+    | '/laser-thulium'
+    | '/protocols'
+    | '/protocols-cl300'
   id:
     | '__root__'
     | '/'
+    | '/calibrate'
     | '/capture'
     | '/laser-thulium'
     | '/protocols'
@@ -84,6 +101,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CalibrateRoute: typeof CalibrateRoute
   CaptureRoute: typeof CaptureRoute
   LaserThuliumRoute: typeof LaserThuliumRoute
   ProtocolsRoute: typeof ProtocolsRoute
@@ -120,6 +138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CaptureRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/calibrate': {
+      id: '/calibrate'
+      path: '/calibrate'
+      fullPath: '/calibrate'
+      preLoaderRoute: typeof CalibrateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -132,6 +157,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CalibrateRoute: CalibrateRoute,
   CaptureRoute: CaptureRoute,
   LaserThuliumRoute: LaserThuliumRoute,
   ProtocolsRoute: ProtocolsRoute,
