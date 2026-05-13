@@ -330,7 +330,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     const aligned = Math.abs(evDelta) <= ALIGN_EV && l1 <= ALIGN_L1;
     return { evDelta, steps, l1, aligned };
   })();
-  const refBlocked = !!refMatch && !refMatch.aligned;
+  const refBlocked = (!!refMatch && !refMatch.aligned) || presetBlocked;
 
   // Blocking gates (live HUD): all currently failing, plus warnings if no fails
   const blockingGates = (() => {
@@ -343,6 +343,15 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
   const capture = useCallback((): "accepted" | "rejected" | "skipped" => {
     const v = videoRef.current;
     if (!v || v.videoWidth === 0 || !report) return "skipped";
+
+    // Hard-block capture while preset (zoom/odległość) doesn't match.
+    if (presetMatch && !presetMatch.distanceOk) {
+      setLastRejection({
+        gateIds: ["preset-distance"],
+        reasons: [`Niezgodność z presetem kalibracji: ${presetMatch.hint}`],
+      });
+      return "rejected";
+    }
 
     // Hard-block capture while exposure is not aligned with the saved reference.
     if (refMatch && !refMatch.aligned) {
