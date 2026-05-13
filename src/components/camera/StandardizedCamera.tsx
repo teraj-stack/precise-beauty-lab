@@ -74,6 +74,13 @@ import {
   parseCaptureAuditSubmitResult,
   type CaptureAuditDeduplicatedResult,
 } from "@/lib/camera/capture-audit-types";
+import {
+  auditSaveButtonLabel,
+  auditSaveReducer,
+  initialAuditSaveState,
+  isAuditSaveBusy,
+  isAuditSaveDisabled,
+} from "@/lib/camera/audit-save-machine";
 
 // Histogram reference storage now lives in hist-reference-library.ts (multi-entry,
 // with conditions + active selection). Legacy single-key store
