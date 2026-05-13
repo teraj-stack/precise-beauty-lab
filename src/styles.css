@@ -142,3 +142,13 @@
     color: var(--color-foreground);
   }
 }
+
+/* Privacy mode: blur sensitive identifiers when toggle is on */
+.privacy-on .privacy-blur {
+  filter: blur(6px);
+  transition: filter 0.15s ease;
+  user-select: none;
+}
+.privacy-on .privacy-blur:hover {
+  filter: blur(0);
+}
