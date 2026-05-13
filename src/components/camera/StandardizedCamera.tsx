@@ -36,7 +36,9 @@ import {
   ThresholdPanel,
   applyOverrides,
   loadOverrides,
+  loadRefMatchThresholds,
   type ThresholdOverrides,
+  type RefMatchThresholds,
 } from "./ThresholdPanel";
 import { CaptureReportDetails } from "./CaptureReportDetails";
 import { HistogramHistory } from "./HistogramHistory";
