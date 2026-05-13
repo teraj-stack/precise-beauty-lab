@@ -97,7 +97,7 @@ export const submitCaptureAudit = createServerFn({ method: "POST" })
         image_height: report.image.height,
         image_bytes: bytes.length,
         jpeg_sha256: sha256,
-        report: reportWithIntegrity,
+        report: JSON.parse(JSON.stringify(reportWithIntegrity)),
         source: "jpeg-com",
       })
       .select("id, created_at, jpeg_sha256")
