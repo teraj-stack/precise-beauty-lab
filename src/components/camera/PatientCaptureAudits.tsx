@@ -129,10 +129,6 @@ export function PatientCaptureAudits({ patientId }: Props) {
                       <FileJson className="h-3 w-3 text-muted-foreground" />
                       <span className="font-medium">Raport jakości (JSONB)</span>
                       <IntegrityBadge report={r.report} />
-                    </div>
-                    <div className="flex items-center gap-2 text-[11px]">
-                      <FileJson className="h-3 w-3 text-muted-foreground" />
-                      <span className="font-medium">Raport jakości (JSONB)</span>
                       <a
                         href={`data:application/json;charset=utf-8,${encodeURIComponent(
                           JSON.stringify(r.report, null, 2),
