@@ -74,6 +74,63 @@ export function HistogramHUD({ metrics, reference }: Props) {
   const highBad = clipHighPct > clipMaxPct;
   const inBand = metrics.luminance >= lo && metrics.luminance <= hi;
 
+  // ---- Per-side mass: split histogram into dark (lewa) and bright (prawa) halves.
+  const half = Math.floor(bins.length / 2);
+  let darkMass = 0;
+  let brightMass = 0;
+  for (let i = 0; i < bins.length; i++) {
+    if (i < half) darkMass += bins[i];
+    else brightMass += bins[i];
+  }
+  const darkPct = darkMass * 100;
+  const brightPct = brightMass * 100;
+  // Heavy = >60% masy w jednej połowie — wyraźna asymetria histogramu.
+  const darkHeavy = darkMass > 0.6;
+  const brightHeavy = brightMass > 0.6;
+  const darkSkewed = darkMass > 0.5 && !darkHeavy;
+  const brightSkewed = brightMass > 0.5 && !brightHeavy;
+
+  // Diagnostic verdict: czy problem to cienie czy prześwietlenia?
+  const sideHint: { text: string; tone: "ok" | "warn" | "fail" } = (() => {
+    if (lowBad && highBad)
+      return {
+        text: "Skrajne cienie i prześwietlenia jednocześnie — scena ma za duży kontrast.",
+        tone: "fail",
+      };
+    if (highBad)
+      return {
+        text: "Prześwietlenia w jasnych partiach — usuń odbicia / przyciemnij światło.",
+        tone: "fail",
+      };
+    if (lowBad)
+      return {
+        text: "Głębokie cienie — dodaj światło wypełniające od przodu.",
+        tone: "fail",
+      };
+    if (brightHeavy)
+      return {
+        text: "Histogram zepchnięty w prawo — kadr za jasny, zmniejsz ekspozycję.",
+        tone: "warn",
+      };
+    if (darkHeavy)
+      return {
+        text: "Histogram zepchnięty w lewo — kadr za ciemny, zwiększ ekspozycję.",
+        tone: "warn",
+      };
+    if (brightSkewed)
+      return { text: "Lekka przewaga jasnych tonów — pilnuj prześwietleń.", tone: "warn" };
+    if (darkSkewed)
+      return { text: "Lekka przewaga cieni — pilnuj niedoświetlenia.", tone: "warn" };
+    return { text: "Rozkład tonów zrównoważony.", tone: "ok" };
+  })();
+  const sideToneCls =
+    sideHint.tone === "ok"
+      ? "bg-emerald-500/15 text-emerald-100 border-emerald-400/30"
+      : sideHint.tone === "fail"
+        ? "bg-red-500/20 text-red-50 border-red-400/40"
+        : "bg-amber-500/15 text-amber-50 border-amber-400/40";
+
+
   // Reference overlay polyline points
   const refPoints =
     refBins && refBins.length === bins.length
@@ -212,12 +269,36 @@ export function HistogramHUD({ metrics, reference }: Props) {
           strokeWidth={1.5}
         />
       </svg>
-      <div className="mt-1 flex items-center justify-between text-[10px] tabular-nums">
-        <ClipPip label="LOW" pct={clipLowPct} bad={lowBad} />
-        <span className="text-white/60">
-          band {lo.toFixed(2)}–{hi.toFixed(2)}
+      <div className="mt-1 grid grid-cols-2 gap-1 text-[10px] tabular-nums">
+        <SidePip
+          side="dark"
+          label="ZA CIEMNE"
+          massPct={darkPct}
+          clipPct={clipLowPct}
+          clipBad={lowBad}
+          heavy={darkHeavy}
+          skewed={darkSkewed}
+        />
+        <SidePip
+          side="bright"
+          label="ZA JASNE"
+          massPct={brightPct}
+          clipPct={clipHighPct}
+          clipBad={highBad}
+          heavy={brightHeavy}
+          skewed={brightSkewed}
+        />
+      </div>
+      <div
+        className={`mt-1 rounded border px-1.5 py-1 text-[10px] leading-snug ${sideToneCls}`}
+        role="status"
+        aria-live="polite"
+      >
+        <span className="font-semibold">Diagnoza tonów:</span>{" "}
+        <span className="opacity-95">{sideHint.text}</span>
+        <span className="ml-1 text-white/60">
+          · band {lo.toFixed(2)}–{hi.toFixed(2)}
         </span>
-        <ClipPip label="HIGH" pct={clipHighPct} bad={highBad} />
       </div>
       {reference && (
         <div className="mt-1 flex items-center justify-between gap-2 rounded bg-sky-500/10 px-1.5 py-1 text-[10px] tabular-nums text-sky-100">
@@ -249,20 +330,55 @@ export function HistogramHUD({ metrics, reference }: Props) {
   );
 }
 
-function ClipPip({ label, pct, bad }: { label: string; pct: number; bad: boolean }) {
+function SidePip({
+  side,
+  label,
+  massPct,
+  clipPct,
+  clipBad,
+  heavy,
+  skewed,
+}: {
+  side: "dark" | "bright";
+  label: string;
+  massPct: number;
+  clipPct: number;
+  clipBad: boolean;
+  heavy: boolean;
+  skewed: boolean;
+}) {
+  const tone = clipBad || heavy ? "fail" : skewed || clipPct > 0 ? "warn" : "ok";
+  const cls =
+    tone === "fail"
+      ? "bg-red-500/25 text-red-100 border-red-400/40"
+      : tone === "warn"
+        ? "bg-amber-500/15 text-amber-100 border-amber-400/30"
+        : "bg-emerald-500/15 text-emerald-100 border-emerald-400/30";
+  const arrow = side === "dark" ? "◀" : "▶";
+  const verdict = clipBad
+    ? side === "dark"
+      ? "głębokie cienie"
+      : "prześwietlenia"
+    : heavy
+      ? side === "dark"
+        ? "kadr zbyt ciemny"
+        : "kadr zbyt jasny"
+      : skewed
+        ? "lekki skos"
+        : "OK";
   return (
     <span
-      className={
-        "inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-medium " +
-        (bad
-          ? "bg-red-500/25 text-red-100"
-          : pct > 0
-            ? "bg-amber-500/15 text-amber-100"
-            : "bg-emerald-500/15 text-emerald-100")
-      }
+      className={`inline-flex items-center justify-between gap-1.5 rounded border px-1.5 py-0.5 font-medium ${cls}`}
+      title={`${label}: masa histogramu ${massPct.toFixed(0)}%, clipping ${clipPct.toFixed(1)}%`}
     >
-      <span className="opacity-80">{label}</span>
-      <span>{pct.toFixed(1)}%</span>
+      <span className="flex items-center gap-1">
+        <span className="opacity-80">{arrow}</span>
+        <span className="opacity-90">{label}</span>
+      </span>
+      <span className="tabular-nums">
+        {massPct.toFixed(0)}% · clip {clipPct.toFixed(1)}%
+      </span>
+      <span className="opacity-95">· {verdict}</span>
     </span>
   );
 }
