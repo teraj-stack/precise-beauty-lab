@@ -216,13 +216,48 @@ export function RefMatchProfiles({
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="text-[10px] text-primary hover:underline"
-      >
-        {open ? "Ukryj formularz" : "+ Dodaj nowy profil z bieżących progów"}
-      </button>
+      <div className="flex items-center justify-between gap-2 border-t border-border pt-2">
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="text-[10px] text-primary hover:underline"
+        >
+          {open ? "Ukryj formularz" : "+ Dodaj nowy profil z bieżących progów"}
+        </button>
+        <div className="flex items-center gap-1">
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={handleExport}
+            className="h-6 px-1.5 text-[10px]"
+            title="Eksportuj progi i profile do pliku JSON"
+          >
+            <Download className="h-3 w-3" /> Eksport
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={triggerImport}
+            className="h-6 px-1.5 text-[10px]"
+            title="Importuj progi i profile z pliku JSON"
+          >
+            <Upload className="h-3 w-3" /> Import
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void handleImportFile(f);
+              e.target.value = "";
+            }}
+          />
+        </div>
+      </div>
     </div>
   );
 }
