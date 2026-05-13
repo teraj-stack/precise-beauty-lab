@@ -23,10 +23,19 @@ export const submitCaptureAudit = createServerFn({ method: "POST" })
     }
 
     const u8 = new Uint8Array(bytes);
-    const report = readQualityReportFromJpeg(u8);
-    if (!report) {
+    const rawReport = readQualityReportFromJpeg(u8);
+    if (!rawReport) {
       throw new Error("Brak segmentu COM z raportem jakości w pliku JPEG");
     }
+
+    const validation = validateQualityReport(rawReport);
+    if (!validation.ok) {
+      const detail = validation.issues?.length
+        ? ` — ${validation.issues.join("; ")}`
+        : "";
+      throw new Error(`${validation.message}${detail}`);
+    }
+    const report = validation.report;
 
     const sha256 = createHash("sha256").update(bytes).digest("hex");
 
