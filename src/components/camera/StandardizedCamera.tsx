@@ -665,6 +665,63 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                         </span>
                       </div>
                     )}
+                    {refHistory.length >= 2 && (
+                      <div className="mt-1.5 border-t border-white/10 pt-1.5">
+                        <div className="flex items-center justify-between gap-2 text-[10px] uppercase tracking-wide opacity-80">
+                          <span>Trend ostatnich {refHistory.length} klatek</span>
+                          {refTrend && (
+                            <span className="tabular-nums normal-case tracking-normal">
+                              <span className={refTrend.evImproving ? "text-emerald-300" : refTrend.evWorsening ? "text-red-300" : "opacity-80"}>
+                                ΔEV {refTrend.evImproving ? "↘" : refTrend.evWorsening ? "↗" : "→"} {refTrend.dEv >= 0 ? "+" : ""}{refTrend.dEv.toFixed(2)}
+                              </span>
+                              {" · "}
+                              <span className={refTrend.l1Improving ? "text-emerald-300" : refTrend.l1Worsening ? "text-red-300" : "opacity-80"}>
+                                L1 {refTrend.l1Improving ? "↘" : refTrend.l1Worsening ? "↗" : "→"} {refTrend.dL1 >= 0 ? "+" : ""}{refTrend.dL1.toFixed(2)}
+                              </span>
+                            </span>
+                          )}
+                        </div>
+                        {(() => {
+                          // Twin sparklines: |ΔEV| and L1, normalized independently
+                          const W = 160;
+                          const H = 22;
+                          const n = refHistory.length;
+                          const evVals = refHistory.map((s) => Math.abs(s.evDelta));
+                          const l1Vals = refHistory.map((s) => s.l1);
+                          const evMax = Math.max(ALIGN_EV * 2, ...evVals, 0.01);
+                          const l1Max = Math.max(ALIGN_L1 * 1.3, ...l1Vals, 0.01);
+                          const xAt = (i: number) => (n === 1 ? 0 : (i / (n - 1)) * W);
+                          const evPath = evVals.map((v, i) => `${i === 0 ? "M" : "L"}${xAt(i).toFixed(1)},${(H - (v / evMax) * H).toFixed(1)}`).join(" ");
+                          const l1Path = l1Vals.map((v, i) => `${i === 0 ? "M" : "L"}${xAt(i).toFixed(1)},${(H - (v / l1Max) * H).toFixed(1)}`).join(" ");
+                          const evThreshY = H - (ALIGN_EV / evMax) * H;
+                          const l1ThreshY = H - (ALIGN_L1 / l1Max) * H;
+                          return (
+                            <div className="mt-1 flex items-center gap-2">
+                              <div className="flex items-center gap-1">
+                                <span className="text-[9px] opacity-70 w-6">|ΔEV|</span>
+                                <svg width={W} height={H} className="overflow-visible">
+                                  <line x1={0} x2={W} y1={evThreshY} y2={evThreshY} stroke="currentColor" strokeOpacity={0.25} strokeDasharray="2 2" />
+                                  <path d={evPath} fill="none" stroke="currentColor" strokeWidth={1.25} className="text-emerald-300" />
+                                  {refHistory.map((s, i) => (
+                                    <circle key={i} cx={xAt(i)} cy={H - (Math.abs(s.evDelta) / evMax) * H} r={1.5} className={s.aligned ? "fill-emerald-300" : "fill-amber-300"} />
+                                  ))}
+                                </svg>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="text-[9px] opacity-70 w-4">L1</span>
+                                <svg width={W} height={H} className="overflow-visible">
+                                  <line x1={0} x2={W} y1={l1ThreshY} y2={l1ThreshY} stroke="currentColor" strokeOpacity={0.25} strokeDasharray="2 2" />
+                                  <path d={l1Path} fill="none" stroke="currentColor" strokeWidth={1.25} className="text-sky-300" />
+                                  {refHistory.map((s, i) => (
+                                    <circle key={i} cx={xAt(i)} cy={H - (s.l1 / l1Max) * H} r={1.5} className={s.aligned ? "fill-emerald-300" : "fill-amber-300"} />
+                                  ))}
+                                </svg>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
