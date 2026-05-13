@@ -162,6 +162,7 @@ export async function performCaptureAuditInsert(
       if (dupErr) throw new Error(dupErr.message);
       if (!dup) throw new Error("[E_DEDUP_LOST] Konflikt unikalności bez wiersza zwycięzcy");
       return {
+        status: "deduplicated",
         id: dup.id,
         sha256: dup.jpeg_sha256,
         createdAt: dup.created_at,
