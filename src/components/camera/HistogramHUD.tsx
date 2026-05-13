@@ -55,9 +55,17 @@ export function HistogramHUD({ metrics, reference }: Props) {
 
   const lo = DEFAULT_THRESHOLDS.luminanceMin;
   const hi = DEFAULT_THRESHOLDS.luminanceMax;
+  const target = (lo + hi) / 2;
   const meanX = metrics.luminance * W;
   const bandX = lo * W;
   const bandW = (hi - lo) * W;
+
+  // Relative EV offset vs band midpoint. Negative = under, positive = over.
+  // Clamp luminance to avoid log(0).
+  const evOffset = Math.log2(Math.max(0.001, metrics.luminance) / target);
+  const evRefOffset = reference
+    ? Math.log2(Math.max(0.001, reference.luminance) / target)
+    : null;
 
   const clipLowPct = metrics.clippingLow * 100;
   const clipHighPct = metrics.clippingHigh * 100;
@@ -92,12 +100,46 @@ export function HistogramHUD({ metrics, reference }: Props) {
         : "podnieś ekspozycję"
     : null;
 
+  // Direction arrow + actionable label for the AE pill
+  const evAbs = Math.abs(evOffset);
+  const aeStatus: "ok" | "warn" | "fail" = inBand
+    ? "ok"
+    : evAbs > 1
+      ? "fail"
+      : "warn";
+  const aeColor =
+    aeStatus === "ok"
+      ? "bg-emerald-500/20 text-emerald-100 border-emerald-400/40"
+      : aeStatus === "fail"
+        ? "bg-red-500/25 text-red-50 border-red-400/50"
+        : "bg-amber-500/20 text-amber-50 border-amber-400/40";
+  const aeArrow = inBand ? "•" : evOffset > 0 ? "▼" : "▲";
+  const aeAction = inBand
+    ? "w paśmie"
+    : evOffset > 0
+      ? "przyciemnij scenę"
+      : "rozjaśnij scenę";
+
   return (
     <div className="rounded-md border border-border/40 bg-black/55 px-2 py-1.5 text-[10px] text-white backdrop-blur-md">
-      <div className="mb-1 flex items-center justify-between font-medium">
-        <span>Histogram (Y){reference ? " · vs ref" : ""}</span>
-        <span className={inBand ? "text-emerald-300" : "text-amber-300"}>
-          μ {metrics.luminance.toFixed(2)}
+      <div className="mb-1 flex items-center justify-between gap-2 font-medium">
+        <span className="shrink-0">Histogram (Y){reference ? " · vs ref" : ""}</span>
+        <span className={`tabular-nums ${inBand ? "text-emerald-300" : "text-amber-300"}`}>
+          μ {metrics.luminance.toFixed(2)} · target {target.toFixed(2)}
+        </span>
+      </div>
+      <div
+        className={`mb-1.5 flex items-center justify-between gap-2 rounded border px-1.5 py-1 text-[10px] tabular-nums ${aeColor}`}
+        role="status"
+        aria-label={`AE offset ${evOffset >= 0 ? "+" : ""}${evOffset.toFixed(1)} EV, ${aeAction}`}
+      >
+        <span className="font-semibold">
+          AE {evOffset >= 0 ? "+" : ""}
+          {evOffset.toFixed(1)} EV
+        </span>
+        <span className="opacity-90">
+          <span className="mr-1 text-[12px] leading-none">{aeArrow}</span>
+          {aeAction}
         </span>
       </div>
       <svg
@@ -194,6 +236,12 @@ export function HistogramHUD({ metrics, reference }: Props) {
           </span>
           <span>L1 {l1.toFixed(2)}</span>
           <span>EMD {emd.toFixed(3)}</span>
+          {evRefOffset != null && (
+            <span title="Różnica EV vs referencja">
+              ΔEV {evOffset - evRefOffset >= 0 ? "+" : ""}
+              {(evOffset - evRefOffset).toFixed(1)}
+            </span>
+          )}
           <span className="font-medium text-white/90">{dirHint}</span>
         </div>
       )}
