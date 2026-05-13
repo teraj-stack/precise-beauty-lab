@@ -71,6 +71,7 @@ function PatientDetail() {
           <TabsTrigger value="consult">Wywiad</TabsTrigger>
           <TabsTrigger value="history">Historia</TabsTrigger>
           <TabsTrigger value="gallery">Galeria</TabsTrigger>
+          <TabsTrigger value="audits">Audyty CV</TabsTrigger>
           <TabsTrigger value="plan">Beauty Plan</TabsTrigger>
         </TabsList>
         <TabsContent value="info">
