@@ -21,6 +21,14 @@ const TemporalSchema = z.object({
   luminanceStd: z.number(),
   colorCastStd: z.number(),
   samples: z.number().int().nonnegative(),
+  luminanceSeries: z.array(z.number()).max(64).optional(),
+  colorCastSeries: z.array(z.number()).max(64).optional(),
+});
+
+const TemporalSchema = z.object({
+  luminanceStd: z.number(),
+  colorCastStd: z.number(),
+  samples: z.number().int().nonnegative(),
 });
 
 const MetricsSchema = z.object({
