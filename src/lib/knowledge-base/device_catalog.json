@@ -288,6 +288,67 @@
       ],
       "expert_confirmation_required": true,
       "operator_role_required": "trained_qualified_operator"
+    },
+    {
+      "id": "DEV-PS30-PLASMA-001",
+      "name": "PlasmaPro PS30 — generator zimnej plazmy (argon/hel)",
+      "name_en": "Winkonlaser PlasmaPro PS30",
+      "vendor_reference": "Winkonlaser PlasmaPro PS20 / PS30",
+      "source_documents": ["English_PS30_user_manual.pdf", "English_PS30_user_manual_2.pdf"],
+      "class": {
+        "samd_class": "IIb",
+        "laser_safety_class": "4",
+        "regulation_note": "Urządzenie do plazmoterapii klasy 4 — wymagane przeszkolenie operatora; ochrona oczu pacjenta i personelu; oznakowane pomieszczenie."
+      },
+      "physics": {
+        "type": "cold_atmospheric_plasma",
+        "gases": ["argon", "helium"],
+        "plasma_temperature_c": [30, 70],
+        "argon_purity_min_pct": 99.9,
+        "argon_inlet_pressure_mpa": [0.1, 0.2],
+        "argon_flow_dial_pct": [90, 100],
+        "voltage_v": "110–220",
+        "screen": "12-inch interactive",
+        "weight_kg": 15,
+        "dimensions_cm": [40, 36, 30]
+      },
+      "operating_modes": [
+        { "id": "continuous", "label_pl": "Tryb ciągły", "notes": "Pojedyncze naciśnięcie aktywuje pracę ciągłą; do większych obszarów." },
+        { "id": "pulse", "label_pl": "Tryb impulsowy", "notes": "Pojedynczy wyładowanie na każde naciśnięcie; precyzyjna praca punktowa." }
+      ],
+      "energy_levels": {
+        "scale": "1–5 (skala urządzenia)",
+        "recommended_start": 3,
+        "low_energy_for": "okolice wrażliwe, zabiegi lżejsze"
+      },
+      "handpieces": [
+        "Hyper Plasma (uniwersalny — odmładzanie, antybakteryjne, ujędrnianie)",
+        "Plasma Roller Tip (microneedling + cold plasma — resurfacing)",
+        "Diamond Plasma (lifting powiek/szyi/brzucha)",
+        "Plasma Jet Tip (cienkie igły — spot/mole removal, blizny)",
+        "Ozone Plasma (dezynfekcja, grzybice, trądzik, bielactwo)"
+      ],
+      "contraindications": [
+        "ciąża",
+        "choroba nowotworowa",
+        "cukrzyca",
+        "niekontrolowane nadciśnienie",
+        "zaburzenia krzepnięcia / choroby krwi",
+        "choroby autoimmunologiczne",
+        "Fitzpatrick V–VI",
+        "skłonność do bliznowców",
+        "izotretynoina (Accutane) aktywnie",
+        "preparaty z retinoidami w polu zabiegu",
+        "uczulenie na lidokainę"
+      ],
+      "after_care_default": [
+        "Lód 10 min on / 10 min off przez pierwsze 2 dni (do 1 h/dzień, przez tkaninę).",
+        "Nie drapać i nie zdrapywać strupków — odpadają w 4–5 dni.",
+        "Unikać treningu, basenu, sauny i pary do złuszczenia strupków.",
+        "Fotoprotekcja SPF 50+ przez min. 4 tygodnie."
+      ],
+      "expert_confirmation_required": true,
+      "operator_role_required": "trained_qualified_operator"
     }
   ]
 }

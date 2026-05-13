@@ -7,9 +7,11 @@ import deviceCatalog from "./device_catalog.json";
 import protocolRules from "./protocol_rules.json";
 import protocolRulesCl300 from "./protocol_rules_cl300.json";
 import protocolRulesEl950 from "./protocol_rules_el950.json";
+import protocolRulesPs30 from "./protocol_rules_ps30.json";
 
 export const PROTOCOL_RULES_CL300 = protocolRulesCl300 as typeof protocolRulesCl300;
 export const PROTOCOL_RULES_EL950 = protocolRulesEl950 as typeof protocolRulesEl950;
+export const PROTOCOL_RULES_PS30 = protocolRulesPs30 as typeof protocolRulesPs30;
 
 export interface ProtocolParams {
   power_w: number;

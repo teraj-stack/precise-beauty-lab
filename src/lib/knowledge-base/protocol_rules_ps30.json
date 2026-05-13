@@ -1,0 +1,207 @@
+{
+  "$schema_version": "1.0.0",
+  "kb_version": "kb-protocols-ps30-2026.05.13-001",
+  "device_id": "DEV-PS30-PLASMA-001",
+  "source_documents": ["English_PS30_user_manual.pdf", "English_PS30_user_manual_2.pdf"],
+  "param_units": {
+    "energy_level": "1–5 (skala urządzenia, start od 3)",
+    "gas_flow": "% pokrętła (zalecane 90–100%)",
+    "inlet_pressure": "MPa",
+    "plasma_temperature": "°C"
+  },
+  "device_specs": {
+    "modes": ["continuous", "pulse"],
+    "gases": ["argon", "helium"],
+    "argon_purity_min": "99.9% (3.0); zalecane 99.99–99.999%",
+    "argon_inlet_pressure_mpa": [0.1, 0.2],
+    "argon_flow_dial_pct": [90, 100],
+    "cold_plasma_temp_c": [30, 70],
+    "voltage_v": "110–220",
+    "screen": "12-inch interactive",
+    "weight_kg": 15
+  },
+  "general_safety": [
+    "Zawsze rozpoczynaj zabieg od poziomu energii 3 dla bezpieczeństwa.",
+    "Niższe poziomy energii dla okolic wrażliwych i zabiegów lżejszych.",
+    "Wymagane przeszkolenie operatora — laser/plazma klasy 4.",
+    "Krem znieczulający miejscowo ~20 min przed zabiegiem (spot/mole removal).",
+    "Unikaj drżenia ręki — równomierny ruch zapobiega bliznom.",
+    "Przy usuwaniu znamion: nie tnij ostrzem igły, redukuj wieloma lekkimi przejściami.",
+    "Niejasna zmiana skórna → konsultacja dermatologiczna przed zabiegiem.",
+    "Test plamkowy na małym obszarze przed pełną sesją."
+  ],
+  "contraindications": [
+    "ciąża",
+    "choroba nowotworowa",
+    "cukrzyca",
+    "niekontrolowane nadciśnienie",
+    "zaburzenia krzepnięcia / choroby krwi",
+    "choroby autoimmunologiczne",
+    "Fitzpatrick V–VI",
+    "skłonność do bliznowców (keloidów)",
+    "izotretynoina (Accutane) — aktywna terapia",
+    "preparaty z retinoidami w polu zabiegu",
+    "uczulenie/nadwrażliwość na lidokainę"
+  ],
+  "probe_selection": [
+    {
+      "probe": "Hyper Plasma",
+      "indications": [
+        "odmładzanie skóry (kolagen, drobne zmarszczki, tekstura)",
+        "antybakteryjne / przeciwzapalne",
+        "wspomaganie gojenia ran i oparzeń",
+        "ujędrnianie i napinanie",
+        "wzmocnienie penetracji serum"
+      ],
+      "mode": "continuous",
+      "default_energy_level": 3,
+      "notes": "Tip najbardziej uniwersalny — można łączyć z innymi."
+    },
+    {
+      "probe": "Plasma Roller Tip",
+      "indications": [
+        "ujędrnianie i poprawa elastyczności (microneedling + cold plasma)",
+        "resurfacing: plamy słoneczne, starcze, cellulit, rozstępy, blizny"
+      ],
+      "mode": "continuous",
+      "default_energy_level": 3,
+      "notes": "Mikronakłucia + zimna plazma — odnowa powierzchni."
+    },
+    {
+      "probe": "Diamond Plasma",
+      "indications": [
+        "lifting szyi i powiek",
+        "napięcie skóry brzucha",
+        "poprawa elastyczności i ujędrnianie obwisłych okolic"
+      ],
+      "mode": "continuous",
+      "default_energy_level": 3,
+      "notes": "Targetowane lifting partie — twarz/szyja/brzuch."
+    },
+    {
+      "probe": "Plasma Jet Tip",
+      "indications": [
+        "odmładzanie skóry (cienkie igły, stymulacja kolagenu)",
+        "redukcja blizn potrądzikowych i pooparzeniowych",
+        "ujędrnianie i napięcie skóry"
+      ],
+      "mode": "pulse",
+      "default_energy_level": 3,
+      "notes": "Cienkie igły penetrujące — wymaga precyzji i stabilnej ręki."
+    },
+    {
+      "probe": "Ozone Plasma",
+      "indications": [
+        "dezynfekcja skóry i skóry głowy",
+        "trądzik, grzybice, bielactwo (regeneracja)",
+        "wspomaganie gojenia infekcji"
+      ],
+      "mode": "continuous",
+      "default_energy_level": 3,
+      "notes": "Sterylizacja pola zabiegowego, przyspieszenie regeneracji."
+    }
+  ],
+  "protocols": [
+    {
+      "id": "PS30-SPOT-001",
+      "indication": "usuwanie plamek pigmentacyjnych (spot removal)",
+      "probe": "Plasma Jet Tip",
+      "mode": "pulse",
+      "energy_level_start": 3,
+      "energy_level_range": [2, 4],
+      "technique": "Igła w bezpośredniej bliskości plamki; delikatne, kontrolowane ruchy posuwisto-zwrotne. Melanina ciemnieje (efekt 'spalenia'), naturalnie złuszcza się w trakcie gojenia.",
+      "anesthesia": "Krem znieczulający 20 min przed zabiegiem.",
+      "session_duration_min": [20, 30],
+      "sessions_typical": "2 sesje (2–3 dla rozległych zmian)",
+      "interval_weeks": [6, 8],
+      "post_treatment": "Strupki odpadają w 4–5 dni; pełna regeneracja kolagenu 3–4 tygodnie."
+    },
+    {
+      "id": "PS30-MOLE-001",
+      "indication": "usuwanie znamion (mole removal)",
+      "probe": "Plasma Jet Tip",
+      "mode": "pulse",
+      "energy_level_start": 3,
+      "energy_level_range": [2, 4],
+      "technique": "Stopniowa redukcja lekkim, kontrolowanym wypalaniem w wielu przejściach. Nie używać końcówki igłowej do ścinania powierzchni.",
+      "anesthesia": "Krem znieczulający 20 min przed zabiegiem.",
+      "session_duration_min": [20, 30],
+      "sessions_typical": "2 sesje (2–3 jeśli znamię głębsze/podskórne)",
+      "interval_weeks": [6, 8],
+      "post_treatment": "Bez drapania strupów; przy stanie zapalnym → konsultacja medyczna.",
+      "warning": "Znamiona podejrzane (asymetria, niejednolity kolor, szybki wzrost) → ocena dermatologiczna przed zabiegiem."
+    },
+    {
+      "id": "PS30-REJUV-001",
+      "indication": "odmładzanie / fibroblast / fine lines",
+      "probe": "Hyper Plasma",
+      "mode": "continuous",
+      "energy_level_start": 3,
+      "energy_level_range": [2, 4],
+      "technique": "Równomierne pokrycie obszaru zabiegowego; w okolicach oczu — niższy poziom energii.",
+      "anesthesia": "Wg wskazań — okolice wrażliwe rozważyć krem 20 min.",
+      "session_duration_min": [20, 30],
+      "sessions_typical": "2 sesje (2–3 dla zaawansowanych zmian)",
+      "interval_weeks": [6, 8],
+      "post_treatment": "Rumień i obrzęk (szczególnie okolice oczu), drobne strupki — odpadają 4–5 dni; pełny efekt 3–4 tyg."
+    },
+    {
+      "id": "PS30-LIFT-001",
+      "indication": "lifting powiek / szyi / brzucha (skin tightening)",
+      "probe": "Diamond Plasma",
+      "mode": "continuous",
+      "energy_level_start": 3,
+      "energy_level_range": [2, 4],
+      "technique": "Targetowane przejścia w obszarze obwisłej skóry; równomierne tempo.",
+      "anesthesia": "Krem znieczulający 20 min — szczególnie powieki.",
+      "session_duration_min": [20, 30],
+      "sessions_typical": "2–3 sesje",
+      "interval_weeks": [6, 8],
+      "post_treatment": "Obrzęk w okolicach oczu — naturalny, ustępuje w kilka dni."
+    },
+    {
+      "id": "PS30-RESURF-001",
+      "indication": "resurfacing: plamy słoneczne/starcze, cellulit, rozstępy, blizny",
+      "probe": "Plasma Roller Tip",
+      "mode": "continuous",
+      "energy_level_start": 3,
+      "energy_level_range": [2, 4],
+      "technique": "Płynne ruchy rolką po obszarze zabiegowym; równomierny nacisk.",
+      "anesthesia": "Krem znieczulający 20 min przed zabiegiem.",
+      "session_duration_min": [20, 30],
+      "sessions_typical": "2–3 sesje",
+      "interval_weeks": [6, 8],
+      "post_treatment": "Rumień, drobne strupki — odpadają 4–5 dni."
+    },
+    {
+      "id": "PS30-DISINFECT-001",
+      "indication": "dezynfekcja / trądzik / grzybica / bielactwo (wspomaganie)",
+      "probe": "Ozone Plasma",
+      "mode": "continuous",
+      "energy_level_start": 3,
+      "energy_level_range": [2, 4],
+      "technique": "Pokrycie obszaru zmian; sterylizacja pola.",
+      "anesthesia": "Zwykle nie wymagana.",
+      "session_duration_min": [15, 25],
+      "sessions_typical": "Seria — wg odpowiedzi klinicznej",
+      "interval_weeks": [1, 2],
+      "post_treatment": "Łagodny rumień; brak strupów przy nieinwazyjnym użyciu."
+    }
+  ],
+  "results_timeline": {
+    "immediate": "Pierwsze widoczne zmiany.",
+    "days_4_5": "Strupki naturalnie odpadają.",
+    "weeks_3_4": "Maksymalny efekt — regeneracja kolagenu zakończona.",
+    "longevity_years": [2, 4]
+  },
+  "aftercare": [
+    "Lód: pierwsze 2 dni, 10 min on / 10 min off, do 1 h dziennie (zawsze przez czystą tkaninę).",
+    "Utrzymuj obszar w czystości do naturalnego złuszczenia strupków.",
+    "Nie dotykać, nie drapać, nie zdrapywać strupków.",
+    "Unikaj treningu, basenu, sauny, jacuzzi i pary (pocenie + namaczanie strupów).",
+    "Fotoprotekcja SPF 50+ przez minimum 4 tygodnie.",
+    "Przy nasilaniu się stanu zapalnego (zaczerwienienie, obrzęk, wyciek, ból, ciepło) — pomoc medyczna."
+  ],
+  "expert_confirmation_required": true,
+  "operator_role_required": "trained_qualified_operator"
+}

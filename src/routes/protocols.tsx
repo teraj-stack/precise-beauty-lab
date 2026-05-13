@@ -41,7 +41,7 @@ function ProtocolsPage() {
           </p>
           <h1 className="text-2xl font-semibold tracking-tight">{device.name}</h1>
           <p className="text-sm text-muted-foreground">
-            {device.physics.wavelengths_nm.join(" / ")} nm · {device.physics.max_power_w} W ·{" "}
+            {device.physics.wavelengths_nm?.join(" / ")} nm · {device.physics.max_power_w} W ·{" "}
             klasa lasera {device.class.laser_safety_class} · SaMD {device.class.samd_class}
           </p>
           <p className="text-[11px] font-mono text-muted-foreground">
