@@ -26,15 +26,14 @@ const RETRY_DEBOUNCE_MS = 350;
 
 /** Human-readable hint per gate, shown when that gate is the blocker. */
 const GATE_HINTS: Record<string, string> = {
-  "face-fill": "Zbliż lub oddal twarz, aż owal wypełni ramkę.",
-  "face-center": "Wycentruj twarz w ramce — kieruj nos na środek.",
+  distance: "Dostosuj odległość — zbliż lub oddal twarz, aż owal wypełni ramkę.",
+  position: "Wycentruj twarz w ramce — kieruj nos na środek owalu.",
   sharpness: "Trzymaj telefon nieruchomo i poczekaj na ostrość.",
-  luminance: "Zmień oświetlenie — za jasno lub za ciemno.",
-  clipping: "Usuń źródła silnego światła z kadru.",
-  "color-cast": "Neutralne oświetlenie — odsuń się od kolorowych lamp.",
-  stability: "Trzymaj telefon nieruchomo (lub oprzyj na statywie).",
+  exposure: "Zmień oświetlenie — kadr za jasny lub za ciemny.",
+  clipping: "Usuń źródła silnego światła z kadru (przepalenia/cienie).",
   "ae-stable": "Czekam, aż auto-ekspozycja się ustabilizuje…",
-  "awb-stable": "Czekam, aż balans bieli się ustabilizuje…",
+  "awb-stable": "Czekam, aż balans bieli się ustabilizuje (neutralne światło).",
+  stability: "Trzymaj telefon nieruchomo (lub oprzyj na statywie).",
 };
 
 function blockingHint(gateIds: string[], reasons: string[]): string {
