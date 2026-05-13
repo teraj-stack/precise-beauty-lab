@@ -235,8 +235,9 @@ export function StandardizedCamera({ onAccepted }: Props) {
             />
             <FaceGuideOverlay roi={DEFAULT_FACE_ROI} ready={liveReady} />
             {report && (
-              <div className="absolute inset-x-2 top-2">
+              <div className="absolute inset-x-2 top-2 space-y-1.5">
                 <QualityHUD gates={report.gates} />
+                <HistogramHUD metrics={report.metrics} />
               </div>
             )}
             {locked && (
