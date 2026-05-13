@@ -9,6 +9,8 @@ import {
   CheckCircle2,
   Loader2,
   RefreshCw,
+  BookmarkPlus,
+  X as XIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -26,7 +28,33 @@ import {
 } from "@/lib/camera/capture-metadata";
 import { FaceGuideOverlay } from "./FaceGuideOverlay";
 import { QualityHUD } from "./QualityHUD";
-import { HistogramHUD } from "./HistogramHUD";
+import { HistogramHUD, type HistogramReference } from "./HistogramHUD";
+
+const HIST_REF_STORAGE_KEY = "msc:hist-reference:v1";
+
+function loadHistReference(): HistogramReference | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(HIST_REF_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as HistogramReference;
+    if (
+      parsed &&
+      Array.isArray(parsed.histogram) &&
+      typeof parsed.luminance === "number"
+    )
+      return parsed;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function saveHistReference(ref: HistogramReference | null) {
+  if (typeof window === "undefined") return;
+  if (ref) window.localStorage.setItem(HIST_REF_STORAGE_KEY, JSON.stringify(ref));
+  else window.localStorage.removeItem(HIST_REF_STORAGE_KEY);
+}
 
 const MAX_AUTO_RETRIES = 5;
 const RETRY_DEBOUNCE_MS = 350;
