@@ -51,6 +51,18 @@ import {
   matchPreset,
   type CapturePreset,
 } from "@/lib/camera/capture-presets";
+import {
+  loadLibrary,
+  saveLibrary,
+  loadActiveId,
+  setActiveId as persistActiveRefId,
+  addReference,
+  removeReference,
+  updateReference,
+  findById as findRefById,
+  type StoredHistogramReference,
+} from "@/lib/camera/hist-reference-library";
+import { HistReferenceLibrary } from "./HistReferenceLibrary";
 
 // Histogram reference storage now lives in hist-reference-library.ts (multi-entry,
 // with conditions + active selection). Legacy single-key store
