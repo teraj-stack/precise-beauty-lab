@@ -43,6 +43,8 @@ import {
 } from "./ThresholdPanel";
 import { CaptureReportDetails } from "./CaptureReportDetails";
 import { HistogramHistory } from "./HistogramHistory";
+import { AlignmentSummary } from "./AlignmentSummary";
+import { useAlignmentTracker } from "@/lib/camera/alignment-tracker";
 import { CalibrationPresets } from "./CalibrationPresets";
 import {
   loadPresets,
@@ -563,6 +565,9 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     return out.filter((h) => (seen.has(h.text) ? false : (seen.add(h.text), true))).slice(0, 4);
   })();
 
+  // ---- Per-attempt alignment tracker (frames + ms until aligned, history per session) ----
+  const alignmentTracker = useAlignmentTracker(refMatch, refKey);
+
 
   // Blocking gates (live HUD): all currently failing, plus warnings if no fails
   const blockingGates = (() => {
@@ -1014,6 +1019,8 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
           </>
         )}
       </div>
+
+      <AlignmentSummary state={alignmentTracker} refAligned={refMatch?.aligned ?? undefined} />
 
       <p className="text-center text-[11px] text-muted-foreground">
         Profil progów: <span className="font-mono">{profile.version}</span>
