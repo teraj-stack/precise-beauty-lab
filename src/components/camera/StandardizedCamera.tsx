@@ -1331,7 +1331,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
               )}
               <button
                 type="button"
-                onClick={() => setAuditError(null)}
+                onClick={() => dispatchAudit({ type: "reset" })}
                 className="mt-1.5 text-[10px] underline opacity-70 hover:opacity-100"
               >
                 Zamknij
