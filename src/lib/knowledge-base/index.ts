@@ -5,6 +5,9 @@
 
 import deviceCatalog from "./device_catalog.json";
 import protocolRules from "./protocol_rules.json";
+import protocolRulesCl300 from "./protocol_rules_cl300.json";
+
+export const PROTOCOL_RULES_CL300 = protocolRulesCl300 as typeof protocolRulesCl300;
 
 export interface ProtocolParams {
   power_w: number;

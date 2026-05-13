@@ -116,6 +116,91 @@
       ],
       "expert_confirmation_required": true,
       "operator_role_required": "physician_or_certified_cosmetologist"
+    },
+    {
+      "id": "DEV-CL300-755-1064-001",
+      "name": "Laser długoimpulsowy Alex/Nd:YAG 755/1064 nm (CL300)",
+      "name_en": "CL300 Long Pulsed Alexandrite & Nd:YAG Laser",
+      "vendor_reference": "CL300 (Alexandrite + Nd:YAG dual-head)",
+      "source_documents": ["English_CL300.pdf", "English_CL300_2.pdf", "English_CL300_3.pdf"],
+      "class": {
+        "samd_class": "IIb",
+        "laser_safety_class": "4",
+        "regulation_note": "Laser klasy 4 — przeszkolony i wykwalifikowany personel; gogle ochronne dla pacjenta i personelu; oznakowane pomieszczenie."
+      },
+      "physics": {
+        "type": "long_pulsed_dual_wavelength",
+        "wavelengths_nm": [755, 1064],
+        "max_energy_j": { "1064": 110, "755": 60 },
+        "screen": "15.6-inch color touchscreen",
+        "cooling_options": ["contact", "chilled_air", "cryogen_R134a"]
+      },
+      "wavelength_targets": {
+        "755": {
+          "primary_chromophore": "melanin",
+          "best_for_phototype": "I–III",
+          "primary_indications": [
+            "depilacja laserowa (jasne fototypy, włosy pigmentowane)"
+          ],
+          "notes": "Wyższa absorpcja melaniny; ryzyko PIH u ciemniejszych fototypów."
+        },
+        "1064": {
+          "primary_chromophore": "hemoglobin / głęboka melanina",
+          "best_for_phototype": "IV–VI / opalona / PIH-prone",
+          "primary_indications": [
+            "depilacja ciemnej skóry / opalonej",
+            "teleangiektazje twarzy",
+            "naczynia siatkowate kończyn",
+            "naczyniaki (głębsze/mieszane)",
+            "grzybica paznokci (klirens kosmetyczny)"
+          ],
+          "notes": "Mniejsza absorpcja w naskórku → bezpieczniej dla ciemnej skóry. Wymaga wyższej fluencji."
+        }
+      },
+      "operating_modes": [
+        {
+          "id": "hair_removal",
+          "label_pl": "Depilacja",
+          "thermal_effects": ["selective_photothermolysis"],
+          "notes": "Pulse width dobierany wg kalibru włosa i fototypu, nie wg lokalizacji."
+        },
+        {
+          "id": "vascular",
+          "label_pl": "Zmiany naczyniowe",
+          "thermal_effects": ["coagulation_hemoglobin"],
+          "notes": "Pojedyncze lub podwójne/potrójne impulsy w zależności od refillu naczynia. Dłuższe impulsy zmniejszają purpurę."
+        },
+        {
+          "id": "skin_rejuvenation",
+          "label_pl": "Odmładzanie / pory / trądzik",
+          "thermal_effects": ["controlled_dermal_heating"],
+          "notes": "Indukowane ciepło górnej skóry właściwej; redukcja bakterii i zaczerwienienia."
+        },
+        {
+          "id": "onychomycosis",
+          "label_pl": "Grzybica paznokci",
+          "thermal_effects": ["thermal"],
+          "notes": "1–2 wolne przejścia; klirens kosmetyczny; ograniczone dowody."
+        }
+      ],
+      "contraindications": [
+        "ciąża i karmienie piersią",
+        "świeża opalenizna",
+        "fotouczulenia (leki, choroby) — w tym pelagra (niedobór wit. B3)",
+        "aktywna infekcja skóry w polu zabiegu",
+        "izotretynoina <6 miesięcy",
+        "skłonność do bliznowców (względne)",
+        "rozrusznik serca / wszczepialne defibrylatory bez konsultacji",
+        "zabieg chirurgiczny w polu w ostatnich 3 miesiącach lub przed pełnym wygojeniem",
+        "nowotwór skóry w polu zabiegu"
+      ],
+      "after_care_default": [
+        "Zimne kompresy i łagodny emolient.",
+        "Unikać ciepła/wysiłku w dniu zabiegu.",
+        "Fotoprotekcja SPF 50+ przez kilka tygodni; kapelusz."
+      ],
+      "expert_confirmation_required": true,
+      "operator_role_required": "trained_qualified_operator"
     }
   ]
 }

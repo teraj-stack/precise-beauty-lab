@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProtocolsCl300RouteImport } from './routes/protocols-cl300'
 import { Route as ProtocolsRouteImport } from './routes/protocols'
 import { Route as LaserThuliumRouteImport } from './routes/laser-thulium'
 import { Route as CaptureRouteImport } from './routes/capture'
 import { Route as IndexRouteImport } from './routes/index'
 
+const ProtocolsCl300Route = ProtocolsCl300RouteImport.update({
+  id: '/protocols-cl300',
+  path: '/protocols-cl300',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProtocolsRoute = ProtocolsRouteImport.update({
   id: '/protocols',
   path: '/protocols',
@@ -40,12 +46,14 @@ export interface FileRoutesByFullPath {
   '/capture': typeof CaptureRoute
   '/laser-thulium': typeof LaserThuliumRoute
   '/protocols': typeof ProtocolsRoute
+  '/protocols-cl300': typeof ProtocolsCl300Route
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/capture': typeof CaptureRoute
   '/laser-thulium': typeof LaserThuliumRoute
   '/protocols': typeof ProtocolsRoute
+  '/protocols-cl300': typeof ProtocolsCl300Route
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,25 @@ export interface FileRoutesById {
   '/capture': typeof CaptureRoute
   '/laser-thulium': typeof LaserThuliumRoute
   '/protocols': typeof ProtocolsRoute
+  '/protocols-cl300': typeof ProtocolsCl300Route
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/capture' | '/laser-thulium' | '/protocols'
+  fullPaths:
+    | '/'
+    | '/capture'
+    | '/laser-thulium'
+    | '/protocols'
+    | '/protocols-cl300'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/capture' | '/laser-thulium' | '/protocols'
-  id: '__root__' | '/' | '/capture' | '/laser-thulium' | '/protocols'
+  to: '/' | '/capture' | '/laser-thulium' | '/protocols' | '/protocols-cl300'
+  id:
+    | '__root__'
+    | '/'
+    | '/capture'
+    | '/laser-thulium'
+    | '/protocols'
+    | '/protocols-cl300'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,10 +87,18 @@ export interface RootRouteChildren {
   CaptureRoute: typeof CaptureRoute
   LaserThuliumRoute: typeof LaserThuliumRoute
   ProtocolsRoute: typeof ProtocolsRoute
+  ProtocolsCl300Route: typeof ProtocolsCl300Route
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/protocols-cl300': {
+      id: '/protocols-cl300'
+      path: '/protocols-cl300'
+      fullPath: '/protocols-cl300'
+      preLoaderRoute: typeof ProtocolsCl300RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/protocols': {
       id: '/protocols'
       path: '/protocols'
@@ -107,6 +135,7 @@ const rootRouteChildren: RootRouteChildren = {
   CaptureRoute: CaptureRoute,
   LaserThuliumRoute: LaserThuliumRoute,
   ProtocolsRoute: ProtocolsRoute,
+  ProtocolsCl300Route: ProtocolsCl300Route,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
