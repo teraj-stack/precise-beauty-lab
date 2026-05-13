@@ -43,6 +43,8 @@ import {
 } from "./ThresholdPanel";
 import { CaptureReportDetails } from "./CaptureReportDetails";
 import { HistogramHistory } from "./HistogramHistory";
+import { AlignmentSummary } from "./AlignmentSummary";
+import { useAlignmentTracker } from "@/lib/camera/alignment-tracker";
 import { CalibrationPresets } from "./CalibrationPresets";
 import {
   loadPresets,
