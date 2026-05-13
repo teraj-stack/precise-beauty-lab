@@ -64,6 +64,10 @@ import {
   type StoredHistogramReference,
 } from "@/lib/camera/hist-reference-library";
 import { HistReferenceLibrary } from "./HistReferenceLibrary";
+import {
+  describeCaptureAuditResult,
+  type CaptureAuditDeduplicatedResult,
+} from "@/lib/camera/capture-audit-types";
 
 // Histogram reference storage now lives in hist-reference-library.ts (multi-entry,
 // with conditions + active selection). Legacy single-key store
