@@ -7,8 +7,8 @@ import {
   BookOpen,
   SlidersHorizontal,
   Settings,
-  Sparkles,
 } from "lucide-react";
+import mscLogo from "@/assets/msc-logo-mini.jpeg";
 import {
   Sidebar,
   SidebarContent,
