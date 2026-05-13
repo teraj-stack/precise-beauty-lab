@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PROTOCOL_RULES_PS30, getDevice } from "@/lib/knowledge-base";
+import { GutPrehabSection } from "@/components/protocols/GutPrehabSection";
 
 export const Route = createFileRoute("/protocols-ps30")({
   head: () => ({
@@ -182,6 +183,10 @@ function ProtocolsPs30Page() {
             laser/plazma klasy {device.class.laser_safety_class}.
           </p>
         )}
+
+        <div className="mt-10">
+          <GutPrehabSection deviceId="DEV-PS30-PLASMA-001" />
+        </div>
       </section>
     </main>
   );
