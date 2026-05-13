@@ -15,6 +15,14 @@ import {
   type QualityProfile,
 } from "@/lib/camera/quality-profiles";
 import type { QualityThresholds } from "@/lib/camera/types";
+import {
+  loadActiveRefMatchProfileId,
+  loadRefMatchProfiles,
+  saveActiveRefMatchProfileId,
+  saveRefMatchProfiles,
+  type RefMatchProfile,
+} from "@/lib/camera/ref-match-profiles";
+import { RefMatchProfiles } from "./RefMatchProfiles";
 
 const STORAGE_KEY = "msc:threshold-overrides:v1";
 const REF_MATCH_STORAGE_KEY = "msc:ref-match-thresholds:v1";
