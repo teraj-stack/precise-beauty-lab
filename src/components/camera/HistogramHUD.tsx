@@ -236,6 +236,12 @@ export function HistogramHUD({ metrics, reference }: Props) {
           </span>
           <span>L1 {l1.toFixed(2)}</span>
           <span>EMD {emd.toFixed(3)}</span>
+          {evRefOffset != null && (
+            <span title="Różnica EV vs referencja">
+              ΔEV {evOffset - evRefOffset >= 0 ? "+" : ""}
+              {(evOffset - evRefOffset).toFixed(1)}
+            </span>
+          )}
           <span className="font-medium text-white/90">{dirHint}</span>
         </div>
       )}
