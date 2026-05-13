@@ -534,6 +534,13 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
       />
 
       {/* Last rejection details — clear, persistent until accepted */}
+      {schemaError && (
+        <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-[11px] text-destructive">
+          <p className="font-medium">Niezgodny schemat raportu jakości</p>
+          <p className="mt-0.5 leading-snug opacity-90">{schemaError}</p>
+        </div>
+      )}
+
       {lastRejection && !shot && (
         <div className="space-y-1.5 rounded-xl border border-amber-500/40 bg-amber-500/5 p-3 text-xs">
           <div className="flex items-center gap-1.5 text-sm font-semibold text-amber-700 dark:text-amber-300">
