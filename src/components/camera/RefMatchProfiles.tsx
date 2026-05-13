@@ -38,12 +38,67 @@ export function RefMatchProfiles({
   onSave,
   onActivate,
   onDelete,
+  onReplaceAll,
+  onApplyThresholds,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [device, setDevice] = useState("");
   const [cond, setCond] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const active = profiles.find((p) => p.id === activeId) ?? null;
+
+  function handleExport() {
+    try {
+      const bundle = buildRefMatchBundle(current);
+      const json = serializeRefMatchBundle(bundle);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = defaultRefMatchExportFilename();
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success(
+        `Wyeksportowano ${bundle.profiles.length} ${bundle.profiles.length === 1 ? "profil" : "profili"} + bieżące progi.`,
+      );
+    } catch (e) {
+      toast.error(`Eksport nie powiódł się: ${(e as Error).message}`);
+    }
+  }
+
+  function triggerImport() {
+    fileInputRef.current?.click();
+  }
+
+  async function handleImportFile(file: File) {
+    try {
+      const text = await file.text();
+      const parsed = parseRefMatchBundle(text);
+      const replace = window.confirm(
+        `Import: ${parsed.profiles.length} profili, progi ΔEV ≤ ${parsed.current.alignEv.toFixed(3)} · L1 ≤ ${parsed.current.alignL1.toFixed(3)}.\n\nOK = ZASTĄP istniejące profile (${profiles.length}).\nAnuluj = SCAL z istniejącymi (zachowa obecne).`,
+      );
+      if (replace) {
+        onReplaceAll(parsed.profiles, parsed.activeProfileId);
+        onApplyThresholds(parsed.current);
+        toast.success(
+          `Zaimportowano (zastąpiono): ${parsed.profiles.length} ${parsed.profiles.length === 1 ? "profil" : "profili"}.`,
+        );
+      } else {
+        const merged = mergeProfiles(profiles, parsed.profiles);
+        onReplaceAll(merged.profiles, activeId);
+        onApplyThresholds(parsed.current);
+        toast.success(
+          `Scalono: dodano ${merged.added}, pominięto ${merged.skipped} (duplikaty po ID).`,
+        );
+      }
+    } catch (e) {
+      if (e instanceof RefMatchImportError) toast.error(`Import: ${e.message}`);
+      else toast.error(`Import nie powiódł się: ${(e as Error).message}`);
+    }
+  }
 
   const handleSave = () => {
     if (!device.trim() || !cond.trim()) {
