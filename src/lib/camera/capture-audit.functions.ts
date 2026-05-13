@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createHash } from "crypto";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { readQualityReportFromJpeg } from "./capture-metadata";
+import { validateQualityReport } from "./quality-report-schema";
 
 const InputSchema = z.object({
   jpegBase64: z.string().min(64).max(20_000_000),
