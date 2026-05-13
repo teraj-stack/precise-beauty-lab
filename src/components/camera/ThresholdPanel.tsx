@@ -205,6 +205,10 @@ export function ThresholdPanel({ current, baseline, onChange, refMatch, onRefMat
     setRefDraft(next);
     saveRefMatchThresholds(next);
     onRefMatchChange?.(next);
+    if (activeProfileId) {
+      setActiveProfileId(null);
+      saveActiveRefMatchProfileId(null);
+    }
   }
 
   function resetRef() {
@@ -212,6 +216,39 @@ export function ThresholdPanel({ current, baseline, onChange, refMatch, onRefMat
     setRefDraft(next);
     saveRefMatchThresholds(next);
     onRefMatchChange?.(next);
+    if (activeProfileId) {
+      setActiveProfileId(null);
+      saveActiveRefMatchProfileId(null);
+    }
+  }
+
+  function handleProfileSave(p: RefMatchProfile) {
+    const next = [...profiles, p];
+    setProfiles(next);
+    saveRefMatchProfiles(next);
+  }
+
+  function handleProfileActivate(id: string | null) {
+    setActiveProfileId(id);
+    saveActiveRefMatchProfileId(id);
+    if (id) {
+      const p = profiles.find((x) => x.id === id);
+      if (p) {
+        setRefDraft(p.thresholds);
+        saveRefMatchThresholds(p.thresholds);
+        onRefMatchChange?.(p.thresholds);
+      }
+    }
+  }
+
+  function handleProfileDelete(id: string) {
+    const next = profiles.filter((p) => p.id !== id);
+    setProfiles(next);
+    saveRefMatchProfiles(next);
+    if (activeProfileId === id) {
+      setActiveProfileId(null);
+      saveActiveRefMatchProfileId(null);
+    }
   }
 
   function resetAll() {
