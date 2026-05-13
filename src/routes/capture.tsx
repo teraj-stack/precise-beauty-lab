@@ -36,14 +36,14 @@ function CapturePage() {
           </p>
         </header>
         <StandardizedCamera
-          onCapture={(f) => {
-            // For now, log. Later: POST to Module 2 (FastAPI CV) endpoint.
-            console.log("[capture]", {
-              w: f.width,
-              h: f.height,
-              metrics: f.metrics,
-              kb: f.kbVersion,
-              at: f.capturedAt,
+          onAccepted={(frame) => {
+            // TODO Module 2: POST to FastAPI CV pipeline.
+            console.log("[capture-accepted]", {
+              w: frame.width,
+              h: frame.height,
+              profile: frame.profileVersion,
+              metrics: frame.validation.report.metrics,
+              at: frame.capturedAt,
             });
           }}
         />
