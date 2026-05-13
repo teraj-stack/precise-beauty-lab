@@ -575,8 +575,39 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
         <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-[11px] text-destructive">
           <p className="font-medium">Niezgodny schemat raportu jakości</p>
           <p className="mt-0.5 leading-snug opacity-90">{schemaError}</p>
-        </div>
-      )}
+              </div>
+            )}
+            {/* Reference-match banner: korekta ekspozycji w krokach 1/3 EV */}
+            {refMatch && (
+              <div
+                className={`absolute inset-x-2 top-[calc(2.5rem+96px)] rounded-md border px-2.5 py-1.5 text-[11px] backdrop-blur-md ${
+                  refMatch.aligned
+                    ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-50"
+                    : "border-amber-400/50 bg-amber-500/20 text-amber-50"
+                }`}
+                role="status"
+                aria-live="polite"
+              >
+                {refMatch.aligned ? (
+                  <span className="font-semibold">
+                    ✓ Ekspozycja zgodna z referencją — możesz robić zdjęcie
+                  </span>
+                ) : (
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-semibold">
+                      {refMatch.steps > 0 ? "▼" : "▲"} Skoryguj{" "}
+                      {refMatch.steps > 0 ? "w dół" : "w górę"} o{" "}
+                      <span className="tabular-nums">{Math.abs(refMatch.steps)}</span>{" "}
+                      {Math.abs(refMatch.steps) === 1 ? "krok" : "kroków"} (1/3 EV)
+                    </span>
+                    <span className="tabular-nums opacity-90">
+                      ΔEV {refMatch.evDelta >= 0 ? "+" : ""}
+                      {refMatch.evDelta.toFixed(2)} · L1 {refMatch.l1.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
 
       {lastRejection && !shot && (
         <div className="space-y-1.5 rounded-xl border border-amber-500/40 bg-amber-500/5 p-3 text-xs">
