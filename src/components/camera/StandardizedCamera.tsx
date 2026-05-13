@@ -204,6 +204,33 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
   } | null>(null);
   const lastAttemptAt = useRef(0);
 
+  // ---- Histogram reference (persistent across reloads) ----
+  const [histRef, setHistRef] = useState<HistogramReference | null>(() =>
+    loadHistReference(),
+  );
+
+  const captureHistRef = useCallback(() => {
+    if (!report) {
+      toast.error("Brak metryk — uruchom kamerę i poczekaj na pierwszy frame.");
+      return;
+    }
+    const ref: HistogramReference = {
+      histogram: [...report.metrics.histogram],
+      luminance: report.metrics.luminance,
+      capturedAt: Date.now(),
+      label: `Próba ${new Date().toLocaleTimeString()}`,
+    };
+    setHistRef(ref);
+    saveHistReference(ref);
+    toast.success(`Histogram zarejestrowany (μ ${ref.luminance.toFixed(2)})`);
+  }, [report]);
+
+  const clearHistRef = useCallback(() => {
+    setHistRef(null);
+    saveHistReference(null);
+    toast.message("Referencja histogramu wyczyszczona");
+  }, []);
+
   // Blocking gates (live HUD): all currently failing, plus warnings if no fails
   const blockingGates = (() => {
     if (!report) return [];
@@ -354,7 +381,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
             {report && (
               <div className="absolute inset-x-2 top-2 space-y-1.5">
                 <QualityHUD gates={report.gates} />
-                <HistogramHUD metrics={report.metrics} />
+                <HistogramHUD metrics={report.metrics} reference={histRef} />
               </div>
             )}
             {locked && (
