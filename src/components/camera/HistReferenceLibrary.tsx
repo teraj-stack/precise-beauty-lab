@@ -7,7 +7,7 @@
  */
 
 import { useMemo, useState } from "react";
-import { ArrowDownAZ, BookmarkPlus, Check, Pencil, Search, Trash2, X } from "lucide-react";
+import { ArrowDownAZ, BookmarkPlus, Check, Copy, Pencil, Search, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { StoredHistogramReference } from "@/lib/camera/hist-reference-library";
 
