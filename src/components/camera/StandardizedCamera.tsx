@@ -300,6 +300,21 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
       height: c.height,
       validation,
     });
+    const schemaCheck = validateQualityReport(qualityReport);
+    if (!schemaCheck.ok) {
+      setSchemaError(`${schemaCheck.message}${schemaCheck.issues?.length ? ` — ${schemaCheck.issues.join("; ")}` : ""}`);
+      toast.error("Raport jakości niezgodny ze schematem", {
+        description: schemaCheck.message,
+      });
+      console.error("[capture-schema-invalid]", schemaCheck);
+      return "rejected";
+    }
+    if (schemaCheck.warnings.length) {
+      toast.warning("Ostrzeżenie schematu raportu", {
+        description: schemaCheck.warnings.join(" • "),
+      });
+    }
+    setSchemaError(null);
     const qualityReportJson = JSON.stringify(qualityReport, null, 2);
     const { dataUrl } = embedQualityReportInJpeg(rawDataUrl, qualityReport);
 
