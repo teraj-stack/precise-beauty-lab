@@ -52,6 +52,11 @@ function Index() {
               <BookOpen /> Protokoły CL300
             </Link>
           </Button>
+          <Button asChild size="lg" variant="outline">
+            <Link to="/protocols-el950">
+              <BookOpen /> Protokoły EL950 (pico)
+            </Link>
+          </Button>
         </div>
 
         <ul className="mt-12 grid gap-4 sm:grid-cols-3">

@@ -1,0 +1,288 @@
+{
+  "$schema_version": "1.0.0",
+  "kb_version": "kb-protocols-el950-2026.05.13-001",
+  "device_id": "DEV-EL950-PICO-001",
+  "source_documents": ["English_EL950_user_manual.pdf"],
+  "param_units": {
+    "spot_size": "mm",
+    "frequency": "Hz",
+    "energy": "mJ (chyba że oznaczone J/cm² — dot. Long Pulse)",
+    "interval": "days"
+  },
+  "general_safety": [
+    "Obsługa wyłącznie przez przeszkolony, wykwalifikowany personel — laser klasy 4.",
+    "Zawsze test plamkowy przed pierwszą sesją; eskaluj energię małymi krokami.",
+    "Endpoint dla tatuaży: natychmiastowe zbielenie (frosting) bez krwawienia/pęcherzy.",
+    "Endpoint dla pigmentacji: lekki rumień, ewentualnie ledwo widoczne ściemnienie zmiany.",
+    "Dla skóry IV–VI: preferuj 1064 nm, tryb Dual Pulse/Multipulse, niższa energia, dłuższe interwały.",
+    "Tryb 'Ready' wyłączaj poza ekspozycją; nigdy nie pozostawiaj sondy w trybie aktywnym bez nadzoru.",
+    "Density display >10–12 J/cm² — wysokie ryzyko wybroczyn po zabiegu; obniż energię lub powiększ spot.",
+    "Long Pulse z depilacją tylko spot 10 mm — mniejszy spot przy długim impulsie = ryzyko oparzenia.",
+    "Po zmianie spot size lub trybu zawsze kalibruj energię ponownie.",
+    "Ochrona oczu pacjenta i operatora — gogle dopasowane do długości fali."
+  ],
+  "wavelength_selection": [
+    {
+      "patient_factor": "Tatuaż czarny / fioletowy / niebieski / błękitny",
+      "preferred_wavelength_nm": 1064,
+      "notes": "Głęboka penetracja, wysoka absorpcja w ciemnych pigmentach. Domyślna głowica."
+    },
+    {
+      "patient_factor": "Tatuaż czerwony / pomarańczowy / żółty / zielony",
+      "preferred_wavelength_nm": 532,
+      "notes": "Wysoka absorpcja w pigmentach ciepłych. Zielone i żółte często wymagają wielu sesji; rozważ dodatkowo 755 nm (Honeycomb) dla zielonego."
+    },
+    {
+      "patient_factor": "Skóra IV–VI lub PIH-prone",
+      "preferred_wavelength_nm": 1064,
+      "notes": "Mniejsza absorpcja w naskórku → bezpieczniejsze. Dual Pulse / Multipulse jeszcze bardziej redukują ryzyko PIH."
+    },
+    {
+      "patient_factor": "Powierzchowne przebarwienia, melasma, rozjaśnianie",
+      "preferred_wavelength_nm": 755,
+      "notes": "Honeycomb 755 nm — najwyższa selektywność wobec melaniny (~3× wyższa niż 1064). Frakcyjny układ mikrowiązek = krótszy downtime."
+    },
+    {
+      "patient_factor": "Powierzchowne plamy soczewicowate, piegi, ostuda nieaktywna",
+      "preferred_wavelength_nm": 532,
+      "notes": "Płytka penetracja, działa na pigment naskórkowy."
+    }
+  ],
+  "operating_modes": [
+    {
+      "id": "standard",
+      "label": "Standard",
+      "description": "Domyślny tryb pojedynczego impulsu. Zbalansowana skuteczność i bezpieczeństwo dla większości protokołów.",
+      "compatible_handpieces": ["all"],
+      "compatible_wavelengths_nm": [532, 755, 1064]
+    },
+    {
+      "id": "dual_pulse_ptp",
+      "label": "Dual Pulse / PTP",
+      "description": "Energia rozdzielana na dwa szybkie impulsy. Redukuje ryzyko oparzeń i PIH (zwłaszcza fototypy 4–6). Dla opornych celów: zielone/niebieskie tatuaże, głęboka pigmentacja.",
+      "compatible_handpieces": ["default_silver"],
+      "compatible_wavelengths_nm": [1064]
+    },
+    {
+      "id": "multipulse",
+      "label": "Multipulse",
+      "description": "Seria krótszych impulsów. Najmniej bólu i uszkodzeń, więcej sesji wymaganych. Dla okolic wrażliwych (oczy, usta), powierzchownych przebarwień, tatuaży średnich, skóry ciemnej.",
+      "compatible_handpieces": ["default_silver"],
+      "compatible_wavelengths_nm": [1064]
+    },
+    {
+      "id": "long_pulse",
+      "label": "Long Pulse",
+      "description": "Mechanizm fototermiczny zamiast fotomechanicznego. Redukcja meszku twarzy/szyi, minimalizacja porów, napinanie/odmładzanie skóry.",
+      "compatible_handpieces": ["default_silver", "blue"],
+      "compatible_wavelengths_nm": [1064],
+      "constraints": [
+        "Spot 10 mm wyłącznie — mniejsze spoty grożą oparzeniem.",
+        "Nie do długotrwałej pracy na dużych obszarach ciała."
+      ]
+    }
+  ],
+  "handpieces": [
+    {
+      "id": "default_silver",
+      "label": "Default Universal (Silver)",
+      "wavelengths_nm": [1064, 532],
+      "spot_pattern": "single_round",
+      "spot_size_mm": [2, 10],
+      "indications_1064": [
+        "Tatuaże czarne/fioletowe i ciemne",
+        "Soczewicowate, piegi, plamy starcze, café-au-lait, PIH",
+        "Nevus Ota / Ito, plamy mongolskie, błękitny",
+        "Ostuda, melanoza, znamię barwnikowe",
+        "Becker, porokeratoza, keratosis follicularis",
+        "Grzybica paznokci",
+        "Pory/meszek (Long Pulse, 10 mm)"
+      ],
+      "indications_532": [
+        "Powierzchowne przebarwienia twarzy i grzbietów dłoni",
+        "Tatuaże czerwone/różowe, pomarańczowe, żółte, zielone"
+      ]
+    },
+    {
+      "id": "honeycomb_755",
+      "label": "Honeycomb 755 nm",
+      "wavelengths_nm": [755],
+      "spot_pattern": "fractional_hexagonal_microbeams",
+      "notes": "Filtr konwertujący + mikrosoczewki: 1064 → 755 nm w heksagonalnej macierzy mikrowiązek. ~3× wyższa absorpcja melaniny vs 1064."
+    },
+    {
+      "id": "carbon_peel",
+      "label": "Carbon Peeling",
+      "wavelengths_nm": [1064],
+      "spot_pattern": "single_round_scan",
+      "notes": "Zabieg 'Hollywood Peel'. Cienka warstwa lotionu węglowego → wyparowanie laserem → oczyszczanie porów, kontrola sebum."
+    },
+    {
+      "id": "red",
+      "label": "Red (fractional micro-array)",
+      "wavelengths_nm": [1064, 532],
+      "spot_pattern": "fractional_circular_grid",
+      "notes": "Frakcyjna głowica do odmładzania i przebarwień. Funkcjonalnie podobna do Honeycomb, ale na 1064/532."
+    },
+    {
+      "id": "golden",
+      "label": "Golden (fractional square grid)",
+      "wavelengths_nm": [1064],
+      "spot_pattern": "fractional_square_grid",
+      "notes": "Frakcyjna głowica 1064 nm — głęboka pigmentacja."
+    },
+    {
+      "id": "blue",
+      "label": "Blue (diffused large-area)",
+      "wavelengths_nm": [1064],
+      "spot_pattern": "single_diffused_round",
+      "notes": "NIE jest frakcyjna. Niższa peak energy, łagodne skanowanie dużych powierzchni."
+    }
+  ],
+  "protocols": [
+    {
+      "id": "EL950-TAT-DARK",
+      "indication": "Tatuaż — kolory ciemne (czarny, fioletowy, niebieski, błękitny)",
+      "mode": "standard",
+      "handpiece": "default_silver",
+      "wavelength_nm": 1064,
+      "spot_size_mm": [4, 10],
+      "frequency_hz": [2, 4],
+      "energy_mj": [100, 900],
+      "interval_days": [30, 60],
+      "notes": "Większy spot + niższa fluencja dla skóry ciemnej; mniejszy spot + wyższa fluencja dla opornych obszarów."
+    },
+    {
+      "id": "EL950-TAT-WARM",
+      "indication": "Tatuaż — kolory ciepłe (czerwony, pomarańczowy, żółty, zielony)",
+      "mode": "standard",
+      "handpiece": "default_silver",
+      "wavelength_nm": 532,
+      "spot_size_mm": [5, 10],
+      "frequency_hz": [2, 3],
+      "energy_mj": [50, 600],
+      "interval_days": [45, 60],
+      "notes": "Zielony i żółty — często najtrudniejsze; rozważ dodatkowo 755 nm Honeycomb dla zielonego."
+    },
+    {
+      "id": "EL950-TAT-LIGHT",
+      "indication": "Lekki tatuaż / znamię barwnikowe wrodzone",
+      "mode": ["dual_pulse_ptp", "multipulse"],
+      "handpiece": "default_silver",
+      "wavelength_nm": 1064,
+      "spot_size_mm": [3, 10],
+      "frequency_hz": [2, 3],
+      "energy_mj": [600, 2000],
+      "interval_days": [30, 45],
+      "notes": "Dual Pulse/Multipulse — niższe ryzyko PIH dla rozległych zmian i ciemniejszej skóry."
+    },
+    {
+      "id": "EL950-SPOT",
+      "indication": "Plamy soczewicowate / małe znamiona barwnikowe",
+      "mode": "standard",
+      "handpiece": "default_silver",
+      "wavelength_nm": [1064, 532],
+      "spot_size_mm": [2, 5],
+      "frequency_hz": [1, 2],
+      "energy_mj": [100, 300],
+      "interval_days": [30, 45],
+      "notes": "Mały spot dla precyzji punktowej. 532 nm dla naskórkowych, 1064 dla głębszych."
+    },
+    {
+      "id": "EL950-ONYCHO",
+      "indication": "Grzybica paznokci (klirens kosmetyczny)",
+      "mode": "standard",
+      "handpiece": "default_silver",
+      "wavelength_nm": 1064,
+      "spot_size_mm": [4, 7],
+      "frequency_hz": [3, 5],
+      "energy_mj": [600, 900],
+      "interval_days": [30, 45],
+      "notes": "Skanowanie płytki paznokcia + okolicznej skóry. Seria 4–6 sesji."
+    },
+    {
+      "id": "EL950-PORE-LP",
+      "indication": "Rozszerzone pory / redukcja czarnego meszku",
+      "mode": "long_pulse",
+      "handpiece": "default_silver",
+      "wavelength_nm": 1064,
+      "spot_size_mm": [10, 10],
+      "frequency_hz": [0.5, 1],
+      "energy_jcm2": [12, null],
+      "interval_days": [30, 30],
+      "notes": "Energia podawana jako gęstość J/cm² (≥12). WYŁĄCZNIE spot 10 mm — mniejszy = oparzenie."
+    },
+    {
+      "id": "EL950-PIG-LIGHT-RED",
+      "indication": "Lekka pigmentacja / piegi nienaczyniowe / odmłodzenie pełnotwarzowe",
+      "mode": "standard",
+      "handpiece": "red",
+      "wavelength_nm": [1064, 532],
+      "spot_size_mm": "default (siatka kołowa)",
+      "frequency_hz": [3, 7],
+      "energy_mj": [600, null],
+      "interval_days": [30, 45],
+      "notes": "Frakcyjna głowica Red — krótki downtime, wielowarstwowy collagen-remodeling."
+    },
+    {
+      "id": "EL950-PIG-DEEP-GOLD",
+      "indication": "Głęboka / oporna pigmentacja + odmłodzenie",
+      "mode": "standard",
+      "handpiece": "golden",
+      "wavelength_nm": 1064,
+      "spot_size_mm": "default (siatka kwadratowa)",
+      "frequency_hz": [3, 7],
+      "energy_mj": [600, null],
+      "interval_days": [30, 45],
+      "notes": "Frakcyjna głowica Golden — pigment głęboki, znamię Ota, plamy potrudnione."
+    },
+    {
+      "id": "EL950-PORE-LARGE-BLUE",
+      "indication": "Duże powierzchnie / pory — szerokie skanowanie",
+      "mode": "standard",
+      "handpiece": "blue",
+      "wavelength_nm": 1064,
+      "spot_size_mm": "default (rozproszona)",
+      "frequency_hz": [3, 6],
+      "energy_mj": [600, null],
+      "interval_days": [30, 45],
+      "notes": "Rozproszona wiązka, mniejsza peak energy — bezpieczna dla dużych obszarów."
+    },
+    {
+      "id": "EL950-MELASMA-755",
+      "indication": "Ostuda (melasma) / rozjaśnianie / cele melaninowe",
+      "mode": "standard",
+      "handpiece": "honeycomb_755",
+      "wavelength_nm": 755,
+      "spot_size_mm": "default",
+      "frequency_hz": [3, 6],
+      "energy_mj": [600, null],
+      "interval_days": [30, 45],
+      "notes": "Najwyższa selektywność melaniny. Konserwatywna fluencja na początku — ostuda jest skłonna do nawrotu i PIH."
+    },
+    {
+      "id": "EL950-CARBON-PEEL",
+      "indication": "Carbon peel (Hollywood Peel)",
+      "mode": "standard",
+      "handpiece": "carbon_peel",
+      "wavelength_nm": 1064,
+      "spot_size_mm": "default",
+      "frequency_hz": [2, 4],
+      "energy_mj": [500, 1000],
+      "interval_days": [7, 14],
+      "notes": "Lotion węglowy → 5–10 min penetracji → skanowanie. Krótkie interwały — zabieg powierzchowny."
+    }
+  ],
+  "indication_to_protocol_index": {
+    "tattoo_dark": ["EL950-TAT-DARK"],
+    "tattoo_warm": ["EL950-TAT-WARM"],
+    "tattoo_light": ["EL950-TAT-LIGHT"],
+    "lentigines": ["EL950-SPOT", "EL950-PIG-LIGHT-RED"],
+    "onychomycosis": ["EL950-ONYCHO"],
+    "enlarged_pores": ["EL950-PORE-LP", "EL950-PORE-LARGE-BLUE"],
+    "rejuvenation": ["EL950-PIG-LIGHT-RED", "EL950-CARBON-PEEL"],
+    "deep_pigmentation": ["EL950-PIG-DEEP-GOLD"],
+    "melasma": ["EL950-MELASMA-755"],
+    "carbon_peel": ["EL950-CARBON-PEEL"]
+  }
+}
