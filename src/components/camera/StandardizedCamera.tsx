@@ -249,6 +249,28 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     toast.message("Referencja histogramu wyczyszczona");
   }, []);
 
+  // ---- Auto-comparison vs reference (live exposure guidance) ----
+  // 1 "step" = 1/3 EV (typowy krok kompensacji ekspozycji w aparatach).
+  // Aligned when |ΔEV| ≤ 1/6 EV (½ kroku) AND L1 między histogramami < 0.45.
+  const STEP_EV = 1 / 3;
+  const ALIGN_EV = STEP_EV / 2; // 1/6 EV
+  const ALIGN_L1 = 0.45;
+  const refMatch = (() => {
+    if (!histRef || !report) return null;
+    const curLum = Math.max(0.001, report.metrics.luminance);
+    const refLum = Math.max(0.001, histRef.luminance);
+    const evDelta = Math.log2(curLum / refLum);
+    const steps = Math.round(evDelta / STEP_EV);
+    const a = report.metrics.histogram;
+    const b = histRef.histogram;
+    let l1 = 0;
+    const n = Math.min(a.length, b.length);
+    for (let i = 0; i < n; i++) l1 += Math.abs(a[i] - b[i]);
+    const aligned = Math.abs(evDelta) <= ALIGN_EV && l1 <= ALIGN_L1;
+    return { evDelta, steps, l1, aligned };
+  })();
+  const refBlocked = !!refMatch && !refMatch.aligned;
+
   // Blocking gates (live HUD): all currently failing, plus warnings if no fails
   const blockingGates = (() => {
     if (!report) return [];
@@ -260,6 +282,19 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
   const capture = useCallback((): "accepted" | "rejected" | "skipped" => {
     const v = videoRef.current;
     if (!v || v.videoWidth === 0 || !report) return "skipped";
+
+    // Hard-block capture while exposure is not aligned with the saved reference.
+    if (refMatch && !refMatch.aligned) {
+      const dir = refMatch.steps > 0 ? "obniż" : "podnieś";
+      const n = Math.abs(refMatch.steps);
+      setLastRejection({
+        gateIds: ["histogram-ref"],
+        reasons: [
+          `Histogram odbiega od referencji o ${refMatch.evDelta >= 0 ? "+" : ""}${refMatch.evDelta.toFixed(2)} EV (L1 ${refMatch.l1.toFixed(2)}). ${dir} ekspozycję o ${n} ${n === 1 ? "krok" : "kroków"} (1/3 EV każdy).`,
+        ],
+      });
+      return "rejected";
+    }
 
     lastAttemptAt.current = Date.now();
 
@@ -337,7 +372,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     setLastRejection(null);
     onAccepted?.(frame);
     return "accepted";
-  }, [report, stability, onAccepted, profile]);
+  }, [report, stability, onAccepted, profile, refMatch]);
 
   // Manual shutter — also enables auto-retry mode if rejected.
   const onShutter = () => {
@@ -359,7 +394,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
 
   // Auto-retry: when shutter was rejected, keep trying as soon as live gates pass.
   useEffect(() => {
-    if (!autoRetry || !liveReady) return;
+    if (!autoRetry || !liveReady || refBlocked) return;
     if (Date.now() - lastAttemptAt.current < RETRY_DEBOUNCE_MS) return;
     if (retryAttempt >= MAX_AUTO_RETRIES) {
       setAutoRetry(false);
@@ -417,6 +452,38 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
               <div className="absolute inset-x-2 top-2 space-y-1.5">
                 <QualityHUD gates={report.gates} />
                 <HistogramHUD metrics={report.metrics} reference={histRef} />
+                {refMatch && (
+                  <div
+                    className={`rounded-md border px-2.5 py-1.5 text-[11px] backdrop-blur-md ${
+                      refMatch.aligned
+                        ? "border-emerald-400/40 bg-emerald-500/20 text-emerald-50"
+                        : "border-amber-400/50 bg-amber-500/25 text-amber-50"
+                    }`}
+                    role="status"
+                    aria-live="polite"
+                  >
+                    {refMatch.aligned ? (
+                      <span className="font-semibold">
+                        ✓ Ekspozycja zgodna z referencją — możesz robić zdjęcie
+                      </span>
+                    ) : (
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold">
+                          {refMatch.steps > 0 ? "▼" : "▲"} Skoryguj{" "}
+                          {refMatch.steps > 0 ? "w dół" : "w górę"} o{" "}
+                          <span className="tabular-nums">
+                            {Math.max(1, Math.abs(refMatch.steps))}
+                          </span>{" "}
+                          {Math.max(1, Math.abs(refMatch.steps)) === 1 ? "krok" : "kroków"} (1/3 EV)
+                        </span>
+                        <span className="tabular-nums opacity-90">
+                          ΔEV {refMatch.evDelta >= 0 ? "+" : ""}
+                          {refMatch.evDelta.toFixed(2)} · L1 {refMatch.l1.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
             {locked && (
@@ -513,12 +580,21 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
             ) : (
               <Button
                 onClick={onShutter}
-                disabled={!report}
+                disabled={!report || refBlocked}
                 className="flex-1"
-                variant={liveReady ? "default" : "secondary"}
+                variant={liveReady && !refBlocked ? "default" : "secondary"}
+                title={
+                  refBlocked && refMatch
+                    ? `Skoryguj ekspozycję o ${Math.max(1, Math.abs(refMatch.steps))} krok(ów) 1/3 EV (${refMatch.steps > 0 ? "w dół" : "w górę"})`
+                    : undefined
+                }
               >
                 <Aperture />{" "}
-                {liveReady ? "Wykonaj zdjęcie" : "Spróbuj — włączę auto-retry"}
+                {refBlocked && refMatch
+                  ? `Skoryguj o ${Math.max(1, Math.abs(refMatch.steps))} ${Math.max(1, Math.abs(refMatch.steps)) === 1 ? "krok" : "kroków"} (1/3 EV)`
+                  : liveReady
+                    ? "Wykonaj zdjęcie"
+                    : "Spróbuj — włączę auto-retry"}
               </Button>
             )}
           </>
