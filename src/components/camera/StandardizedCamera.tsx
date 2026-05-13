@@ -445,6 +445,25 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
             >
               {locked ? <Lock /> : <LockOpen />}
             </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={captureHistRef}
+              disabled={!report}
+              title="Zapisz histogram bieżącej klatki jako referencję"
+            >
+              <BookmarkPlus />
+            </Button>
+            {histRef && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={clearHistRef}
+                title="Wyczyść referencję histogramu"
+              >
+                <XIcon />
+              </Button>
+            )}
             {autoRetry ? (
               <Button
                 variant="secondary"
