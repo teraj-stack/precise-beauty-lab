@@ -8,10 +8,40 @@ import protocolRules from "./protocol_rules.json";
 import protocolRulesCl300 from "./protocol_rules_cl300.json";
 import protocolRulesEl950 from "./protocol_rules_el950.json";
 import protocolRulesPs30 from "./protocol_rules_ps30.json";
+import skinPhenotypes from "./skin_phenotypes.json";
 
 export const PROTOCOL_RULES_CL300 = protocolRulesCl300 as typeof protocolRulesCl300;
 export const PROTOCOL_RULES_EL950 = protocolRulesEl950 as typeof protocolRulesEl950;
 export const PROTOCOL_RULES_PS30 = protocolRulesPs30 as typeof protocolRulesPs30;
+
+/**
+ * MSC-MATRIX skin phenotype knowledge base.
+ * Code format: MSC-[FENOTYP]-[GRADE], np. MSC-SEB-G2.
+ * Źródła: System kodowania MSC, oś żelazo–skóra, dysbioza mikrobiomu, paradoks retinoidów.
+ */
+export const SKIN_PHENOTYPES = skinPhenotypes as typeof skinPhenotypes;
+
+export type SkinPhenotypeId = "SEB" | "XER" | "VAS" | "AGE";
+export type SkinGrade = "G1" | "G2" | "G3";
+
+export function getSkinPhenotype(id: SkinPhenotypeId) {
+  return SKIN_PHENOTYPES.phenotypes.find((p) => p.id === id);
+}
+
+export function getSkinGrade(id: SkinPhenotypeId, grade: SkinGrade) {
+  const ph = getSkinPhenotype(id);
+  return ph?.grades[grade];
+}
+
+export function formatMscCode(id: SkinPhenotypeId, grade: SkinGrade): string {
+  return `MSC-${id}-${grade}`;
+}
+
+export function getCrossCuttingPhenomenaFor(id: SkinPhenotypeId) {
+  return SKIN_PHENOTYPES.cross_cutting_phenomena.filter((p) =>
+    (p.affects_phenotypes ?? []).includes(id),
+  );
+}
 
 export interface ProtocolParams {
   power_w: number;
