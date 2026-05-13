@@ -1014,6 +1014,17 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
         onRefMatchChange={setRefMatchThresholds}
       />
 
+      <HistReferenceLibrary
+        library={refLibrary}
+        activeId={activeRefId}
+        canSaveCurrent={!!report}
+        onSaveCurrent={saveCurrentAsRef}
+        onActivate={handleActivateRef}
+        onDelete={handleDeleteRef}
+        onRename={handleRenameRef}
+        presetActive={!!activePreset}
+      />
+
       <CalibrationPresets
         presets={presets}
         activeId={activePresetId}
