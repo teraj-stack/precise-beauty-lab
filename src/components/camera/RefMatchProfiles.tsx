@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Save, Trash2, CheckCircle2, Smartphone } from "lucide-react";
+import { useRef, useState } from "react";
+import { Save, Trash2, CheckCircle2, Smartphone, Download, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,14 @@ import {
   type RefMatchProfile,
   makeRefMatchProfileId,
 } from "@/lib/camera/ref-match-profiles";
+import {
+  buildRefMatchBundle,
+  defaultRefMatchExportFilename,
+  mergeProfiles,
+  parseRefMatchBundle,
+  RefMatchImportError,
+  serializeRefMatchBundle,
+} from "@/lib/camera/ref-match-io";
 import type { RefMatchThresholds } from "./ThresholdPanel";
 
 interface Props {
@@ -17,6 +25,10 @@ interface Props {
   onSave: (profile: RefMatchProfile) => void;
   onActivate: (id: string | null) => void;
   onDelete: (id: string) => void;
+  /** Replace profile list (used by import). */
+  onReplaceAll: (profiles: RefMatchProfile[], activeId: string | null) => void;
+  /** Apply imported `current` thresholds. */
+  onApplyThresholds: (t: RefMatchThresholds) => void;
 }
 
 export function RefMatchProfiles({
