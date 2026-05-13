@@ -116,7 +116,7 @@ function LaserThuliumPage() {
               <Row k="Klasa SaMD" v={device.class.samd_class} />
               <Row
                 k="Długości fali"
-                v={device.physics.wavelengths_nm.map((w) => `${w} nm`).join(" + ")}
+                v={(device.physics.wavelengths_nm ?? []).map((w) => `${w} nm`).join(" + ")}
               />
               <Row k="Maks. moc" v={`${device.physics.max_power_w} W`} />
               <Row k="Typ" v={device.physics.type} />
