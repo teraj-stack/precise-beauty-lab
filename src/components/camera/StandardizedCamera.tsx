@@ -1177,13 +1177,10 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                   );
                   const base64 = shot.dataUrl.slice(shot.dataUrl.indexOf(",") + 1);
                   const res = await submitCaptureAudit({ data: { jpegBase64: base64 } });
-                  const { describeCaptureAuditResult } = await import(
-                    "@/lib/camera/capture-audit-types"
-                  );
                   setAuditState("saved");
                   const view = describeCaptureAuditResult(res);
                   if (res.status === "deduplicated") {
-                    setDedupInfo({ id: res.id, sha256: res.sha256, createdAt: res.createdAt });
+                    setDedupInfo(res);
                     const openExisting = () =>
                       navigate({ to: "/audits", search: { sha: res.sha256, open: res.id } });
                     toast.info(view.title, {
