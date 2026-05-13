@@ -15,6 +15,14 @@ import {
   type QualityProfile,
 } from "@/lib/camera/quality-profiles";
 import type { QualityThresholds } from "@/lib/camera/types";
+import {
+  loadActiveRefMatchProfileId,
+  loadRefMatchProfiles,
+  saveActiveRefMatchProfileId,
+  saveRefMatchProfiles,
+  type RefMatchProfile,
+} from "@/lib/camera/ref-match-profiles";
+import { RefMatchProfiles } from "./RefMatchProfiles";
 
 const STORAGE_KEY = "msc:threshold-overrides:v1";
 const REF_MATCH_STORAGE_KEY = "msc:ref-match-thresholds:v1";
@@ -159,6 +167,10 @@ export function ThresholdPanel({ current, baseline, onChange, refMatch, onRefMat
   const [refDraft, setRefDraft] = useState<RefMatchThresholds>(
     () => refMatch ?? loadRefMatchThresholds(),
   );
+  const [profiles, setProfiles] = useState<RefMatchProfile[]>(() => loadRefMatchProfiles());
+  const [activeProfileId, setActiveProfileId] = useState<string | null>(
+    () => loadActiveRefMatchProfileId(),
+  );
 
   // Re-sync draft if external `current` changes (e.g. profile swap).
   useEffect(() => {
@@ -193,6 +205,10 @@ export function ThresholdPanel({ current, baseline, onChange, refMatch, onRefMat
     setRefDraft(next);
     saveRefMatchThresholds(next);
     onRefMatchChange?.(next);
+    if (activeProfileId) {
+      setActiveProfileId(null);
+      saveActiveRefMatchProfileId(null);
+    }
   }
 
   function resetRef() {
@@ -200,6 +216,39 @@ export function ThresholdPanel({ current, baseline, onChange, refMatch, onRefMat
     setRefDraft(next);
     saveRefMatchThresholds(next);
     onRefMatchChange?.(next);
+    if (activeProfileId) {
+      setActiveProfileId(null);
+      saveActiveRefMatchProfileId(null);
+    }
+  }
+
+  function handleProfileSave(p: RefMatchProfile) {
+    const next = [...profiles, p];
+    setProfiles(next);
+    saveRefMatchProfiles(next);
+  }
+
+  function handleProfileActivate(id: string | null) {
+    setActiveProfileId(id);
+    saveActiveRefMatchProfileId(id);
+    if (id) {
+      const p = profiles.find((x) => x.id === id);
+      if (p) {
+        setRefDraft(p.thresholds);
+        saveRefMatchThresholds(p.thresholds);
+        onRefMatchChange?.(p.thresholds);
+      }
+    }
+  }
+
+  function handleProfileDelete(id: string) {
+    const next = profiles.filter((p) => p.id !== id);
+    setProfiles(next);
+    saveRefMatchProfiles(next);
+    if (activeProfileId === id) {
+      setActiveProfileId(null);
+      saveActiveRefMatchProfileId(null);
+    }
   }
 
   function resetAll() {
@@ -392,6 +441,15 @@ export function ThresholdPanel({ current, baseline, onChange, refMatch, onRefMat
             łagodniejszych progów (większe wartości). Dla precyzyjnej kalibracji
             studyjnej zmniejsz oba progi.
           </p>
+
+          <RefMatchProfiles
+            profiles={profiles}
+            activeId={activeProfileId}
+            current={refDraft}
+            onSave={handleProfileSave}
+            onActivate={handleProfileActivate}
+            onDelete={handleProfileDelete}
+          />
         </div>
       )}
     </div>
