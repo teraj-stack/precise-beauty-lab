@@ -173,6 +173,7 @@ export async function performCaptureAuditInsert(
   }
   if (!row) throw new Error("[E_INSERT_NO_ROW] Insert nie zwrócił wiersza");
   return {
+    status: "created",
     id: row.id,
     sha256: row.jpeg_sha256,
     createdAt: row.created_at,
