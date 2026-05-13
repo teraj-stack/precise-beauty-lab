@@ -176,11 +176,13 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
   } | null>(null);
   const lastAttemptAt = useRef(0);
 
-  // Blocking gate (live HUD): first failing, otherwise first warning
-  const blockingGate =
-    report?.gates.find((g) => g.status === "fail") ??
-    report?.gates.find((g) => g.status === "warn") ??
-    null;
+  // Blocking gates (live HUD): all currently failing, plus warnings if no fails
+  const blockingGates = (() => {
+    if (!report) return [];
+    const fails = report.gates.filter((g) => g.status === "fail");
+    if (fails.length) return fails;
+    return report.gates.filter((g) => g.status === "warn");
+  })();
 
   const capture = useCallback((): "accepted" | "rejected" | "skipped" => {
     const v = videoRef.current;
@@ -332,16 +334,31 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                 <Lock className="h-3 w-3" /> AE/AWB lock
               </div>
             )}
-            {/* Blocking-gate banner (live) */}
-            {!liveReady && blockingGate && (
-              <div className="absolute inset-x-2 bottom-2 rounded-lg border border-amber-400/40 bg-amber-500/15 px-3 py-2 text-[12px] text-amber-50 backdrop-blur-md">
-                <div className="flex items-center gap-1.5 font-semibold">
+            {/* Blocking-gate banner (live) — lists all gates currently blocking the shutter */}
+            {!liveReady && blockingGates.length > 0 && (
+              <div className="absolute inset-x-2 bottom-2 rounded-lg border border-amber-400/40 bg-amber-500/15 px-3 py-2 text-[12px] text-amber-50 backdrop-blur-md max-h-[45%] overflow-y-auto">
+                <div className="flex items-center gap-1.5 font-semibold mb-1">
                   <AlertCircle className="h-3.5 w-3.5" />
-                  Blokada: {blockingGate.label}
+                  Migawka zablokowana ({blockingGates.length}):
                 </div>
-                <p className="mt-0.5 leading-snug opacity-90">
-                  {GATE_HINTS[blockingGate.id] ?? blockingGate.detail}
-                </p>
+                <ul className="space-y-1">
+                  {blockingGates.map((g) => (
+                    <li key={g.id} className="leading-snug">
+                      <span
+                        className={`inline-block rounded px-1.5 py-0.5 mr-1.5 text-[10px] font-bold uppercase tracking-wide ${
+                          g.status === "fail"
+                            ? "bg-red-500/30 text-red-50"
+                            : "bg-amber-400/30 text-amber-50"
+                        }`}
+                      >
+                        {g.label}
+                      </span>
+                      <span className="opacity-95">
+                        {gateHint(g, report?.metrics, report?.temporal)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
             {/* Auto-retry overlay */}
