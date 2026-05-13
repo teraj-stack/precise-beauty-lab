@@ -452,6 +452,38 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
               <div className="absolute inset-x-2 top-2 space-y-1.5">
                 <QualityHUD gates={report.gates} />
                 <HistogramHUD metrics={report.metrics} reference={histRef} />
+                {refMatch && (
+                  <div
+                    className={`rounded-md border px-2.5 py-1.5 text-[11px] backdrop-blur-md ${
+                      refMatch.aligned
+                        ? "border-emerald-400/40 bg-emerald-500/20 text-emerald-50"
+                        : "border-amber-400/50 bg-amber-500/25 text-amber-50"
+                    }`}
+                    role="status"
+                    aria-live="polite"
+                  >
+                    {refMatch.aligned ? (
+                      <span className="font-semibold">
+                        ✓ Ekspozycja zgodna z referencją — możesz robić zdjęcie
+                      </span>
+                    ) : (
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold">
+                          {refMatch.steps > 0 ? "▼" : "▲"} Skoryguj{" "}
+                          {refMatch.steps > 0 ? "w dół" : "w górę"} o{" "}
+                          <span className="tabular-nums">
+                            {Math.max(1, Math.abs(refMatch.steps))}
+                          </span>{" "}
+                          {Math.max(1, Math.abs(refMatch.steps)) === 1 ? "krok" : "kroków"} (1/3 EV)
+                        </span>
+                        <span className="tabular-nums opacity-90">
+                          ΔEV {refMatch.evDelta >= 0 ? "+" : ""}
+                          {refMatch.evDelta.toFixed(2)} · L1 {refMatch.l1.toFixed(2)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
             {locked && (
