@@ -450,6 +450,61 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
     return { dEv, dL1, evImproving, evWorsening, l1Improving, l1Worsening };
   })();
 
+  // ---- Contextual lighting/exposure hints (kierunek + magnituda + anomalie) ----
+  type RefHint = { icon: "sun" | "moon" | "lamp" | "shadow" | "burn" | "frame" | "wb" | "wait"; tone: "info" | "warn" | "act"; text: string };
+  const refHints: RefHint[] = (() => {
+    if (!refMatch || !report) return [];
+    const m = report.metrics;
+    const t = report.temporal;
+    const out: RefHint[] = [];
+    const absEv = Math.abs(refMatch.evDelta);
+    const tooDark = refMatch.evDelta < 0;
+    const tooBright = refMatch.evDelta > 0;
+
+    if (absEv > ALIGN_EV) {
+      if (tooDark) {
+        if (absEv > 0.66) out.push({ icon: "lamp", tone: "act", text: "Za ciemno o ponad ⅔ EV — podejdź bliżej do źródła światła lub włącz dodatkową lampę." });
+        else if (absEv > 0.33) out.push({ icon: "lamp", tone: "act", text: "Wyraźnie za ciemno (~⅓–⅔ EV) — odsłoń okno lub skieruj lampę bezpośrednio na obszar." });
+        else out.push({ icon: "sun", tone: "info", text: "Lekko za ciemno — delikatnie podnieś jasność (kompensacja EV +) albo zbliż źródło światła." });
+      } else if (tooBright) {
+        if (absEv > 0.66) out.push({ icon: "moon", tone: "act", text: "Za jasno o ponad ⅔ EV — odsuń się od źródła światła lub przygaś lampę." });
+        else if (absEv > 0.33) out.push({ icon: "moon", tone: "act", text: "Wyraźnie za jasno (~⅓–⅔ EV) — zasłoń część okna albo zmień kąt względem światła." });
+        else out.push({ icon: "sun", tone: "info", text: "Lekko za jasno — delikatnie obniż jasność (kompensacja EV −) lub odejdź od lampy." });
+      }
+    }
+
+    const clipHigh = m.clippingHigh ?? 0;
+    const clipLow = m.clippingLow ?? 0;
+    if (clipHigh > 0.04) out.push({ icon: "burn", tone: "act", text: `Przepalenia w jasnych partiach (${(clipHigh * 100).toFixed(1)}%) — odsuń lampę albo unikaj bezpośredniego refleksu na skórze.` });
+    if (clipLow > 0.04) out.push({ icon: "shadow", tone: "act", text: `Głębokie cienie (${(clipLow * 100).toFixed(1)}% pikseli czarnych) — doświetl od strony cienia lub zmień kąt o ~30°.` });
+
+    if (refMatch.l1 > ALIGN_L1 && absEv <= ALIGN_EV) {
+      out.push({ icon: "shadow", tone: "warn", text: "Średnia jasność OK, ale rozkład odbiega od referencji — sprawdź kierunek światła i unikaj cieni połowicznych (jedna strona twarzy ciemniejsza)." });
+    }
+
+    if ((m.colorCast ?? 0) > 0.06) {
+      const dominant =
+        Math.abs(m.castR) >= Math.abs(m.castG) && Math.abs(m.castR) >= Math.abs(m.castB)
+          ? m.castR > 0 ? "ciepły (czerwony/żółty)" : "chłodny (cyan)"
+          : Math.abs(m.castB) >= Math.abs(m.castG)
+            ? m.castB > 0 ? "chłodny (niebieski)" : "ciepły (żółty)"
+            : m.castG > 0 ? "zielonkawy (LED)" : "magentowy";
+      out.push({ icon: "wb", tone: "warn", text: `Dominujący odcień ${dominant} — użyj jednego, neutralnego źródła światła (unikaj mieszania żarówek z dziennym).` });
+    }
+
+    if (m.skinRatio > 0 && m.skinRatio < 0.18) out.push({ icon: "frame", tone: "info", text: "Twarz/obszar zajmuje za mało kadru — podejdź bliżej (~10–20 cm)." });
+    else if (m.skinRatio > 0.7) out.push({ icon: "frame", tone: "info", text: "Za blisko — odsuń telefon o ~10 cm, żeby uzyskać proporcje jak w referencji." });
+    if (m.centerOffset > 0.35) out.push({ icon: "frame", tone: "info", text: "Obszar zainteresowania jest poza środkiem — wyśrodkuj kadr." });
+
+    if (t && t.luminanceStd > 0.025 && t.samples >= 4) {
+      out.push({ icon: "wait", tone: "info", text: "Auto-ekspozycja jeszcze się stabilizuje — wstrzymaj korektę ~2 s i nie ruszaj telefonem." });
+    }
+
+    const seen = new Set<string>();
+    return out.filter((h) => (seen.has(h.text) ? false : (seen.add(h.text), true))).slice(0, 4);
+  })();
+
+
   // Blocking gates (live HUD): all currently failing, plus warnings if no fails
   const blockingGates = (() => {
     if (!report) return [];
@@ -669,6 +724,30 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                           {refMatch.evDelta.toFixed(2)} · L1 {refMatch.l1.toFixed(2)}
                         </span>
                       </div>
+                    )}
+                    {refHints.length > 0 && (
+                      <ul className="mt-1.5 space-y-1 border-t border-white/10 pt-1.5 text-[11px] leading-snug">
+                        {refHints.map((h, i) => {
+                          const glyph =
+                            h.icon === "sun" ? "☀" :
+                            h.icon === "moon" ? "🌙" :
+                            h.icon === "lamp" ? "💡" :
+                            h.icon === "shadow" ? "◐" :
+                            h.icon === "burn" ? "✦" :
+                            h.icon === "frame" ? "▭" :
+                            h.icon === "wb" ? "🎨" : "⏳";
+                          const tone =
+                            h.tone === "act" ? "text-amber-100" :
+                            h.tone === "warn" ? "text-amber-200/90" :
+                            "text-white/85";
+                          return (
+                            <li key={i} className={`flex items-start gap-1.5 ${tone}`}>
+                              <span className="shrink-0 tabular-nums opacity-90">{glyph}</span>
+                              <span>{h.text}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
                     )}
                     {refHistory.length >= 2 && (
                       <div className="mt-1.5 border-t border-white/10 pt-1.5">
