@@ -24,12 +24,10 @@ export interface CaptureAuditInsertInput {
   patientId?: string | null;
 }
 
-/**
- * @deprecated Re-exported alias for {@link CaptureAuditSubmitResult}.
- * Prefer importing `CaptureAuditSubmitResult` directly from
- * `./capture-audit-types`.
- */
-export type CaptureAuditInsertResult = CaptureAuditSubmitResult;
+// NOTE: The legacy `CaptureAuditInsertResult` alias has been removed.
+// Always use `CaptureAuditSubmitResult` from `./capture-audit-types`.
+// An ESLint `no-restricted-syntax` rule (see eslint.config) blocks new
+// imports/usages of the old name to prevent regressions.
 
 /**
  * Minimal structural type covering the surface of the Supabase JS client
