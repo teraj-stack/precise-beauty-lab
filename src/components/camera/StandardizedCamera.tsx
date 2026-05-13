@@ -31,7 +31,7 @@ import { HistogramHUD } from "./HistogramHUD";
 const MAX_AUTO_RETRIES = 5;
 const RETRY_DEBOUNCE_MS = 350;
 
-/** Human-readable hint per gate, shown when that gate is the blocker. */
+/** Static fallback hint per gate. Dynamic hints (AE/AWB direction, clipping side) override these. */
 const GATE_HINTS: Record<string, string> = {
   distance: "Dostosuj odległość — zbliż lub oddal twarz, aż owal wypełni ramkę.",
   position: "Wycentruj twarz w ramce — kieruj nos na środek owalu.",
@@ -42,6 +42,66 @@ const GATE_HINTS: Record<string, string> = {
   "awb-stable": "Czekam, aż balans bieli się ustabilizuje (neutralne światło).",
   stability: "Trzymaj telefon nieruchomo (lub oprzyj na statywie).",
 };
+
+/** Build a contextual hint that explains *why* a gate fails and *what to do*. */
+function gateHint(
+  gate: { id: string; status: string; detail: string },
+  metrics?: import("@/lib/camera/types").FrameMetrics,
+  temporal?: import("@/lib/camera/types").TemporalStability,
+): string {
+  const m = metrics;
+  switch (gate.id) {
+    case "exposure": {
+      if (!m) break;
+      if (m.luminance < 0.35)
+        return `Za ciemno (luma ${m.luminance.toFixed(2)}). Dodaj światło rozproszone od przodu lub przejdź bliżej okna.`;
+      if (m.luminance > 0.7)
+        return `Za jasno (luma ${m.luminance.toFixed(2)}). Odsuń się od źródła światła lub przyciemnij lampę.`;
+      break;
+    }
+    case "clipping": {
+      if (!m) break;
+      if (m.clippingHigh > m.clippingLow)
+        return `Przepalenia ${(m.clippingHigh * 100).toFixed(1)}% pikseli — usuń silne światło/odbicia w kadrze.`;
+      return `Niedoświetlone cienie ${(m.clippingLow * 100).toFixed(1)}% — dodaj światło wypełniające.`;
+    }
+    case "ae-stable": {
+      if (!temporal) break;
+      if (temporal.samples < 8)
+        return `Zbieram próbki AE… (${temporal.samples}). Trzymaj kadr nieruchomo.`;
+      return `Auto-ekspozycja jeszcze się waha (σL ${temporal.luminanceStd.toFixed(3)}). Ustabilizuj światło i nie ruszaj telefonem.`;
+    }
+    case "awb-stable": {
+      if (!m || !temporal) break;
+      const dirs: string[] = [];
+      const TH = 0.04;
+      // castR/G/B are signed deltas vs gray-world neutral
+      if (m.castR > TH && m.castB < -TH) dirs.push("ciepły (czerwony/żółty)");
+      else if (m.castB > TH && m.castR < -TH) dirs.push("zimny (niebieski)");
+      if (m.castG > TH) dirs.push("zielony");
+      else if (m.castG < -TH && m.castR > 0 && m.castB > 0) dirs.push("magenta");
+      const driftHint =
+        temporal.colorCastStd > 0.02
+          ? ` AWB wciąż się waha (σ ${temporal.colorCastStd.toFixed(3)}).`
+          : "";
+      const dirText = dirs.length ? ` Wykryty cast: ${dirs.join(", ")}.` : "";
+      return `Niezbalansowane światło (cast ${(m.colorCast * 100).toFixed(1)}%).${dirText}${driftHint} Użyj jednolitego, neutralnego źródła (5000–6500 K).`;
+    }
+    case "distance": {
+      if (!m) break;
+      const pct = (m.skinRatio * 100).toFixed(0);
+      if (m.skinRatio < 0.15) return `Twarz za mała (${pct}% ROI) — przybliż telefon.`;
+      return `Twarz za blisko (${pct}% ROI) — odsuń telefon.`;
+    }
+    case "position":
+      return `Wycentruj twarz w owalu (${m ? `Δ ${(m.centerOffset * 100).toFixed(0)}%` : ""}).`;
+    case "sharpness":
+      return `Obraz nieostry (LapVar ${m ? m.sharpness.toFixed(0) : "—"}). Trzymaj telefon nieruchomo i poczekaj na AF.`;
+    case "stability":
+      return "Telefon się rusza — oprzyj łokcie lub użyj statywu.";
+  }
+  return GATE_HINTS[gate.id] ?? gate.detail;
+}
 
 function blockingHint(gateIds: string[], reasons: string[]): string {
   const id = gateIds[0];
@@ -116,11 +176,13 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
   } | null>(null);
   const lastAttemptAt = useRef(0);
 
-  // Blocking gate (live HUD): first failing, otherwise first warning
-  const blockingGate =
-    report?.gates.find((g) => g.status === "fail") ??
-    report?.gates.find((g) => g.status === "warn") ??
-    null;
+  // Blocking gates (live HUD): all currently failing, plus warnings if no fails
+  const blockingGates = (() => {
+    if (!report) return [];
+    const fails = report.gates.filter((g) => g.status === "fail");
+    if (fails.length) return fails;
+    return report.gates.filter((g) => g.status === "warn");
+  })();
 
   const capture = useCallback((): "accepted" | "rejected" | "skipped" => {
     const v = videoRef.current;
@@ -272,16 +334,31 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                 <Lock className="h-3 w-3" /> AE/AWB lock
               </div>
             )}
-            {/* Blocking-gate banner (live) */}
-            {!liveReady && blockingGate && (
-              <div className="absolute inset-x-2 bottom-2 rounded-lg border border-amber-400/40 bg-amber-500/15 px-3 py-2 text-[12px] text-amber-50 backdrop-blur-md">
-                <div className="flex items-center gap-1.5 font-semibold">
+            {/* Blocking-gate banner (live) — lists all gates currently blocking the shutter */}
+            {!liveReady && blockingGates.length > 0 && (
+              <div className="absolute inset-x-2 bottom-2 rounded-lg border border-amber-400/40 bg-amber-500/15 px-3 py-2 text-[12px] text-amber-50 backdrop-blur-md max-h-[45%] overflow-y-auto">
+                <div className="flex items-center gap-1.5 font-semibold mb-1">
                   <AlertCircle className="h-3.5 w-3.5" />
-                  Blokada: {blockingGate.label}
+                  Migawka zablokowana ({blockingGates.length}):
                 </div>
-                <p className="mt-0.5 leading-snug opacity-90">
-                  {GATE_HINTS[blockingGate.id] ?? blockingGate.detail}
-                </p>
+                <ul className="space-y-1">
+                  {blockingGates.map((g) => (
+                    <li key={g.id} className="leading-snug">
+                      <span
+                        className={`inline-block rounded px-1.5 py-0.5 mr-1.5 text-[10px] font-bold uppercase tracking-wide ${
+                          g.status === "fail"
+                            ? "bg-red-500/30 text-red-50"
+                            : "bg-amber-400/30 text-amber-50"
+                        }`}
+                      >
+                        {g.label}
+                      </span>
+                      <span className="opacity-95">
+                        {gateHint(g, report?.metrics, report?.temporal)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
             {/* Auto-retry overlay */}
