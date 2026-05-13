@@ -902,6 +902,7 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
               disabled={auditState === "saving" || auditState === "saved"}
               onClick={async () => {
                 setAuditState("saving");
+                setAuditError(null);
                 try {
                   const { submitCaptureAudit } = await import(
                     "@/lib/camera/capture-audit.functions"
@@ -921,9 +922,39 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                 } catch (e) {
                   console.error(e);
                   setAuditState("idle");
-                  toast.error("Nie udało się zapisać audytu", {
-                    description: e instanceof Error ? e.message : undefined,
-                  });
+                  const raw = e instanceof Error ? e.message : String(e);
+                  const m = raw.match(/^\[(E_[A-Z_]+)\]\s*(.*)$/);
+                  const code = m?.[1] ?? "E_UNKNOWN";
+                  const msg = m?.[2] ?? raw;
+                  const meta: Record<string, { title: string; hint: string }> = {
+                    E_NO_COM: {
+                      title: "Brak segmentu COM w pliku JPEG",
+                      hint: "Użyj aparatu MSC do zrobienia zdjęcia. Zdjęcia zewnętrzne lub przekonwertowane tracą metadane jakości.",
+                    },
+                    E_REPORT_MISSING: {
+                      title: "Raport jakości jest pusty",
+                      hint: "Powtórz capture — segment COM istnieje, ale nie zawiera ładunku JSON.",
+                    },
+                    E_SCHEMA_MISMATCH: {
+                      title: "Niezgodna wersja schematu raportu",
+                      hint: "Zdjęcie pochodzi ze starszej/nowszej wersji aparatu MSC. Zaktualizuj aplikację lub powtórz capture.",
+                    },
+                    E_SCHEMA_INVALID: {
+                      title: "Raport nie spełnia schematu MSC CDSS v1",
+                      hint: "Pola raportu są uszkodzone lub niekompletne. Powtórz capture; szczegóły walidacji poniżej.",
+                    },
+                    E_JPEG_INVALID: {
+                      title: "Plik nie jest poprawnym JPEG",
+                      hint: "Sprawdź źródło pliku — oczekiwany jest JPEG (FFD8…).",
+                    },
+                    E_UNKNOWN: {
+                      title: "Nie udało się zapisać audytu",
+                      hint: "Skopiuj kod błędu i prześlij go do wsparcia.",
+                    },
+                  };
+                  const info = meta[code] ?? meta.E_UNKNOWN;
+                  setAuditError({ code, title: info.title, message: msg, hint: info.hint });
+                  toast.error(`${info.title} (${code})`, { description: msg });
                 }
               }}
               className="inline-flex items-center rounded-md border border-border bg-background px-2.5 py-1 text-[11px] font-medium hover:bg-muted disabled:opacity-60"
@@ -935,6 +966,30 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
                   : "Zapisz audyt"}
             </button>
           </div>
+          {auditError && (
+            <div
+              role="alert"
+              className="mt-2 rounded-md border border-destructive/40 bg-destructive/10 p-2 text-[11px] text-destructive"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-medium">{auditError.title}</p>
+                <code className="rounded bg-destructive/20 px-1.5 py-0.5 font-mono text-[10px]">
+                  {auditError.code}
+                </code>
+              </div>
+              <p className="mt-1 break-words opacity-90">{auditError.message}</p>
+              {auditError.hint && (
+                <p className="mt-1 text-[10px] opacity-80">→ {auditError.hint}</p>
+              )}
+              <button
+                type="button"
+                onClick={() => setAuditError(null)}
+                className="mt-1.5 text-[10px] underline opacity-70 hover:opacity-100"
+              >
+                Zamknij
+              </button>
+            </div>
+          )}
           <p className="text-[10px] leading-snug text-muted-foreground">
             Pełny raport jakości (luminancja, ostrość, skóra, histogram, AE/AWB
             temporal, gates) zapisany w segmencie JPEG COM oraz dostępny jako
