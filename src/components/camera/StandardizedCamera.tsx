@@ -736,6 +736,8 @@ export function StandardizedCamera({ onAccepted, profile: profileProp }: Props) 
         </div>
       )}
 
+      {session.length >= 2 && <HistogramHistory session={session} limit={8} />}
+
       {!shot && !lastRejection && (
         <p className="flex items-start gap-1.5 text-[11px] leading-snug text-muted-foreground">
           <AlertCircle className="mt-0.5 h-3 w-3 shrink-0" />
