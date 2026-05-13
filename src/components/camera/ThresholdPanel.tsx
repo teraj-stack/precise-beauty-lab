@@ -23,6 +23,7 @@ import {
   type RefMatchProfile,
 } from "@/lib/camera/ref-match-profiles";
 import { RefMatchProfiles } from "./RefMatchProfiles";
+import { RefMatchAutoCalibrate } from "./RefMatchAutoCalibrate";
 
 const STORAGE_KEY = "msc:threshold-overrides:v1";
 const REF_MATCH_STORAGE_KEY = "msc:ref-match-thresholds:v1";
