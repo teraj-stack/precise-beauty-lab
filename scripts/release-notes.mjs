@@ -76,38 +76,21 @@ const ver = tag.replace(/^v/, "");
 
 // ---------- extract section ----------
 const md = readFileSync(CHANGELOG, "utf8");
-const lines = md.split("\n");
 
-function extract(predicate) {
-  const buf = [];
-  let inSection = false;
-  for (const line of lines) {
-    const isH2 = /^##\s+/.test(line);
-    if (isH2) {
-      if (inSection) break;
-      if (predicate(line)) {
-        inSection = true;
-        continue;
-      }
-    }
-    if (inSection) buf.push(line);
-  }
-  return buf.join("\n").trim();
-}
-
-let body = extract((l) => l.includes(`[${ver}]`));
+let body = extractSection(md, (l) => isHeadingForVersion(l, ver));
 let usedFallback = false;
 if (!body) {
-  body = extract((l) => /\[unreleased\]/i.test(l));
+  body = extractSection(md, isUnreleasedHeading);
   usedFallback = !!body;
 }
 
 if (!body) {
   console.error(
-    `Error: no section '## [${ver}]' and no fallback '## [Unreleased]' in CHANGELOG.md`,
+    `Error: no section for version '${ver}' and no fallback '[Unreleased]' in CHANGELOG.md`,
   );
   process.exit(1);
 }
+
 
 if (usedFallback) {
   console.error(`⚠️  No '## [${ver}]' section — using [Unreleased] as fallback.`);
