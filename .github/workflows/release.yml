@@ -4,6 +4,17 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to simulate (e.g. v0.2.0). Defaults to the latest v* tag."
+        required: false
+        type: string
+      dry_run:
+        description: "Dry run — print body and tag, do not create a release."
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -17,12 +28,34 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Resolve tag
+        id: resolve
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            TAG="${{ inputs.tag }}"
+            if [[ -z "$TAG" ]]; then
+              TAG="$(git tag --list 'v*' --sort=-v:refname | head -n1)"
+            fi
+            if [[ -z "$TAG" ]]; then
+              echo "::error::No tag provided and no v* tag found in repo." >&2
+              exit 1
+            fi
+            DRY_RUN="${{ inputs.dry_run }}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+            DRY_RUN="false"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "dry_run=$DRY_RUN" >> "$GITHUB_OUTPUT"
+
       - name: Extract changelog section for tag
         id: changelog
         shell: bash
         run: |
           set -euo pipefail
-          TAG="${GITHUB_REF_NAME}"
+          TAG="${{ steps.resolve.outputs.tag }}"
           VERSION="${TAG#v}"
           FILE="CHANGELOG.md"
 
@@ -65,11 +98,36 @@ jobs:
             echo "__EOF__"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Dry-run summary
+        if: steps.resolve.outputs.dry_run == 'true'
+        shell: bash
+        env:
+          TAG: ${{ steps.resolve.outputs.tag }}
+          BODY: ${{ steps.changelog.outputs.body }}
+        run: |
+          echo "🔎 Dry-run — no release will be created."
+          echo "Tag:        $TAG"
+          echo "Prerelease: ${{ contains(steps.resolve.outputs.tag, '-') }}"
+          echo "----- BODY -----"
+          echo "$BODY"
+          echo "----------------"
+          {
+            echo "## 🔎 Dry-run release preview"
+            echo ""
+            echo "- **Tag:** \`$TAG\`"
+            echo "- **Prerelease:** ${{ contains(steps.resolve.outputs.tag, '-') }}"
+            echo ""
+            echo "### Body"
+            echo ""
+            echo "$BODY"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Create GitHub Release
+        if: steps.resolve.outputs.dry_run != 'true'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
+          tag_name: ${{ steps.resolve.outputs.tag }}
+          name: ${{ steps.resolve.outputs.tag }}
           body: ${{ steps.changelog.outputs.body }}
           draft: false
-          prerelease: ${{ contains(github.ref_name, '-') }}
+          prerelease: ${{ contains(steps.resolve.outputs.tag, '-') }}
