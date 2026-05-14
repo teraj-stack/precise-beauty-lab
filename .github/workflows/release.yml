@@ -64,13 +64,23 @@ jobs:
             exit 1
           fi
 
-          # Try to extract the section for this exact version (## [x.y.z] ... until next ## )
+          # Try to extract the section for this exact version. We accept any of:
+          #   ## [1.2.3]            ## [1.2.3] - 2026-05-14
+          #   ## [v1.2.3]           ## v1.2.3
+          #   ## 1.2.3 - 2026-05-14 ### [1.2.3]
+          # Section ends at the next version/[Unreleased] heading (## or ###).
           BODY="$(awk -v ver="$VERSION" '
-            BEGIN { found = 0 }
-            /^##[[:space:]]+\[/ {
+            BEGIN {
+              IGNORECASE = 1
+              # any H2/H3 starting with a version or "unreleased"
+              any_re = "^#{2,3}[[:space:]]+(\\[[[:space:]]*(v?[0-9]+\\.[0-9]+\\.[0-9]+([-][[:alnum:].]+)?|unreleased)[[:space:]]*\\]|v?[0-9]+\\.[0-9]+\\.[0-9]+([-][[:alnum:].]+)?|unreleased)([[:space:]]|$)"
+              # heading carrying our exact version
+              ver_re = "^#{2,3}[[:space:]]+(\\[[[:space:]]*v?" ver "[[:space:]]*\\]|v?" ver ")([[:space:]]|$)"
+              found = 0
+            }
+            $0 ~ any_re {
               if (found) { exit }
-              # Match "## [VERSION]" or "## [VERSION] - date"
-              if (index($0, "[" ver "]") > 0) { found = 1; next }
+              if ($0 ~ ver_re) { found = 1; next }
             }
             found { print }
           ' "$FILE")"
@@ -78,10 +88,15 @@ jobs:
           # Fallback: if no matching section, use the [Unreleased] block
           if [[ -z "${BODY// /}" ]]; then
             BODY="$(awk '
-              BEGIN { found = 0 }
-              /^##[[:space:]]+\[/ {
+              BEGIN {
+                IGNORECASE = 1
+                any_re = "^#{2,3}[[:space:]]+(\\[[[:space:]]*(v?[0-9]+\\.[0-9]+\\.[0-9]+([-][[:alnum:].]+)?|unreleased)[[:space:]]*\\]|v?[0-9]+\\.[0-9]+\\.[0-9]+([-][[:alnum:].]+)?|unreleased)([[:space:]]|$)"
+                unr_re = "^#{2,3}[[:space:]]+\\[?[[:space:]]*unreleased[[:space:]]*\\]?[[:space:]]*$"
+                found = 0
+              }
+              $0 ~ any_re {
                 if (found) { exit }
-                if (tolower($0) ~ /\[unreleased\]/) { found = 1; next }
+                if ($0 ~ unr_re) { found = 1; next }
               }
               found { print }
             ' "$FILE")"
