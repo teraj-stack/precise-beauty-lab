@@ -61,6 +61,8 @@ jobs:
       - name: Extract changelog section for tag
         id: changelog
         shell: bash
+        env:
+          STRICT: ${{ steps.resolve.outputs.strict }}
         run: |
           set -euo pipefail
           TAG="${{ steps.resolve.outputs.tag }}"
