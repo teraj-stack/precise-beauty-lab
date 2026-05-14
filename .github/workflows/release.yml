@@ -15,6 +15,11 @@ on:
         required: false
         type: boolean
         default: true
+      strict:
+        description: "Strict mode — require '## [<version>]' section, no fallback to [Unreleased]."
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
