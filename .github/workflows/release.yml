@@ -48,12 +48,15 @@ jobs:
               exit 1
             fi
             DRY_RUN="${{ inputs.dry_run }}"
+            STRICT="${{ inputs.strict }}"
           else
             TAG="${GITHUB_REF_NAME}"
             DRY_RUN="false"
+            STRICT="false"
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "dry_run=$DRY_RUN" >> "$GITHUB_OUTPUT"
+          echo "strict=$STRICT" >> "$GITHUB_OUTPUT"
 
       - name: Extract changelog section for tag
         id: changelog
