@@ -19,7 +19,7 @@
 // Każdy nagłówek H2/H3, którego treść zaczyna się od wersji lub od "unreleased".
 // Używane do wykrywania końca poprzedniej sekcji.
 export const ANY_VERSION_HEADING_RE =
-  /^#{2,3}\s+(?:\[\s*(?:v?\d+\.\d+\.\d+(?:-[\w.]+)?|unreleased)\s*\]|v?\d+\.\d+\.\d+(?:-[\w.]+)?|unreleased)\b/i;
+  /^#{2,3}\s+(?:\[\s*(?:v?\d+\.\d+\.\d+(?:-[\w.]+)?|unreleased)\s*\]|v?\d+\.\d+\.\d+(?:-[\w.]+)?|unreleased)(?=$|[\s\-–—:])/i;
 
 /** Czy linia jest jakimkolwiek nagłówkiem wersji/unreleased? */
 export function isAnyVersionHeading(line) {
@@ -29,7 +29,7 @@ export function isAnyVersionHeading(line) {
 /** Wyciąga "1.2.3" z dowolnego nagłówka wersji albo null. */
 export function parseVersionFromHeading(line) {
   const m =
-    /^#{2,3}\s+(?:\[\s*v?(\d+\.\d+\.\d+(?:-[\w.]+)?)\s*\]|v?(\d+\.\d+\.\d+(?:-[\w.]+)?))\b/i.exec(
+    /^#{2,3}\s+(?:\[\s*v?(\d+\.\d+\.\d+(?:-[\w.]+)?)\s*\]|v?(\d+\.\d+\.\d+(?:-[\w.]+)?))(?=$|[\s\-–—:])/i.exec(
       line,
     );
   if (!m) return null;
