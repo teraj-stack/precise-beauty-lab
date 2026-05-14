@@ -1,0 +1,76 @@
+name: Bump & Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Część wersji do podbicia (ignorowane, gdy podano 'version')."
+        required: false
+        type: choice
+        default: patch
+        options:
+          - patch
+          - minor
+          - major
+      version:
+        description: "Jawna wersja X.Y.Z (opcjonalnie — nadpisuje 'bump')."
+        required: false
+        type: string
+      push:
+        description: "Wypushuj commit i tag (release.yml utworzy GitHub Release)."
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history + tags)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump CHANGELOG, commit & tag
+        id: bump
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_BUMP: ${{ inputs.bump }}
+          INPUT_PUSH: ${{ inputs.push }}
+        run: |
+          set -euo pipefail
+          ARGS=()
+          if [[ -n "$INPUT_VERSION" ]]; then
+            ARGS+=(--version "$INPUT_VERSION")
+          else
+            ARGS+=(--bump "$INPUT_BUMP")
+          fi
+          if [[ "$INPUT_PUSH" == "true" ]]; then
+            ARGS+=(--push)
+          else
+            ARGS+=(--git)
+          fi
+          node scripts/bump-release.mjs "${ARGS[@]}"
+
+          NEW_TAG="$(git tag --list 'v*' --sort=-v:refname | head -n1)"
+          echo "tag=$NEW_TAG" >> "$GITHUB_OUTPUT"
+          echo "## ✅ Bumped to \`$NEW_TAG\`" >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$INPUT_PUSH" == "true" ]]; then
+            echo "Tag pushed — \`release.yml\` will publish the GitHub Release." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Push disabled — run \`git push && git push origin $NEW_TAG\` manually." >> "$GITHUB_STEP_SUMMARY"
+          fi
