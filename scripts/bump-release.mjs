@@ -111,16 +111,16 @@ const today = new Date().toISOString().slice(0, 10);
 const md = readFileSync(CHANGELOG, "utf8");
 const lines = md.split("\n");
 
-const unreleasedIdx = lines.findIndex((l) => /^##\s+\[unreleased\]/i.test(l));
+const unreleasedIdx = lines.findIndex((l) => isUnreleasedHeading(l));
 if (unreleasedIdx === -1) {
-  console.error("Error: no '## [Unreleased]' section in CHANGELOG.md");
+  console.error("Error: no '[Unreleased]' section in CHANGELOG.md");
   process.exit(1);
 }
 
-// collect [Unreleased] body until next ## heading
+// collect [Unreleased] body until next version/unreleased heading
 let endIdx = lines.length;
 for (let i = unreleasedIdx + 1; i < lines.length; i++) {
-  if (/^##\s+/.test(lines[i])) {
+  if (isAnyVersionHeading(lines[i])) {
     endIdx = i;
     break;
   }
@@ -132,8 +132,8 @@ if (!unreleasedBody) {
 }
 
 // already exists?
-if (lines.some((l) => new RegExp(`^##\\s+\\[${newVersion}\\]`).test(l))) {
-  console.error(`Error: section '## [${newVersion}]' already exists in CHANGELOG.md`);
+if (lines.some((l) => parseVersionFromHeading(l) === newVersion)) {
+  console.error(`Error: a section for version '${newVersion}' already exists in CHANGELOG.md`);
   process.exit(1);
 }
 
