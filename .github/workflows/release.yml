@@ -55,7 +55,8 @@ jobs:
           fi
 
           if [[ -z "${BODY// /}" ]]; then
-            BODY="See CHANGELOG.md for details."
+            echo "::error file=CHANGELOG.md::No section found for tag '$TAG' (looked for '## [$VERSION]') and no fallback '## [Unreleased]' section present. Aborting release." >&2
+            exit 1
           fi
 
           {
