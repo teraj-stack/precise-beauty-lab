@@ -25,6 +25,11 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { execSync } from "node:child_process";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  isAnyVersionHeading,
+  isUnreleasedHeading,
+  parseVersionFromHeading,
+} from "./lib/changelog.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
