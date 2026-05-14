@@ -49,6 +49,7 @@ let toStdout = false;
 let useGh = false;
 let draft = false;
 let title = null;
+let strict = false;
 
 for (let i = 0; i < args.length; i++) {
   const a = args[i];
@@ -58,9 +59,10 @@ for (let i = 0; i < args.length; i++) {
   else if (a === "--gh") useGh = true;
   else if (a === "--draft") draft = true;
   else if (a === "--title") title = args[++i];
+  else if (a === "--strict") strict = true;
   else if (a === "-h" || a === "--help") {
     console.log(
-      "Usage: release-notes.mjs --version vX.Y.Z [-o RELEASE_NOTES.md] [--stdout] [--gh] [--draft] [--title TITLE]",
+      "Usage: release-notes.mjs --version vX.Y.Z [-o RELEASE_NOTES.md] [--stdout] [--gh] [--draft] [--title TITLE] [--strict]",
     );
     process.exit(0);
   }
@@ -80,6 +82,12 @@ const md = readFileSync(CHANGELOG, "utf8");
 let body = extractSection(md, (l) => isHeadingForVersion(l, ver));
 let usedFallback = false;
 if (!body) {
+  if (strict) {
+    console.error(
+      `Error: --strict: no section for version '${ver}' in CHANGELOG.md (fallback to [Unreleased] disabled).`,
+    );
+    process.exit(1);
+  }
   body = extractSection(md, isUnreleasedHeading);
   usedFallback = !!body;
 }

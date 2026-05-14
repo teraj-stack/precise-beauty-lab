@@ -15,6 +15,11 @@ on:
         required: false
         type: boolean
         default: true
+      strict:
+        description: "Strict mode — require '## [<version>]' section, no fallback to [Unreleased]."
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -43,16 +48,21 @@ jobs:
               exit 1
             fi
             DRY_RUN="${{ inputs.dry_run }}"
+            STRICT="${{ inputs.strict }}"
           else
             TAG="${GITHUB_REF_NAME}"
             DRY_RUN="false"
+            STRICT="false"
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "dry_run=$DRY_RUN" >> "$GITHUB_OUTPUT"
+          echo "strict=$STRICT" >> "$GITHUB_OUTPUT"
 
       - name: Extract changelog section for tag
         id: changelog
         shell: bash
+        env:
+          STRICT: ${{ steps.resolve.outputs.strict }}
         run: |
           set -euo pipefail
           TAG="${{ steps.resolve.outputs.tag }}"
@@ -86,7 +96,12 @@ jobs:
           ' "$FILE")"
 
           # Fallback: if no matching section, use the [Unreleased] block
+          # — unless --strict mode is enabled (then fail hard).
           if [[ -z "${BODY// /}" ]]; then
+            if [[ "$STRICT" == "true" ]]; then
+              echo "::error file=CHANGELOG.md::Strict mode: no section '## [$VERSION]' for tag '$TAG' in CHANGELOG.md. Fallback to [Unreleased] disabled. Aborting release." >&2
+              exit 1
+            fi
             BODY="$(awk '
               BEGIN {
                 IGNORECASE = 1
