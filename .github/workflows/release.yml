@@ -96,7 +96,12 @@ jobs:
           ' "$FILE")"
 
           # Fallback: if no matching section, use the [Unreleased] block
+          # — unless --strict mode is enabled (then fail hard).
           if [[ -z "${BODY// /}" ]]; then
+            if [[ "$STRICT" == "true" ]]; then
+              echo "::error file=CHANGELOG.md::Strict mode: no section '## [$VERSION]' for tag '$TAG' in CHANGELOG.md. Fallback to [Unreleased] disabled. Aborting release." >&2
+              exit 1
+            fi
             BODY="$(awk '
               BEGIN {
                 IGNORECASE = 1
