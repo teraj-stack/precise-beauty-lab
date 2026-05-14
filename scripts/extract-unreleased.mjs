@@ -3,6 +3,9 @@
  * Wycina sekcję [Unreleased] z CHANGELOG.md i wypisuje gotowy tekst
  * do użycia jako body GitHub Release.
  *
+ * Obsługuje elastyczne nagłówki: `## [Unreleased]`, `## Unreleased`,
+ * `### [unreleased]`, itp. (patrz scripts/lib/changelog.mjs)
+ *
  * Użycie:
  *   node scripts/extract-unreleased.mjs            # → stdout
  *   node scripts/extract-unreleased.mjs -o out.md  # → plik
@@ -12,6 +15,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { extractSection, isUnreleasedHeading } from "./lib/changelog.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -31,23 +35,8 @@ for (let i = 0; i < args.length; i++) {
 }
 
 const md = readFileSync(CHANGELOG, "utf8");
-const lines = md.split("\n");
+let body = extractSection(md, isUnreleasedHeading);
 
-let inSection = false;
-const collected = [];
-for (const line of lines) {
-  const isH2 = /^##\s+/.test(line);
-  if (isH2) {
-    if (inSection) break;
-    if (/\[unreleased\]/i.test(line)) {
-      inSection = true;
-      continue;
-    }
-  }
-  if (inSection) collected.push(line);
-}
-
-let body = collected.join("\n").trim();
 if (!body) {
   console.error("No [Unreleased] section found in CHANGELOG.md");
   process.exit(1);
