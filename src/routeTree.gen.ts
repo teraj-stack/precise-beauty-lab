@@ -9,80 +9,25 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as ProtocolsPs30RouteImport } from './routes/protocols-ps30'
-import { Route as ProtocolsEl950RouteImport } from './routes/protocols-el950'
-import { Route as ProtocolsCl300RouteImport } from './routes/protocols-cl300'
-import { Route as ProtocolsRouteImport } from './routes/protocols'
-import { Route as PatientsRouteImport } from './routes/patients'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as LaserThuliumRouteImport } from './routes/laser-thulium'
-import { Route as CaptureRouteImport } from './routes/capture'
-import { Route as CalibrateRouteImport } from './routes/calibrate'
-import { Route as CalendarRouteImport } from './routes/calendar'
-import { Route as AuditsRouteImport } from './routes/audits'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuditsRouteImport } from './routes/audits'
+import { Route as CalendarRouteImport } from './routes/calendar'
+import { Route as CalibrateRouteImport } from './routes/calibrate'
+import { Route as CaptureRouteImport } from './routes/capture'
+import { Route as LaserThuliumRouteImport } from './routes/laser-thulium'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as PatientsRouteImport } from './routes/patients'
+import { Route as ProtocolsRouteImport } from './routes/protocols'
+import { Route as ProtocolsCl300RouteImport } from './routes/protocols-cl300'
+import { Route as ProtocolsEl950RouteImport } from './routes/protocols-el950'
+import { Route as ProtocolsPs30RouteImport } from './routes/protocols-ps30'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as PatientsIdRouteImport } from './routes/patients.$id'
 
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProtocolsPs30Route = ProtocolsPs30RouteImport.update({
-  id: '/protocols-ps30',
-  path: '/protocols-ps30',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProtocolsEl950Route = ProtocolsEl950RouteImport.update({
-  id: '/protocols-el950',
-  path: '/protocols-el950',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProtocolsCl300Route = ProtocolsCl300RouteImport.update({
-  id: '/protocols-cl300',
-  path: '/protocols-cl300',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProtocolsRoute = ProtocolsRouteImport.update({
-  id: '/protocols',
-  path: '/protocols',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PatientsRoute = PatientsRouteImport.update({
-  id: '/patients',
-  path: '/patients',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LaserThuliumRoute = LaserThuliumRouteImport.update({
-  id: '/laser-thulium',
-  path: '/laser-thulium',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CaptureRoute = CaptureRouteImport.update({
-  id: '/capture',
-  path: '/capture',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CalibrateRoute = CalibrateRouteImport.update({
-  id: '/calibrate',
-  path: '/calibrate',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CalendarRoute = CalendarRouteImport.update({
-  id: '/calendar',
-  path: '/calendar',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuditsRoute = AuditsRouteImport.update({
@@ -90,9 +35,64 @@ const AuditsRoute = AuditsRouteImport.update({
   path: '/audits',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const CalendarRoute = CalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalibrateRoute = CalibrateRouteImport.update({
+  id: '/calibrate',
+  path: '/calibrate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CaptureRoute = CaptureRouteImport.update({
+  id: '/capture',
+  path: '/capture',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LaserThuliumRoute = LaserThuliumRouteImport.update({
+  id: '/laser-thulium',
+  path: '/laser-thulium',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PatientsRoute = PatientsRouteImport.update({
+  id: '/patients',
+  path: '/patients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProtocolsRoute = ProtocolsRouteImport.update({
+  id: '/protocols',
+  path: '/protocols',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProtocolsCl300Route = ProtocolsCl300RouteImport.update({
+  id: '/protocols-cl300',
+  path: '/protocols-cl300',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProtocolsEl950Route = ProtocolsEl950RouteImport.update({
+  id: '/protocols-el950',
+  path: '/protocols-el950',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProtocolsPs30Route = ProtocolsPs30RouteImport.update({
+  id: '/protocols-ps30',
+  path: '/protocols-ps30',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PatientsIdRoute = PatientsIdRouteImport.update({
@@ -226,88 +226,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/protocols-ps30': {
-      id: '/protocols-ps30'
-      path: '/protocols-ps30'
-      fullPath: '/protocols-ps30'
-      preLoaderRoute: typeof ProtocolsPs30RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/protocols-el950': {
-      id: '/protocols-el950'
-      path: '/protocols-el950'
-      fullPath: '/protocols-el950'
-      preLoaderRoute: typeof ProtocolsEl950RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/protocols-cl300': {
-      id: '/protocols-cl300'
-      path: '/protocols-cl300'
-      fullPath: '/protocols-cl300'
-      preLoaderRoute: typeof ProtocolsCl300RouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/protocols': {
-      id: '/protocols'
-      path: '/protocols'
-      fullPath: '/protocols'
-      preLoaderRoute: typeof ProtocolsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/patients': {
-      id: '/patients'
-      path: '/patients'
-      fullPath: '/patients'
-      preLoaderRoute: typeof PatientsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/laser-thulium': {
-      id: '/laser-thulium'
-      path: '/laser-thulium'
-      fullPath: '/laser-thulium'
-      preLoaderRoute: typeof LaserThuliumRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/capture': {
-      id: '/capture'
-      path: '/capture'
-      fullPath: '/capture'
-      preLoaderRoute: typeof CaptureRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/calibrate': {
-      id: '/calibrate'
-      path: '/calibrate'
-      fullPath: '/calibrate'
-      preLoaderRoute: typeof CalibrateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/calendar': {
-      id: '/calendar'
-      path: '/calendar'
-      fullPath: '/calendar'
-      preLoaderRoute: typeof CalendarRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/audits': {
@@ -317,11 +240,88 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuditsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calibrate': {
+      id: '/calibrate'
+      path: '/calibrate'
+      fullPath: '/calibrate'
+      preLoaderRoute: typeof CalibrateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/capture': {
+      id: '/capture'
+      path: '/capture'
+      fullPath: '/capture'
+      preLoaderRoute: typeof CaptureRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/laser-thulium': {
+      id: '/laser-thulium'
+      path: '/laser-thulium'
+      fullPath: '/laser-thulium'
+      preLoaderRoute: typeof LaserThuliumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/patients': {
+      id: '/patients'
+      path: '/patients'
+      fullPath: '/patients'
+      preLoaderRoute: typeof PatientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/protocols': {
+      id: '/protocols'
+      path: '/protocols'
+      fullPath: '/protocols'
+      preLoaderRoute: typeof ProtocolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/protocols-cl300': {
+      id: '/protocols-cl300'
+      path: '/protocols-cl300'
+      fullPath: '/protocols-cl300'
+      preLoaderRoute: typeof ProtocolsCl300RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/protocols-el950': {
+      id: '/protocols-el950'
+      path: '/protocols-el950'
+      fullPath: '/protocols-el950'
+      preLoaderRoute: typeof ProtocolsEl950RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/protocols-ps30': {
+      id: '/protocols-ps30'
+      path: '/protocols-ps30'
+      fullPath: '/protocols-ps30'
+      preLoaderRoute: typeof ProtocolsPs30RouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/patients/$id': {
